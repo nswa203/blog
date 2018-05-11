@@ -45,9 +45,12 @@ class PostController extends Controller
 		$post=new Post;
 		$post->title=$request->title;
 		$post->body	=$request->body;
-		$post->save();
-	
-		Session::flash('success','The Blog Post was successfully saved!');
+		$myrc=$post->save();
+        
+        if($myrc){
+            Session::flash('success','The blog Post was successfully saved.');
+        }else{
+            Session::flash('failure','The blog Post was NOT saved.');
 	
 		return redirect()->route('posts.show',$post->id);	
     }
