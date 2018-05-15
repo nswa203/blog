@@ -18,6 +18,7 @@ Route::get('/', 'PagesController@getIndex');
 
 Route::resource('posts', 'PostController');
 Route::resource('categories', 'CategoryController')->except(['create','show']);
+Route::resource('tags', 'TagController')->except(['create','show']);;
 
 Auth::routes();
 /* "home" is used as a default return URL within Laravel's built-in authentification 			*/

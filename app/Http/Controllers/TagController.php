@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Category;
+use App\Tag;
 use Session;
 
-class CategoryController extends Controller
+class TagController extends Controller
 {
     /**
      * We lock down the complete PostController here using the __construct()
@@ -25,16 +25,16 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = Category::orderBy('id', 'desc')->paginate(10);
+       $tags = Tag::orderBy('id', 'desc')->paginate(10);
 
-        if ($categories) {
+        if ($tags) {
 
         } else {
-            Session::flash('failure', 'No Categories were found.');
+            Session::flash('failure', 'No Tags were found.');
         }
-        return view('categories.index', ['categories' => $categories]);
+        return view('tags.index', ['tags' => $tags]);
     }
-
+    
     /**
      * Store a newly created resource in storage.
      *
@@ -44,19 +44,19 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'name' => 'required|min:5|max:191',
+            'name' => 'required|min:3|max:191',
         ]);
 
-        $category = new Category;
-        $category->name = $request->name;
-        $myrc = $category->save();
+        $tag = new Tag;
+        $tag->name = $request->name;
+        $myrc = $tag->save();
 
         if ($myrc) {
-            Session::flash('success', 'The Category was successfully saved.');
+            Session::flash('success', 'The Tag was successfully saved.');
         } else {
-            Session::flash('failure', 'The Category was NOT saved.');
+            Session::flash('failure', 'The Tag was NOT saved.');
         }
-        return redirect()->route('categories.index');
+        return redirect()->route('tags.index');
     }
 
     /**
@@ -67,7 +67,7 @@ class CategoryController extends Controller
      */
     public function edit($id)
     {
-        return redirect()->route('categories.index',['edit'=>$id]);
+        return redirect()->route('tags.index',['edit'=>$id]);
     }
 
     /**
@@ -79,21 +79,21 @@ class CategoryController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $category = Category::find($id);
+        $tag = Tag::find($id);
 
         $this->validate($request, [
-            'name' => 'required|min:5|max:191',
+            'name' => 'required|min:3|max:191',
         ]);
 
-        $category->name = $request->name;
-        $myrc = $category->save();
+        $tag->name = $request->name;
+        $myrc = $tag->save();
 
         if ($myrc) {
-            Session::flash('success', 'The Category was successfully saved.');
+            Session::flash('success', 'The Tag was successfully saved.');
         } else {
-            Session::flash('failure', 'The Category was NOT saved.');
+            Session::flash('failure', 'The Tag was NOT saved.');
         }
-        return redirect()->route('categories.index',['page'=>$request->page]);
+        return redirect()->route('tags.index',['page'=>$request->page]);
     }
 
     /**
@@ -107,10 +107,10 @@ class CategoryController extends Controller
         $myrc=false ;   
 
         if ($myrc) {
-            Session::flash('success', 'The Category was deleted.');
+            Session::flash('success', 'The Tag was deleted.');
         } else {
-            Session::flash('failure', 'Delete Category is not yet supported!');
+            Session::flash('failure', 'Delete Tag is not yet supported!');
         }        
-        return redirect()->route('categories.index',['page'=>$request->page]);
+        return redirect()->route('tags.index',['page'=>$request->page]);
     }
 }

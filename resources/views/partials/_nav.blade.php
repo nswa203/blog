@@ -21,6 +21,7 @@
 					<div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
 						<a class="dropdown-item" href="{{ route('posts.index'		) }}">Posts</a>
 						<a class="dropdown-item" href="{{ route('categories.index'	) }}">Categories</a>
+						<a class="dropdown-item" href="{{ route('tags.index'		) }}">Tags</a>
 						<div class="dropdown-divider"></div>
 						{!! Form::open(['route'=>['logout'],'method'=>'POST']) !!}
 							{!! Form::submit('Log Out',['class'=>'dropdown-item']) !!}
