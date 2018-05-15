@@ -4,15 +4,15 @@
 		@include('partials._head')
 		@yield('stylesheets')
 	</head>
-	
+
 	<body>
 		@include('partials._nav')
-	
-		<div class="container">
+
+		<div class="container mt-3">
 			@include('partials._messages')
-		
+
 			@yield('content')
-			
+
 			@include('partials._footer')
 		</div>
 		@include('partials._javascript')

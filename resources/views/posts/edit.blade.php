@@ -1,14 +1,26 @@
 @extends('main')
 
-@section('title','| View Post')
+@section('title','| Edit Post')
 
 @section('content')
 	@if($post)
 		<div class="row">
 			<div class="col-md-8">
-				<h1>{{ $post->title }}</h1>
+				<h1>Edit Post</h1>
 				<hr>
-				<p class="lead">{{ $post->body }}</p>
+				{!! Form::model($post,['route'=>['posts.update',$post->id],'method'=>'PUT']) !!}
+
+				{{ Form::label('title','Title:',['class'=>'font-bold form-spacing-top']) }}
+				{{ Form::text('title',null,['class'=>'form-control form-control-lg']) }}
+
+				{{ Form::label('slug','Slug:',['class'=>'font-bold form-spacing-top']) }}
+				{{ Form::text('slug',null,['class'=>'form-control','data-parsley-required'=>'','data-parsley-maxlength'=>'191','data-parsley-minlength'=>'5']) }}
+
+				{{ Form::label('category_id','Category:',['class'=>'font-bold form-spacing-top']) }}
+				{{ Form::select('category_id',$categories,null,['class'=>'form-control','data-parsley-required'=>'']) }}
+
+				{{ Form::label('body','Body:',['class'=>'font-bold form-spacing-top']) }}
+				{{ Form::textarea('body',null,['class'=>'form-control']) }}
 			</div>
 
 			<div class="col-md-4">
@@ -26,12 +38,10 @@
 					<hr class="hr-spacing-top">
 					<div class="row">
 						<div class="col-sm-6">
-							{!! Html::LinkRoute('posts.edit','Edit',[$post->id],['class'=>'btn btn-primary btn-block']) !!}
+							{!! Html::LinkRoute('posts.show','Cancel',[$post->id],['class'=>'btn btn-danger btn-block']) !!}
 						</div>
 						<div class="col-sm-6">
-							{!! Form::open(['route'=>['posts.destroy',$post->id],'method'=>'DELETE']) !!}
-							{!! Form::submit('Delete',['class'=>'btn btn-danger btn-block']) !!}
-							{!! Form::close() !!}
+							{{ Form::submit('Save Changes',['class'=>'btn btn-success btn-block']) }}
 						</div>
 					</div>
 					<div class="row mt-3">
@@ -40,6 +50,7 @@
 						</div>
 					</div>
 				</div>
+				{!! Form::close() !!}
 			</div>
 		</div>
 	@endif

@@ -1,0 +1,25 @@
+.btn-h1-spacing{
+	margin-top: 2px;
+}
+
+.form-spacing-top{
+	margin-top: 20px;
+}
+
+.font-bold{
+	font-weight: bold;
+}
+
+.hr-spacing-top{
+	margin-top: -5px;
+}
+
+.form-input-success{
+	border-color: #218838;
+	border-width: 2px;
+}
+
+.form-input-primary{
+	border-color: #0069d9;
+	border-width: 2px;
+}
