@@ -36,8 +36,8 @@
 							<tr>
 								<th>{{ $tag->id }}</th>
 								@if(Request::get('edit')==$tag->id)
-									{!! Form::open(['route'=>['tags.update',$tag->id],'method'=>'PUT']) !!}
-										<td>{{ Form::text('name',$tag->name,['class'=>'form-control form-input-success']) }}</td>
+									{!! Form::model($tag,['route'=>['tags.update',$tag->id],'method'=>'PUT']) !!}
+										<td>{{ Form::text('name',null,['class'=>'form-control form-input-success']) }}</td>
 										<td>{{ date('j M Y',strtotime($tag->created_at)) }}</td>
 										<td>{{ date('j M Y',strtotime($tag->updated_at)) }}</td>
 										<td>
@@ -48,7 +48,7 @@
 									{!! Form::close() !!}
 								@else
 									{!! Form::open(['route'=>['tags.destroy',$tag->id],'method'=>'DELETE']) !!}
-										<td>{{ $tag->name }}</td>
+										<td><a href="{{ route('tags.show',$tag->id) }}">{{ $tag->name }}</a></td>
 										<td>{{ date('j M Y',strtotime($tag->created_at)) }}</td>
 										<td>{{ date('j M Y',strtotime($tag->updated_at)) }}</td>
 										<td>

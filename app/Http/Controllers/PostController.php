@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Post;
+use App\Tag;
 use App\Category;
 use Session;
 
@@ -43,7 +44,8 @@ class PostController extends Controller {
 		// URI=http://blog/posts/create
 
 		$categories=Category::orderBy('name','asc')->pluck('name','id');
-		return view('posts.create',['categories'=>$categories]);
+		$tags=Tag::orderBy('name','asc')->pluck('name','id');
+		return view('posts.create',['categories'=>$categories,'tags'=>$tags]);
 	}
 
 	/**
@@ -57,6 +59,8 @@ class PostController extends Controller {
 			'title' 		=> 'required|min:8|max:191',
 			'slug' 			=> 'required|alpha_dash|min:5|max:191|unique:posts,slug',
 			'category_id' 	=> 'required|integer',
+			'tags'			=> 'array',
+			'tags.*'		=> 'integer',
 			'body' 			=> 'required',
 		]);
 
@@ -67,7 +71,9 @@ class PostController extends Controller {
 		$post->body 		= $request->body;
 		$myrc = $post->save();
 
-		if ($myrc) {
+		$myrc2 = $post->tags()->sync($request->tags, false);
+
+		if ($myrc and $myrc2) {
 			Session::flash('success', 'The blog Post was successfully saved.');
 		} else {
 			Session::flash('failure', 'The blog Post was NOT saved.');
@@ -100,14 +106,15 @@ class PostController extends Controller {
 	 */
 	public function edit($id) {
 		$post = Post::find($id);
-		$categories=Category::orderBy('name','asc')->pluck('name','id');		
+		$categories=Category::orderBy('name','asc')->pluck('name','id');
+		$tags=Tag::orderBy('name','asc')->pluck('name','id');
 
 		if ($post) {
 
 		} else {
 			Session::flash('failure', 'Blog Post ' . $id . ' was NOT found.');
 		}
-		return view('posts.edit', ['post'=>$post, 'categories'=>$categories]);
+		return view('posts.edit', ['post'=>$post, 'categories'=>$categories,'tags'=>$tags]);
 	}
 
 	/**
@@ -124,6 +131,8 @@ class PostController extends Controller {
 			$this->validate($request, [
 				'title' 		=> 'required|min:8|max:191',
 				'category_id' 	=> 'required|integer',
+				'tags'			=> 'array',
+				'tags.*'		=> 'integer',				
 				'body' 			=> 'required',
 			]);
 		} else {
@@ -131,6 +140,8 @@ class PostController extends Controller {
 				'title' 		=> 'required|min:8|max:191',
 				'slug' 			=> 'required|alpha_dash|min:5|max:191|unique:posts,slug',
 				'category_id' 	=> 'required|integer',
+				'tags'			=> 'array',
+				'tags.*'		=> 'integer',				
 				'body' 			=> 'required',
 			]);
 		}
@@ -141,7 +152,9 @@ class PostController extends Controller {
 		$post->body 		= $request->body;
 		$myrc = $post->save();
 
-		if ($myrc) {
+		$myrc2 = $post->tags()->sync($request->tags, true);
+
+		if ($myrc and $myrc2) {
 			Session::flash('success', 'The blog Post was successfully saved.');
 		} else {
 			Session::flash('failure', 'The blog Post was NOT saved.');

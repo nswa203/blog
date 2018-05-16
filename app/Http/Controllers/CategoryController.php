@@ -59,6 +59,23 @@ class CategoryController extends Controller
         return redirect()->route('categories.index');
     }
 
+     /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id) {
+        $category=Category::find($id);
+
+        if ($category) {
+
+        } else {
+            Session::flash('failure', 'Category ' . $id . ' was NOT found.');
+        }
+        return view('categories.show', ['category' => $category]);
+    }
+
     /**
      * Show the form for editing the specified resource.
      *

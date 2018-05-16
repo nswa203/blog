@@ -36,8 +36,8 @@
 							<tr>
 								<th>{{ $category->id }}</th>
 								@if(Request::get('edit')==$category->id)
-									{!! Form::open(['route'=>['categories.update',$category->id],'method'=>'PUT']) !!}
-										<td>{{ Form::text('name',$category->name,['class'=>'form-control form-input-success']) }}</td>
+									{!! Form::model($category,['route'=>['categories.update',$category->id],'method'=>'PUT']) !!}
+										<td>{{ Form::text('name',null,['class'=>'form-control form-input-success']) }}</td>
 										<td>{{ date('j M Y',strtotime($category->created_at)) }}</td>
 										<td>{{ date('j M Y',strtotime($category->updated_at)) }}</td>
 										<td>
@@ -48,7 +48,7 @@
 									{!! Form::close() !!}
 								@else
 									{!! Form::open(['route'=>['categories.destroy',$category->id],'method'=>'DELETE']) !!}
-										<td>{{ $category->name }}</td>
+										<td><a href="{{ route('categories.show',$category->id) }}">{{ $category->name }}</a></td>
 										<td>{{ date('j M Y',strtotime($category->created_at)) }}</td>
 										<td>{{ date('j M Y',strtotime($category->updated_at)) }}</td>
 										<td>

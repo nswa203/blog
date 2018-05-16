@@ -59,6 +59,23 @@ class TagController extends Controller
         return redirect()->route('tags.index');
     }
 
+     /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id) {
+        $tag=Tag::find($id);
+
+        if ($tag) {
+
+        } else {
+            Session::flash('failure', 'Tag ' . $id . ' was NOT found.');
+        }
+        return view('tags.show', ['tag' => $tag]);
+    }
+
     /**
      * Show the form for editing the specified resource.
      *

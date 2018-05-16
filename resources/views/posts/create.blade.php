@@ -4,6 +4,7 @@
 
 @section('stylesheets')
 	{!! Html::style('css/parsley.css') !!}
+	{!! Html::style('css/select2.min.css') !!}	
 @endsection
 
 @section('content')
@@ -21,6 +22,9 @@
 				{{ Form::label('category_id','Category:',['class'=>'font-bold form-spacing-top']) }}
 				{{ Form::select('category_id',$categories,null,['class'=>'form-control','placeholder'=>'Select a Category...','data-parsley-required'=>'']) }}
 
+				{{ Form::label('tags','Tags:',['class'=>'font-bold form-spacing-top']) }}
+				{{ Form::select('tags[]',$tags,null,['class'=>'form-control select2-multi','multiple'=>'']) }}
+
 				{{ Form::label('body','Body:',['class'=>'font-bold form-spacing-top']) }}
 				{{ Form::textarea('body',null,['class'=>'form-control','data-parsley-required'=>'']) }}
 		</div>
@@ -31,7 +35,7 @@
 					<dt class="col-sm-5">URL:</dt>
 					<dd class="col-sm-7"><a href="#">{{ route('blog.single','your-url') }}</a></dd>
 					<dt class="col-sm-5">Category:</dt>
-					<dd class="col-sm-7">Select a Category...</dd>					
+					<dd class="col-sm-7"><a href="#"><span class="badge badge-default">Select a Category...</span></a></dd>					
 					<dt class="col-sm-5">Created At:</dt>
 					<dd class="col-sm-7">{{ date('j M Y, h:ia') }}</dd>
 					<dt class="col-sm-5">Last Updated:</dt>
@@ -59,4 +63,10 @@
 
 @section('scripts')
 	{!! Html::script('js/parsley.min.js') !!}
+	{!! Html::script('js/select2.min.js') !!}
+
+	<script type="text/javascript">
+		$('.select2-multi').select2();		
+
+	</script>
 @endsection

@@ -9,6 +9,12 @@
 				<h1>{{ $post->title }}</h1>
 				<hr>
 				<p class="lead">{{ $post->body }}</p>
+				<hr>
+				<div class="tags">
+					@foreach ($post->tags as $tag)
+						<a href="{{ route('tags.show',$tag->id) }}"><span class="badge badge-info">{{ $tag->name }}</span></a>
+					@endforeach
+				</div>
 			</div>
 
 			<div class="col-md-4">
@@ -17,7 +23,7 @@
 						<dt class="col-sm-5">URL:</dt>
 						<dd class="col-sm-7"><a href="{{ route('blog.single',$post->slug) }}">{{ route('blog.single',$post->slug) }}</a></dd>
 						<dt class="col-sm-5">Category:</dt>
-						<dd class="col-sm-7">{{ $post->category->name }}</dd>							
+						<dd class="col-sm-7"><a href="{{ route('categories.show',$post->category->id) }}"><span class="badge badge-default">{{ $post->category->name }}</span></a></dd>							
 						<dt class="col-sm-5">Created At:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:ia',strtotime($post->created_at)) }}</dd>
 						<dt class="col-sm-5">Last Updated:</dt>
