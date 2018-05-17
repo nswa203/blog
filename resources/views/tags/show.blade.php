@@ -45,14 +45,14 @@
 							<tr>
 								<th>{{ $post->id }}</th>
 								<td>{{ $post->title }}</td>
-								<td><a href="{{ route('categories.show',$post->category->id)}}"><span class="badge badge-default">{{ $post->category->name }}</span></a></td>
+								<td><a href="{{ route('categories.show',$post->category->id) }}"><span class="badge badge-default">{{ $post->category->name }}</span></a></td>
 								<td>
 									@foreach ($post->tags as $tag)
-										<a href="{{ route('tags.show',$tag->id)}}"><span class="badge badge-info">{{ $tag->name }}</span></a>
+										<a href="{{ route('tags.show',$tag->id) }}"><span class="badge badge-info">{{ $tag->name }}</span></a>
 									@endforeach
 								</td>
 								<td>
-									<a href="{{ route('posts.show',$post->id)}}" class="btn btn-sm btn-outline-dark">View Post</a>
+									<a href="{{ route('posts.show',$post->id) }}" class="btn btn-sm btn-outline-dark">View Post</a>
 								</td>								
 							</tr>
 						@endforeach

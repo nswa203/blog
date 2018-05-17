@@ -121,12 +121,22 @@ class CategoryController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $myrc=false ;   
+        $category = Category::find($id);
+        // Can't yet delete Categories because
+        // 1. blades don't supprt null Category & No default Category set up
+        // 2. Don't know how to set all posts category-id fields to null easily 
+        $category = false;
 
+        if ($category){
+            $categoryName=$category->name;
+
+            $myrc = $category->delete();
+        } else { $myrc=false; }
+            
         if ($myrc) {
-            Session::flash('success', 'The Category was deleted.');
+            Session::flash('success', 'The "' . $categoryName . '" Category was successfully deleted.');
         } else {
-            Session::flash('failure', 'Delete Category is not yet supported!');
+            Session::flash('failure', 'The Category was NOT deleted.');
         }        
         return redirect()->route('categories.index',['page'=>$request->page]);
     }

@@ -11,10 +11,11 @@
 |
  */
 
-Route::get('contact', 'PagesController@getContact');
-Route::get('about', 'PagesController@getAbout');
-Route::get('blog', 'BlogController@getIndex')->name('blog.index');
-Route::get('/', 'PagesController@getIndex');
+Route::get('contact',	'PagesController@getContact');
+Route::post('contact',	'PagesController@postContact');
+Route::get('about',		'PagesController@getAbout');
+Route::get('blog',		'BlogController@getIndex')->name('blog.index');
+Route::get('/',			'PagesController@getIndex');
 
 Route::resource('posts', 'PostController');
 Route::resource('categories', 'CategoryController')->except(['create']);

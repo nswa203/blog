@@ -121,12 +121,18 @@ class TagController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $myrc=false ;   
+        $tag = Tag::find($id);
 
+        if ($tag){
+            $tagName=$tag->name;
+            $tag->posts()->detach();
+            $myrc = $tag->delete();
+        } else { $myrc=false; }
+            
         if ($myrc) {
-            Session::flash('success', 'The Tag was deleted.');
+            Session::flash('success', 'The "' . $tagName . '" Tag was successfully deleted.');
         } else {
-            Session::flash('failure', 'Delete Tag is not yet supported!');
+            Session::flash('failure', 'The Tag was NOT deleted.');
         }        
         return redirect()->route('tags.index',['page'=>$request->page]);
     }

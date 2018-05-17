@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Post;
 use Auth;
+use Mail;
+use Session;
 
 class PagesController extends Controller {
 
@@ -19,10 +22,10 @@ class PagesController extends Controller {
 	}
 
 	public function getAbout() {
-		$first = 'Nick';
-		$last = 'Svonja';
-		$email = 'nswa203@btinternet.com';
-		$data = [];
+		$first 	= 'Nick';
+		$last 	= 'Svonja';
+		$email 	= 'nswa203@btinternet.com';
+		$data 	= [];
 		$data['fullname'] = $first . ' ' . $last;
 		$data['email'] = $email;
 
@@ -33,8 +36,32 @@ class PagesController extends Controller {
 		return view('pages.contact');
 	}
 
-	public function postContact() {
+	public function postContact(Request $request) {
 
+		$this->validate($request, [
+			'email' 		=> 'required|email',
+			'subject'		=> 'required|min:3',
+			'message' 		=> 'required|min:10',
+		]); 
+		
+		$data=[
+			'email' 		=> $request->email,
+			'subject'		=> $request->subject,
+			'bodyMessage'	=> $request->message
+		];
+
+		$myrc = Mail::send('emails.contact', $data, function($message) use ($data) {
+			$message->from($data['email']);
+			$message->to('nswa002@btinternet.com');
+			$message->subject($data['subject']);
+		});
+
+		if (!$myrc) {
+			Session::flash('success', 'Your eMail was successfully sent.');
+		} else {
+			Session::flash('failure', 'The eMail was NOT sent.');
+		}
+		return redirect()->route('home');
 	}
 
 }
