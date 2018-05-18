@@ -6,7 +6,7 @@
 	@if($posts)
 		<div class="row">
 			<div class="col-md-9">
-				<h1>All Posts</h1>
+				<h1><span class="fas fa-file-alt mr-4"></span>All Posts</h1>
 			</div>
 
 			<div class="col-md-3">

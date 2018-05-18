@@ -39,12 +39,14 @@ class PagesController extends Controller {
 	public function postContact(Request $request) {
 
 		$this->validate($request, [
+			'name' 			=> 'required|min:2',
 			'email' 		=> 'required|email',
-			'subject'		=> 'required|min:3',
-			'message' 		=> 'required|min:10',
+			'subject'		=> 'required|min:2',
+			'message' 		=> 'required|min:8',
 		]); 
 		
 		$data=[
+			'name' 			=> $request->name,
 			'email' 		=> $request->email,
 			'subject'		=> $request->subject,
 			'bodyMessage'	=> $request->message

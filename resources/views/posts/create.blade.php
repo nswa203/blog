@@ -10,7 +10,7 @@
 @section('content')
 	<div class="row">
 		<div class="col-md-8" >
-			<h1>Create New Post</h1>
+			<h1><span class="fas fa-file-alt mr-4"></span>Create New Post</h1>
 			<hr>
 			{!! Form::open(['route'=>'posts.store','data-parsley-validate'=>'']) !!}
 				{{ Form::label('title','Title:',['class'=>'font-bold form-spacing-top']) }}
@@ -20,7 +20,7 @@
 				{{ Form::text('slug',null,['class'=>'form-control','data-parsley-required'=>'','data-parsley-maxlength'=>'191','data-parsley-minlength'=>'5','placeholder'=>'your-slug']) }}
 
 				{{ Form::label('category_id','Category:',['class'=>'font-bold form-spacing-top']) }}
-				{{ Form::select('category_id',$categories,null,['class'=>'form-control','placeholder'=>'Select a Category...','data-parsley-required'=>'']) }}
+				{{ Form::select('category_id',$categories,null,['class'=>'form-control custom-select','placeholder'=>'Select a Category...','data-parsley-required'=>'']) }}
 
 				{{ Form::label('tags','Tags:',['class'=>'font-bold form-spacing-top']) }}
 				{{ Form::select('tags[]',$tags,null,['class'=>'form-control select2-multi','multiple'=>'']) }}
@@ -33,13 +33,13 @@
 			<div class="card card-body bg-light">
 				<dl class="row">
 					<dt class="col-sm-5">URL:</dt>
-					<dd class="col-sm-7"><a href="#">{{ route('blog.single','your-url') }}</a></dd>
+					<dd class="col-sm-7"><a href="#">{{ route('blog.single','your-slug') }}</a></dd>
 					<dt class="col-sm-5">Category:</dt>
 					<dd class="col-sm-7"><a href="#"><span class="badge badge-default">Select a Category...</span></a></dd>					
 					<dt class="col-sm-5">Created At:</dt>
-					<dd class="col-sm-7">{{ date('j M Y, h:ia') }}</dd>
+					<dd class="col-sm-7">{{ date('j M Y, h:i a') }}</dd>
 					<dt class="col-sm-5">Last Updated:</dt>
-					<dd class="col-sm-7">{{ date('j M Y, h:ia') }}</dd>
+					<dd class="col-sm-7">{{ date('j M Y, h:i a') }}</dd>
 				</dl>
 				<hr class="hr-spacing-top">
 				<div class="row">

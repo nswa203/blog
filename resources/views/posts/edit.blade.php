@@ -11,7 +11,7 @@
 	@if($post)
 		<div class="row">
 			<div class="col-md-8">
-				<h1>Edit Post</h1>
+				<h1><span class="fas fa-edit mr-4"></span>Edit Post</h1>
 				<hr>
 				{!! Form::model($post,['route'=>['posts.update',$post->id],'method'=>'PUT']) !!}
 
@@ -22,7 +22,7 @@
 				{{ Form::text('slug',null,['class'=>'form-control','data-parsley-required'=>'','data-parsley-maxlength'=>'191','data-parsley-minlength'=>'5']) }}
 
 				{{ Form::label('category_id','Category:',['class'=>'font-bold form-spacing-top']) }}
-				{{ Form::select('category_id',$categories,null,['class'=>'form-control','data-parsley-required'=>'']) }}
+				{{ Form::select('category_id',$categories,null,['class'=>'form-control custom-select','data-parsley-required'=>'']) }}
 
 				{{ Form::label('tags','Tags:',['class'=>'font-bold form-spacing-top']) }}
 				{{ Form::select('tags[]',$tags,null,['class'=>'form-control select2-multi','multiple'=>'']) }}
@@ -39,9 +39,9 @@
 						<dt class="col-sm-5">Category:</dt>
 						<dd class="col-sm-7"><a href="{{ route('categories.show',$post->category->id) }}"><span class="badge badge-default">{{ $post->category->name }}</span></a></dd>							
 						<dt class="col-sm-5">Created At:</dt>
-						<dd class="col-sm-7">{{ date('j M Y, h:ia',strtotime($post->created_at)) }}</dd>
+						<dd class="col-sm-7">{{ date('j M Y, h:i a',strtotime($post->created_at)) }}</dd>
 						<dt class="col-sm-5">Last Updated:</dt>
-						<dd class="col-sm-7">{{ date('j M Y, h:ia',strtotime($post->updated_at)) }}</dd>
+						<dd class="col-sm-7">{{ date('j M Y, h:i a',strtotime($post->updated_at)) }}</dd>
 					</dl>
 					<hr class="hr-spacing-top">
 					<div class="row">

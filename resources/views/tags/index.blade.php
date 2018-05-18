@@ -6,7 +6,7 @@
 	@if($tags)
 		<div class="row">
 			<div class="col-md-12">
-				<h1>Tags</h1>
+				<h1><span class="fas fa-tag mr-4"></span>Tags</h1>
 				<hr>
 				<table class="table table-hover">
 					<thead class="thead-dark">

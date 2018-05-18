@@ -19,9 +19,9 @@
 						Hello {{ Auth::user()->name }}
 					</a>
 					<div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-						<a class="dropdown-item" href="{{ route('posts.index'		) }}">Posts</a>
-						<a class="dropdown-item" href="{{ route('categories.index'	) }}">Categories</a>
-						<a class="dropdown-item" href="{{ route('tags.index'		) }}">Tags</a>
+						<a class="dropdown-item" href="{{ route('posts.index'		) }}"><span class="fas fa-file-alt mr-2"></span>Posts</a>
+						<a class="dropdown-item" href="{{ route('categories.index'	) }}"><span class="fas fa-tasks mr-2"></span>Categories</a>
+						<a class="dropdown-item" href="{{ route('tags.index'		) }}"><span class="fas fa-tag mr-2"></span>Tags</a>
 						<div class="dropdown-divider"></div>
 						{!! Form::open(['route'=>['logout'],'method'=>'POST']) !!}
 							{!! Form::submit('Log Out',['class'=>'dropdown-item']) !!}

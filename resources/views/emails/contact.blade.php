@@ -5,4 +5,5 @@
 	{{ $bodyMessage }}
 </div>
 
-<p>Sent from {{ $email }}</p>
+<p>Sent from {{ $name }}</p>
+<p>eMail: {{ $email }}</p>

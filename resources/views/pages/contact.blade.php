@@ -6,10 +6,14 @@
 	<div class="row">
 		<div class="col-md-12">
 			<div class="jumbotron">
-				<h1>Contact Me</h1>
+				<h1><span class="fas fa-envelope mr-4"></span>Contact Me</h1>
 				<hr>
 				<form action="{{ url('contact') }}" method="POST">
 					{{ csrf_field() }}
+					<div class="form-group">
+						<label name="name" class="font-bold">Your Name:</label>
+						<input id="name" name="name" class="form-control">
+					</div>
 					<div class="form-group">
 						<label name="email" class="font-bold">Your eMail:</label>
 						<input id="email" name="email" class="form-control">
