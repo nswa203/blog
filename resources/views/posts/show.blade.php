@@ -8,7 +8,7 @@
 			<div class="col-md-8">
 				<h1><span class="fas fa-file-alt mr-4"></span>{{ $post->title }}</h1>
 				<hr>
-				<p class="lead">{{ $post->body }}</p>
+				<p class="lead">{!! $post->body !!}</p>
 				<hr>
 				<div class="tags">
 					@foreach ($post->tags as $tag)
@@ -73,7 +73,7 @@
 									<td>{{ $comment->approved?'Y':'N' }}</td>
 									<td>{{ $comment->name }}</td>
 									<td>{{ $comment->email }}</td>
-									<td>{{ substr($comment->comment,0,256)}}{{ strlen($comment->comment)>256?'...':'' }}</td>
+									<td>{{ substr(strip_tags($comment->comment),0,256)}}{{ strlen(strip_tags($comment->comment))>256?'...':'' }}</td>
 									<td>{{ date('j M Y',strtotime($comment->created_at)) }}</td>
 
 									<td>

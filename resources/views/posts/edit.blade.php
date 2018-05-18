@@ -4,7 +4,16 @@
 
 @section('stylesheets')
 	{!! Html::style('css/parsley.css') !!}
-	{!! Html::style('css/select2.min.css') !!}	
+	{!! Html::style('css/select2.min.css') !!}
+	{!! Html::script('js/tinymce.min.js') !!}
+	<script>
+		tinymce.init ({
+			selector: 'textarea',
+			plugins: "link lists",
+			menubar: false,
+			toolbar: ""
+ 		});
+	</script>
 @endsection
 
 @section('content')
@@ -13,10 +22,10 @@
 			<div class="col-md-8">
 				<h1><span class="fas fa-edit mr-4"></span>Edit Post</h1>
 				<hr>
-				{!! Form::model($post,['route'=>['posts.update',$post->id],'method'=>'PUT']) !!}
+				{!! Form::model($post,['route'=>['posts.update',$post->id],'method'=>'PUT','data-parsley-validate'=>'']) !!}
 
 				{{ Form::label('title','Title:',['class'=>'font-bold form-spacing-top']) }}
-				{{ Form::text('title',null,['class'=>'form-control form-control-lg']) }}
+				{{ Form::text('title',null,['class'=>'form-control form-control-lg','data-parsley-required'=>'','data-parsley-maxlength'=>'191']) }}
 
 				{{ Form::label('slug','Slug:',['class'=>'font-bold form-spacing-top']) }}
 				{{ Form::text('slug',null,['class'=>'form-control','data-parsley-required'=>'','data-parsley-maxlength'=>'191','data-parsley-minlength'=>'5']) }}

@@ -66,3 +66,16 @@
 	margin-top: 45px;
 	margin-bottom: 25px;
 }
+
+html {
+    width: 100%;
+    width: 100vw;
+}
+
+.evenColor {
+	background-color: white;
+}
+
+.oddColor {
+	background-color: white;
+}

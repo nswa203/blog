@@ -33,7 +33,7 @@
 							<tr>
 								<th>{{ $post->id }}</th>
 								<td>{{ $post->title }}</td>
-								<td>{{ substr($post->body,0,48) }}{{ strlen($post->body)>48?'...':'' }}</td>
+								<td>{{ substr(strip_tags($post->body),0,48) }}{{ strlen(strip_tags($post->body))>48?'...':'' }}</td>
 								<td>{{ date('j M Y',strtotime($post->created_at)) }}</td>
 								<td>{{ date('j M Y',strtotime($post->updated_at)) }}</td>
 								<td>

@@ -4,7 +4,16 @@
 
 @section('stylesheets')
 	{!! Html::style('css/parsley.css') !!}
-	{!! Html::style('css/select2.min.css') !!}	
+	{!! Html::style('css/select2.min.css') !!}
+	{!! Html::script('js/tinymce.min.js') !!}
+	<script>
+		tinymce.init ({
+			selector: 'textarea',
+			plugins: "link lists",
+			menubar: false,
+			toolbar: ""
+ 		});
+	</script>
 @endsection
 
 @section('content')
@@ -26,7 +35,7 @@
 				{{ Form::select('tags[]',$tags,null,['class'=>'form-control select2-multi','multiple'=>'']) }}
 
 				{{ Form::label('body','Body:',['class'=>'font-bold form-spacing-top']) }}
-				{{ Form::textarea('body',null,['class'=>'form-control','data-parsley-required'=>'']) }}
+				{{ Form::textarea('body',null,['class'=>'form-control']) }}
 		</div>
 
 		<div class="col-md-4">
@@ -67,6 +76,5 @@
 
 	<script type="text/javascript">
 		$('.select2-multi').select2();		
-
 	</script>
 @endsection

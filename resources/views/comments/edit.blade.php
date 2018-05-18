@@ -3,7 +3,15 @@
 @section('title','| Edit Comment')
 
 @section('stylesheets')
-	{!! Html::style('css/parsley.css') !!}
+	{!! Html::script('js/tinymce.min.js') !!}
+	<script>
+		tinymce.init ({
+			selector: 'textarea',
+			plugins: "link lists",
+			menubar: false,
+			toolbar: ""
+ 		});
+	</script>
 @endsection
 
 @section('content')
@@ -26,7 +34,7 @@
 					{{ Form::label('approved','Approved',['class'=>'font-bold ml-2']) }}
 				</div>			
 
-				{{ Form::textarea('comment',null,['class'=>'form-control','data-parsley-required'=>'','data-parsley-maxlength'=>'2048','data-parsley-minlength'=>'8']) }}
+				{{ Form::textarea('comment',null,['class'=>'form-control']) }}
 			</div>
 
 			<div class="col-md-4">

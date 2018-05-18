@@ -1,5 +1,18 @@
 @extends('main')
 
+@section('stylesheets')
+	{!! Html::style('css/parsley.css') !!}
+	{!! Html::script('js/tinymce.min.js') !!}
+	<script>
+		tinymce.init ({
+			selector: 'textarea',
+			plugins: "link lists",
+			menubar: false,
+			toolbar: ""
+ 		});
+	</script>
+@endsection
+
 @if ($post)
 	@section('title',"| $post->slug")
 
@@ -7,7 +20,7 @@
 		<div class="row">
 			<div class="col-md-8 offset-md-2">
 				<h1>{{ $post->title }}</h1>
-				<p>{{ $post->body }}</p>
+				<p>{!! $post->body !!}</p>
 				<hr>
 				<p>Posted In: {{ $post->category->name }}</p>
 			</div>
@@ -21,7 +34,7 @@
 				</h3>
 
 				@foreach($post->comments as $comment)
-					<div class="comment">
+					<div class="comment {{ $loop->index % 2 == 0 ? 'evenColor' : 'oddColor' }}">
 						<div class="author-info">
 							<img src="{{ 'https://www.gravatar.com/avatar/' . md5(strtolower(trim($comment->email))) . '?s=50&d=wavatar' }}" class="author-image">
 							<div class="author-name">
@@ -30,7 +43,7 @@
 							</div>
 						</div>
 						<div class="comment-content">
-							{{ $comment->comment }}
+							{!! $comment->comment !!}
 						</div>
 					</div>
 				@endforeach
@@ -39,16 +52,16 @@
 
 		<div class="row">
 			<div class="col-md-8 offset-md-2 mt-5">
-				{{ Form::open(['route' => ['comments.store', $post->id], 'method' => 'POST']) }}
+				{{ Form::open(['route' => ['comments.store', $post->id], 'method' => 'POST','data-parsley-validate'=>'']) }}
 					<div class="row">
 						<div class="col-md-6">
 							{{ Form::label('name', 'Your Name:', ['class'=>'font-bold form-spacing-top']) }}
-							{{ Form::text('name', null, ['class' => 'form-control']) }}
+							{{ Form::text('name', null, ['class' => 'form-control','data-parsley-required'=>'','data-parsley-maxlength'=>'191','data-parsley-minlength'=>'2']) }}
 						</div>
 
 						<div class="col-md-6">
 							{{ Form::label('email', 'Your eMail:', ['class'=>'font-bold form-spacing-top']) }}
-							{{ Form::text('email', null, ['class' => 'form-control']) }}
+							{{ Form::text('email', null, ['class' => 'form-control','data-parsley-required'=>'','data-parsley-maxlength'=>'191']) }}
 						</div>
 
 						<div class="col-md-12 mt-2">
@@ -63,3 +76,7 @@
 
 	@endsection
 @endif
+
+@section('scripts')
+	{!! Html::script('js/parsley.min.js') !!}
+@endsection
