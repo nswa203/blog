@@ -7,6 +7,9 @@ use App\Post;
 use App\Tag;
 use App\Category;
 use Session;
+use Purifier;
+use Image;
+use Storage;
 
 class PostController extends Controller {
 	/**
@@ -56,19 +59,29 @@ class PostController extends Controller {
 	 */
 	public function store(Request $request) {
 		$this->validate($request, [
-			'title' 		=> 'required|min:8|max:191',
-			'slug' 			=> 'required|alpha_dash|min:5|max:191|unique:posts,slug',
-			'category_id' 	=> 'required|integer',
-			'tags'			=> 'array',
-			'tags.*'		=> 'integer',
-			'body' 			=> 'required',
+			'title' 			=> 'required|min:8|max:191',
+			'slug' 				=> 'required|alpha_dash|min:5|max:191|unique:posts,slug',
+			'category_id' 		=> 'required|integer',
+			'tags'				=> 'array',
+			'tags.*'			=> 'integer',
+			'body' 				=> 'required',
+			'featured_image' 	=> 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
 		]);
 
 		$post = new Post;
 		$post->title 		= $request->title;
 		$post->slug 		= $request->slug;
 		$post->category_id 	= $request->category_id;
-		$post->body 		= $request->body;
+		$post->body 		= Purifier::clean($request->body);
+
+		if ($request->hasFile('featured_image')) {
+			$image=$request->file('featured_image');
+			$filename=time().'.'.$image->getClientOriginalExtension();
+			$location=public_path('images\\'.$filename);
+			Image::make($image)->resize(800, null, function ($constraint) {$constraint->aspectRatio();})->save($location);
+			$post->image = $filename;
+		}
+
 		$myrc = $post->save();
 
 		$myrc2 = $post->tags()->sync($request->tags, false);
@@ -127,38 +140,51 @@ class PostController extends Controller {
 	public function update(Request $request, $id) {
 		$post = Post::find($id);
 
-		if ($request->slug == $post->slug) {
-			$this->validate($request, [
-				'title' 		=> 'required|min:8|max:191',
-				'category_id' 	=> 'required|integer',
-				'tags'			=> 'array',
-				'tags.*'		=> 'integer',				
-				'body' 			=> 'required',
+		$this->validate($request, [
+				'title' 			=> 'required|min:8|max:191',
+				'slug' 				=> "required|alpha_dash|min:5|max:191|unique:posts,slug,$id",
+				'category_id' 		=> 'required|integer',
+				'tags'				=> 'array',
+				'tags.*'			=> 'integer',				
+				'body' 				=> 'required',
+				'featured_image' 	=> 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
 			]);
-		} else {
-			$this->validate($request, [
-				'title' 		=> 'required|min:8|max:191',
-				'slug' 			=> 'required|alpha_dash|min:5|max:191|unique:posts,slug',
-				'category_id' 	=> 'required|integer',
-				'tags'			=> 'array',
-				'tags.*'		=> 'integer',				
-				'body' 			=> 'required',
-			]);
-		}
 
 		$post->title 		= $request->title;
 		$post->slug 		= $request->slug;
 		$post->category_id 	= $request->category_id;
-		$post->body 		= $request->body;
-		$myrc = $post->save();
+		$post->body 		= Purifier::clean($request->body);
 
+		if ($request->hasFile('featured_image')) {
+			$oldFilename = $post->image;
+
+			$image=$request->file('featured_image');
+			$filename=time().'.'.$image->getClientOriginalExtension();
+			$location=public_path('images\\'.$filename);
+			$myrc=Image::make($image)->resize(800, null, function ($constraint) {$constraint->aspectRatio();})->save($location);
+			$post->image = $filename;
+			$msgOK=' and its image file ' . $image->getClientOriginalName() . ' were ';
+		} elseif ($request->delete_image) {
+			$oldFilename=$post->image;
+			$post->image = null;
+			$msgOK=' and its image file ' . $oldFilename . ' were ';
+		} else {
+			$oldFilename=false;
+			$msgOK=' ';
+		}
+
+		$myrc = $post->save();
 		$myrc2 = $post->tags()->sync($request->tags, true);
 
 		if ($myrc and $myrc2) {
-			Session::flash('success', 'The blog Post was successfully saved.');
+			if ($oldFilename) {
+				Storage::delete($oldFilename);
+			}
+			Session::flash('success', 'Blog Post ' . $id . $msgOK . 'successfully updated.');
 		} else {
-			Session::flash('failure', 'The blog Post was NOT saved.');
+			Session::flash('failure', 'The blog Post was NOT updated.');
 		}
+
 		return redirect()->route('posts.show', $post->id);
 	}
 
@@ -175,7 +201,13 @@ class PostController extends Controller {
 		$myrc = $post->delete();
 
 		if ($myrc) {
-			Session::flash('success', 'Blog Post ' . $id . ' was successfully deleted.');
+			if ($post->image) {
+				Storage::delete($post->image);
+				$msgOK = ' and its image file ' . $post->image . ' were ';
+			} else {
+				$msgOK = ' was ';
+			}
+			Session::flash('success', 'Blog Post ' . $id . $msgOK . 'successfully deleted.');
 		} else {
 			Session::flash('failure', 'The blog Post was NOT deleted.');
 		}

@@ -20,6 +20,11 @@ class BlogController extends Controller {
 	public function getSingle($slug) {
 		$post = Post::where('slug', '=', $slug)->first();
 
+		// We only include "Approved" comments in this public view.
+		// Comments are automatically set Approved on creation.
+		// Comment approval status may be editted by an authorised User.  
+		$post->comments=$post->comments->where('approved', '=', '1');
+
 		return view('blog.single', ['post' => $post]);
 	}
 

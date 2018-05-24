@@ -19,6 +19,9 @@
 	@section('content')
 		<div class="row">
 			<div class="col-md-8 offset-md-2">
+				@if($post->image)
+					<img src="{{ asset('images/'.$post->image) }}" height="400">
+				@endif	
 				<h1>{{ $post->title }}</h1>
 				<p>{!! $post->body !!}</p>
 				<hr>

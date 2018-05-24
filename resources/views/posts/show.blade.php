@@ -46,6 +46,9 @@
 						</div>
 					</div>
 				</div>
+				@if($post->image)
+					<img src="{{ asset('images/'.$post->image) }}" width="100%" class="mt-3"/>
+				@endif	
 			</div>
 		</div>	
 		
@@ -60,7 +63,7 @@
 						<thead class="thead-dark">
 							<th>#</th>
 							<th>OK</th>
-							<th>Names</th>
+							<th>Name</th>
 							<th>eMail</th>
 							<th>Comment</th>
 							<th width="120px">Created At</th>

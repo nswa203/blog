@@ -12,7 +12,7 @@
 					<p><strong class="mr-3">Name:</strong> {{ $comment->name }}</p>
 					<p><strong class="mr-3">eMail:</strong> {{ $comment->email }}</p>
 					<p class="mt-5"><strong>Comment:</strong></p>
-					<p>{{ $comment->comment }}</p>
+					<p>{{ strip_tags($comment->comment) }}</p>
 				</div>
 			</div>
 
@@ -33,7 +33,7 @@
 					<div class="row">
 						<div class="col-sm-12">
 							{{ Form::submit('YES DELETE NOW',['class'=>'btn btn-danger btn-block font-weight-bold']) }}
-							{!! Html::LinkRoute('posts.show','Cancel',[$post->id],['class'=>'btn btn-outline-dark btn-block']) !!}
+							<a href="{{ url()->previous() }}" class="form-control btn btn-outline-dark btn-block">Cancel</a>
 						</div>
 					</div>
 				</div>

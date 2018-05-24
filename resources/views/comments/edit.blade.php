@@ -30,9 +30,9 @@
 
 				{{ Form::label('comment','Comment:',['class'=>'font-bold form-spacing-top']) }}
 				<div class="float-right form-spacing-top">
-					{{ Form::checkbox('approved', '1', null) }}
+					{{ Form::checkbox('approved', '1', null,['class'=>'']) }}
 					{{ Form::label('approved','Approved',['class'=>'font-bold ml-2']) }}
-				</div>			
+				</div>	
 
 				{{ Form::textarea('comment',null,['class'=>'form-control']) }}
 			</div>
@@ -53,7 +53,7 @@
 					<div class="row">
 						<div class="col-sm-12">
 							{{ Form::submit('Save Changes',['class'=>'btn btn-success btn-block']) }}
-							{!! Html::LinkRoute('posts.show','Cancel',[$post->id],['class'=>'btn btn-outline-dark btn-block']) !!}
+							<a href="{{ url()->previous() }}" class="form-control btn btn-outline-dark btn-block">Cancel</a>
 						</div>
 					</div>
 				</div>

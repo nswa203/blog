@@ -6,7 +6,7 @@
 	@if($category)
 		<div class="row">
 			<div class="col-md-8">
-				<h1><span class="fas fa-tasks mr-4"></span>{{ $category->name }} Category</h1>
+				<h1><span class="fas fa-list-alt mr-4"></span>{{ $category->name }} Category</h1>
 				<h5><small>Has {{ $category->posts()->count()?$category->posts()->count():'No' }} posts</small></h5>
 				<hr>
 			</div>

@@ -6,7 +6,7 @@
 	@if($categories)
 		<div class="row">
 			<div class="col-md-12">
-				<h1><span class="fas fa-tasks mr-4"></span>Categories</h1>
+				<h1><span class="fas fa-list-alt mr-4"></span>Categories</h1>
 				<hr>
 				<table class="table table-hover">
 					<thead class="thead-dark">

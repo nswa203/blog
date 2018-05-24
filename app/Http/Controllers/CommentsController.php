@@ -6,12 +6,29 @@ use Illuminate\Http\Request;
 use App\Comment;
 use App\Post;
 use Session;
+use Purifier;
 
 class CommentsController extends Controller
 {
 
     public function __contruct() {
         $this->middleware('auth',['except' => 'store']);
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index() {
+        $comments = Comment::orderBy('post_id', 'desc')->paginate(5);
+
+        if ($comments) {
+
+        } else {
+            Session::flash('failure', 'No Post Comments were found.');
+        }
+        return view('comments.index', ['comments' => $comments]);
     }
 
     /**
@@ -33,7 +50,7 @@ class CommentsController extends Controller
         $comment = new Comment;
         $comment->name      = $request->name;
         $comment->email     = $request->email;
-        $comment->comment   = $request->comment;
+        $comment->comment   = Purifier::clean($request->comment);
         $comment->approved  = true;
         $comment->post()->associate($post);
 
@@ -81,7 +98,7 @@ class CommentsController extends Controller
 
         $post = Post::find($comment->post_id);
 
-        $comment->comment   = $request->comment;
+        $comment->comment   = Purifier::clean($request->comment);;
         if ($request->approved) {
             $comment->approved = '1';
         } else {
