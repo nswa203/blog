@@ -119,6 +119,23 @@ class TagController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+    public function delete($id) {
+        $tag = Tag::find($id);
+
+       if ($tag) {
+            
+        } else {
+            Session::flash('failure', 'Tag ' . $id . ' was NOT found.');
+        }
+        return view('tags.delete', ['tag'=>$tag]);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
     public function destroy(Request $request, $id)
     {
         $tag = Tag::find($id);

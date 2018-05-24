@@ -47,7 +47,7 @@
 										{{ Form::hidden('page', $categories->currentPage()) }}
 									{!! Form::close() !!}
 								@else
-									{!! Form::open(['route'=>['categories.destroy',$category->id],'method'=>'DELETE']) !!}
+									{!! Form::open(['route'=>['categories.delete',$category->id],'method'=>'GET']) !!}
 										<td><a href="{{ route('categories.show',$category->id) }}">{{ $category->name }}</a></td>
 										<td>{{ date('j M Y',strtotime($category->created_at)) }}</td>
 										<td>{{ date('j M Y',strtotime($category->updated_at)) }}</td>

@@ -188,6 +188,23 @@ class PostController extends Controller {
 		return redirect()->route('posts.show', $post->id);
 	}
 
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function delete($id) {
+        $post = Post::find($id);
+
+        if ($post) {
+            
+        } else {
+            Session::flash('failure', 'Post ' . $id . ' was NOT found.');
+        }
+        return view('posts.delete', ['post'=>$post]);
+    }
+
 	/**
 	 * Remove the specified resource from storage.
 	 *

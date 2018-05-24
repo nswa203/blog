@@ -11,23 +11,34 @@
 |
  */
 
+// Pages
 Route::get('contact',	'PagesController@getContact');
 Route::post('contact',	'PagesController@postContact');
 Route::get('about',		'PagesController@getAbout');
 Route::get('blog',		'BlogController@getIndex')->name('blog.index');
 Route::get('/',			'PagesController@getIndex');
 
+// Posts
 Route::resource('posts',		'PostController');
-Route::resource('categories',	'CategoryController')->except(['create']);
+Route::get('posts/{id}/delete',	'PostController@delete')->name('posts.delete');
+
+// Categories
+Route::resource('categories',		'CategoryController')->except(['create']);
+Route::get('categories/{id}/delete','CategoryController@delete')->name('categories.delete');
+
+// Tags
 Route::resource('tags',			'TagController')->except(['create']);
+Route::get('tags/{id}/delete',	'TagController@delete')->name('tags.delete');
 
-Route::post('comments/{post_id}',	'CommentsController@store')->name('comments.store');
-Route::get('comments/{id}/edit',	'CommentsController@edit')->name('comments.edit');
-Route::put('comments/{id}',			'CommentsController@update')->name('comments.update');
+// Comments
+Route::post('comments/{post_id}',	'CommentsController@store'	)->name('comments.store');
+Route::get('comments/{id}/edit',	'CommentsController@edit'	)->name('comments.edit');
+Route::put('comments/{id}',			'CommentsController@update'	)->name('comments.update');
 Route::delete('comments/{id}',		'CommentsController@destroy')->name('comments.destroy');
-Route::get('comments/{id}/delete',	'CommentsController@delete')->name('comments.delete');
-Route::get('comments',				'CommentsController@index')->name('comments.index');
+Route::get('comments/{id}/delete',	'CommentsController@delete'	)->name('comments.delete');
+Route::get('comments',				'CommentsController@index'	)->name('comments.index');
 
+// Auth
 Auth::routes();
 /* "home" is used as a default return URL within Laravel's built-in authentification 			*/
 /* controllers. We don't have a "home", but rather than change multiple controllers we'll just 	*/
@@ -35,6 +46,7 @@ Auth::routes();
 // Route::get('home', 'PagesController@getIndex');
 Route::get('/home', 'PagesController@getIndex')->name('home');
 
+// Slugs
 /* LAST LAST LAST LAST LAST LAST LAST LAST LAST LASTLAST LAST LAST LAST LASTLAST LAST LAST LAST */
 /* Since we are not using any prefix, this route will intercept any routes placed after it. 	*/
 /* So make it the LAST in your route list.														*/

@@ -1,12 +1,12 @@
 @extends('main')
 
-@section('title','| View Post')
+@section('title','| DELETE Post')
 
 @section('content')
 	@if($post)
 		<div class="row">
 			<div class="col-md-8">
-				<h1><span class="fas fa-file-alt mr-4"></span>{{ $post->title }}</h1>
+				<h1><span class="fas fa-trash-alt mr-4"></span> DELETE {{ $post->title }}</h1>
 				<hr>
 				<p class="lead">{!! $post->body !!}</p>
 				<hr>
@@ -31,18 +31,11 @@
 					</dl>
 					<hr class="hr-spacing-top">
 					<div class="row">
-						<div class="col-sm-6">
-							{!! Html::LinkRoute('posts.edit','Edit',[$post->id],['class'=>'btn btn-primary btn-block']) !!}
-						</div>
-						<div class="col-sm-6">
-							{!! Form::open(['route'=>['posts.delete',$post->id],'method'=>'GET']) !!}
-							{!! Form::submit('Delete',['class'=>'btn btn-danger btn-block']) !!}
-							{!! Form::close() !!}
-						</div>
-					</div>
-					<div class="row mt-3">
 						<div class="col-sm-12">
-							{{ Html::LinkRoute('posts.index','See All Posts',[],['class'=>'btn btn-outline-dark btn-block']) }}
+							{!! Form::open(['route'=>['posts.destroy',$post->id],'method'=>'DELETE']) !!}
+								{{ Form::submit('YES DELETE NOW',['class'=>'btn btn-danger btn-block font-weight-bold']) }}
+								<a href="{{ url()->previous() }}" class="form-control btn btn-outline-dark btn-block">Cancel</a>
+							{!! Form::close() !!}
 						</div>
 					</div>
 				</div>

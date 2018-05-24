@@ -47,7 +47,7 @@
 										{{ Form::hidden('page', $tags->currentPage()) }}
 									{!! Form::close() !!}
 								@else
-									{!! Form::open(['route'=>['tags.destroy',$tag->id],'method'=>'DELETE']) !!}
+									{!! Form::open(['route'=>['tags.delete',$tag->id],'method'=>'GET']) !!}
 										<td><a href="{{ route('tags.show',$tag->id) }}">{{ $tag->name }}</a></td>
 										<td>{{ date('j M Y',strtotime($tag->created_at)) }}</td>
 										<td>{{ date('j M Y',strtotime($tag->updated_at)) }}</td>

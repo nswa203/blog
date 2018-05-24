@@ -119,6 +119,23 @@ class CategoryController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+    public function delete($id) {
+        $category = Category::find($id);
+
+       if ($category) {
+            
+        } else {
+            Session::flash('failure', 'Category ' . $id . ' was NOT found.');
+        }
+        return view('categories.delete', ['category'=>$category]);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
     public function destroy(Request $request, $id)
     {
         $category = Category::find($id);

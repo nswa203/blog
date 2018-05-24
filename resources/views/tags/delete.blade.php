@@ -1,36 +1,39 @@
 @extends('main')
 
-@section('title',"| $tag->name Tag")
+@section('title',"| DELETE $tag->name Tag")
 
 @section('content')
 	@if($tag)
 		<div class="row">
 			<div class="col-md-8">
-				<h1><span class="fas fa-tag mr-4"></span>{{ $tag->name }} Tag</h1>
+				<h1><span class="fas fa-tag mr-4"></span>DELETE {{ $tag->name }} Tag</h1>
 				<h5>Has {{ $tag->posts->count()=='0'?'No Posts!':($tag->posts->count()=='1'?'1 Post':$tag->posts->count().' Posts') }}</h5>
 				<hr>
 			</div>
 
 			<div class="col-md-4">
-				<div class="card card-body bg-light">
-					<dl class="row">
-						<dt class="col-sm-5">Tag URL:</dt>
-						<dd class="col-sm-7"><a href="{{ route('tags.show',$tag->id) }}">{{ route('tags.show',$tag->id) }}</a></dd>
-						<dt class="col-sm-5">Tag ID</dt>
-						<dd class="col-sm-7">{{ $tag->id }}</dd>							
-						<dt class="col-sm-5">Created At:</dt>
-						<dd class="col-sm-7">{{ date('j M Y, h:i a',strtotime($tag->created_at)) }}</dd>
-						<dt class="col-sm-5">Last Updated:</dt>
-						<dd class="col-sm-7">{{ date('j M Y, h:i a',strtotime($tag->updated_at)) }}</dd>
-					</dl>
-					<hr class="hr-spacing-top">
+				{!! Form::open(['route' => ['tags.destroy', $tag->id], 'method'=>'DELETE']) !!}
+					<div class="card card-body bg-light">
+						<dl class="row">
+							<dt class="col-sm-5">Tag URL:</dt>
+							<dd class="col-sm-7"><a href="{{ route('tags.show',$tag->id) }}">{{ route('tags.show',$tag->id) }}</a></dd>
+							<dt class="col-sm-5">Tag ID</dt>
+							<dd class="col-sm-7">{{ $tag->id }}</dd>							
+							<dt class="col-sm-5">Created At:</dt>
+							<dd class="col-sm-7">{{ date('j M Y, h:i a',strtotime($tag->created_at)) }}</dd>
+							<dt class="col-sm-5">Last Updated:</dt>
+							<dd class="col-sm-7">{{ date('j M Y, h:i a',strtotime($tag->updated_at)) }}</dd>
+						</dl>
+						<hr class="hr-spacing-top">
 
-					<div class="row mt-3">
-						<div class="col-sm-12">
-							{{ Html::LinkRoute('tags.index','Manage All Tags',[],['class'=>'btn btn-outline-dark btn-block']) }}
+						<div class="row mt-3">
+							<div class="col-sm-12">
+								{{ Form::submit('YES DELETE NOW',['class'=>'btn btn-danger btn-block font-weight-bold']) }}
+								<a href="{{ url()->previous() }}" class="form-control btn btn-outline-dark btn-block">Cancel</a>
+							</div>
 						</div>
 					</div>
-				</div>
+				{!! Form::close() !!}
 			</div>
 		</div>
 
