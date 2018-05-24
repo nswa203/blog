@@ -31,7 +31,7 @@
 				{{ Form::label('comment','Comment:',['class'=>'font-bold form-spacing-top']) }}
 				<div class="float-right form-spacing-top">
 					{{ Form::checkbox('approved', '1', null,['class'=>'']) }}
-					{{ Form::label('approved','Approved',['class'=>'font-bold ml-2']) }}
+					{{ Form::label('approved','Approved',['class'=>'font-bold text-success ml-2']) }}
 				</div>	
 
 				{{ Form::textarea('comment',null,['class'=>'form-control']) }}

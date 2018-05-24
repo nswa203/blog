@@ -13,6 +13,10 @@
 		</div>
 	</div>
 
+	<div class="d-flex float-right">
+		{!! $posts->render() !!}
+	</div>
+
 	<div class="row mt-5">
 		<div class="col-md-8">
 			@if($posts)
