@@ -11,6 +11,9 @@
 |
  */
 
+// Tests
+Route::resource('tests', 'TestController');
+
 // Pages
 Route::get('contact',	'PagesController@getContact');
 Route::post('contact',	'PagesController@postContact');

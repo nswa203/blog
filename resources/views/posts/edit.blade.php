@@ -38,7 +38,7 @@
 
 				{{ Form::label('featured_image','Update Featured Image:',['class'=>'font-bold form-spacing-top']) }}
 				<div class="custom-file float-left" style="width:80%">
-					{{ Form::file('featured_image',						['class'=>'custom-file-input','id'=>'myFile-file']) }} 
+					{{ Form::file('featured_image',						['class'=>'custom-file-input','id'=>'myFile-file','accept'=>'image/*']) }} 
 					{{ Form::label('featured_image','Select a file...',	['class'=>'custom-file-label','id'=>'myFile-label']) }}
 				</div>
 

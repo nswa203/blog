@@ -8,13 +8,9 @@
 			<div class="jumbotron">
 				<h1 class="display-4">Welcome to {{ env('APP_NAME') }}!</h1>
 				<p class="lead">Thank you so much for visiting. This is my test website built with Laravel. Please read my latest post!</p>
-				<a class="btn btn-primary btn-lg mt-4" href="#" role="button">Popular Post</a>
+				<a class="btn btn-primary btn-lg mt-4" href="/blog" role="button">Popular Post</a>
 			</div>
 		</div>
-	</div>
-
-	<div class="d-flex float-right">
-		{!! $posts->render() !!}
 	</div>
 
 	<div class="row mt-5">

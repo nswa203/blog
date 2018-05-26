@@ -19,10 +19,13 @@
 						Hello {{ Auth::user()->name }}
 					</a>
 					<div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-						<a class="dropdown-item" href="{{ route('posts.index'		) }}"><span class="fas fa-file-alt mr-2"></span>Posts</a>
-						<a class="dropdown-item" href="{{ route('comments.index'	) }}"><span class="fas fa-comment-alt mr-2"></span>Comments</a>
-						<a class="dropdown-item" href="{{ route('tags.index'		) }}"><span class="fas fa-tag mr-2"></span>Tags</a>
-						<a class="dropdown-item" href="{{ route('categories.index'	) }}"><span class="fas fa-list-alt mr-2"></span>Categories</a>
+						<a class="dropdown-item" href="{{ route('posts.index'		) }}"><span class="fas fa-file-alt		mr-2"></span>Posts</a>
+						<a class="dropdown-item" href="{{ route('comments.index'	) }}"><span class="fas fa-comment-alt	mr-2"></span>Comments</a>
+						<a class="dropdown-item" href="{{ route('tags.index'		) }}"><span class="fas fa-tag			mr-2"></span>Tags</a>
+						<a class="dropdown-item" href="{{ route('categories.index'	) }}"><span class="fas fa-list-alt		mr-2"></span>Categories</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="{{ route('tests.show','1'   	) }}"><span class="fas fa-vial			mr-2"></span>Tests Show</a>
+						<a class="dropdown-item" href="{{ route('tests.create'	 	) }}"><span class="fas fa-vial			mr-2"></span>Tests Create</a>
 						<div class="dropdown-divider"></div>
 						{!! Form::open(['route'=>['logout'],'method'=>'POST']) !!}
 						{!! Form::button('<span class="fas fa-sign-out-alt mr-2"></span>Log Out', ['type'=>'submit', 'class'=>'dropdown-item'] ) !!}

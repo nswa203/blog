@@ -5,9 +5,12 @@
  * building robust, powerful web applications using Vue and Laravel.
  */
 
-require('./bootstrap');
+//require('./bootstrap');
 
 window.Vue = require('vue');
+window.Slug = require('slug');
+Slug.defaults.mode = "rfc3986";
+var _ = require('lodash');
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
@@ -15,8 +18,12 @@ window.Vue = require('vue');
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-Vue.component('example-component', require('./components/ExampleComponent.vue'));
+Vue.component('folders',	require('./components/Folders.vue'));
+Vue.component('images',		require('./components/Images.vue'));
+Vue.component('slugwidget',	require('./components/slugWidget.vue'));
 
-const app = new Vue({
-    el: '#app'
-});
+//const app = new Vue({
+//    el: '#app'
+//});
+
+//require('./manage');

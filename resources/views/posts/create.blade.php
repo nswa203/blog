@@ -1,32 +1,29 @@
 @extends('main')
 
-@section('title','| Create New Post')
+@section('title','| Add New Post')
 
 @section('stylesheets')
-	{!! Html::style('css/parsley.css') !!}
-	{!! Html::style('css/select2.min.css') !!}
-	{!! Html::script('js/tinymce.min.js') !!}
-	<script>
-		tinymce.init ({
-			selector: 'textarea',
-			plugins: "link lists",
-			menubar: false,
-			toolbar: ""
- 		});
-	</script>
+	{!! Html::style('css/parsley.css') 		!!}
+	{!! Html::style('css/select2.min.css') 	!!}
 @endsection
 
 @section('content')
 	<div class="row">
-		<div class="col-md-8" >
-			<h1><span class="fas fa-file-alt mr-4"></span>Create New Post</h1>
+		<div class="col-md-8">
+			<h1><span class="fas fa-file-alt mr-4"></span>Add A New Post</h1>
 			<hr>
 			{!! Form::open(['route'=>'posts.store','data-parsley-validate'=>'','files'=>true]) !!}
+				<div id="app">
 				{{ Form::label('title','Title:',['class'=>'font-bold form-spacing-top']) }}
-				{{ Form::text('title',null,['class'=>'form-control form-control-lg','data-parsley-required'=>'','data-parsley-maxlength'=>'191']) }}
+				{{ Form::text('title',null,['class'=>'form-control form-control-lg','data-parsley-required'=>'','data-parsley-maxlength'=>'191','v-model'=>'title']) }}
 
+				<slugwidget url="{{ url('/') }}" subdirectory="/" :title="title" @slug-changed="updateSlug"></slugwidget>
+				</div>
+
+{{-- -----------This section is replaced by the slugwidget vue			
 				{{ Form::label('slug','Slug:',['class'=>'font-bold form-spacing-top']) }}
-				{{ Form::text('slug',null,['class'=>'form-control','data-parsley-required'=>'','data-parsley-maxlength'=>'191','data-parsley-minlength'=>'5','placeholder'=>'your-slug']) }}
+				{{ Form::text('slug',null,['class'=>'form-control','data-parsley-required'=>'','data-parsley-maxlength'=>'191','data-parsley-minlength'=>'5','placeholder'=>'your-slug']) }} 
+------------- --}}
 
 				{{ Form::label('category_id','Category:',['class'=>'font-bold form-spacing-top']) }}
 				{{ Form::select('category_id',$categories,null,['class'=>'form-control custom-select','placeholder'=>'Select a Category...','data-parsley-required'=>'']) }}
@@ -36,7 +33,7 @@
 
 				{{ Form::label('featured_image','Update Featured Image:',['class'=>'font-bold form-spacing-top']) }}
 				<div class="custom-file float-left" style="width:80%">
-					{{ Form::file('featured_image',						['class'=>'custom-file-input','id'=>'myFile-file']) }} 
+					{{ Form::file('featured_image',						['class'=>'custom-file-input','id'=>'myFile-file','accept'=>'image/*']) }} 
 					{{ Form::label('featured_image','Select a file...',	['class'=>'custom-file-label','id'=>'myFile-label']) }}
 				</div>
 
@@ -59,7 +56,7 @@
 		<div class="col-md-4">
 			<div class="card card-body bg-light">
 				<dl class="row">
-					<dt class="col-sm-5">URL:</dt>
+					<dt class="col-sm-5">URL<span class="fas fa-link ml-1 mr-1"></span>:</dt>
 					<dd class="col-sm-7"><a href="#">{{ route('blog.single','your-slug') }}</a></dd>
 					<dt class="col-sm-5">Category:</dt>
 					<dd class="col-sm-7"><a href="#"><span class="badge badge-default">Select a Category...</span></a></dd>					
@@ -99,11 +96,22 @@
 @endsection
 
 @section('scripts')
-	{!! Html::script('js/parsley.min.js') !!}
-	{!! Html::script('js/select2.min.js') !!}
+	{!! Html::script('js/parsley.min.js')	!!}
+	{!! Html::script('js/select2.min.js')	!!}
+	{!! Html::script('js/tinymce.min.js') 	!!}
+	{!! Html::script('js/app.js') 			!!}
 
 	<script type="text/javascript">
 		$('.select2-multi').select2();		
+	</script>
+
+	<script>
+		tinymce.init ({
+			selector: 'textarea',
+			plugins: "link lists",
+			menubar: false,
+			toolbar: ""
+ 		});
 	</script>
 
 	<script>
@@ -155,4 +163,19 @@
 			myHideShowElement(['myReset','myImage-2'],'block');
 		});
 	</script>
+
+	<script>
+		var app=new Vue({
+			el: '#app',
+			data: {
+				title: '',
+				slug: ''
+			},
+			methods: {
+				updateSlug: function(val){
+					this.slug=val
+				}
+			}
+		});
+	</script>	
 @endsection
