@@ -11,6 +11,23 @@
 |
  */
 
+// Manage
+Route::prefix('manage')->middleware('role:superadministrator|administrator|editor|author|contributor')->group(function () {
+	Route::get('/dashboard', 'ManageController@dashboard')->name('manage.dashboard');
+	Route::get('/',			 'ManageController@dashboard')->name('manage.dashboard');
+});
+Route::prefix('manage')->middleware('role:superadministrator|administrator')->group(function () {
+	// Users
+	Route::resource('/users', 'UserController');
+	Route::get('users/{id}/delete',	'UserController@delete')->name('users.delete');
+	// Roles
+	Route::resource('/roles', 'RoleController');
+	Route::get('roles/{id}/delete',	'RoleController@delete')->name('roles.delete');
+	// Permissions
+	Route::resource('/permissions', 'PermissionController');
+	Route::get('permissions/{id}/delete',	'PermissionController@delete')->name('permissions.delete');
+});
+
 // Tests
 Route::resource('tests', 'TestController');
 

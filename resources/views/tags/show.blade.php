@@ -16,7 +16,7 @@
 					<dl class="row">
 						<dt class="col-sm-5">Tag URL:</dt>
 						<dd class="col-sm-7"><a href="{{ route('tags.show',$tag->id) }}">{{ route('tags.show',$tag->id) }}</a></dd>
-						<dt class="col-sm-5">Tag ID</dt>
+						<dt class="col-sm-5">Tag ID:</dt>
 						<dd class="col-sm-7">{{ $tag->id }}</dd>							
 						<dt class="col-sm-5">Created At:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a',strtotime($tag->created_at)) }}</dd>
