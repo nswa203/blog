@@ -46,8 +46,9 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'name'  => 'required|min:3|max:191',
-            'email' => 'required|email|max:191|unique:users',
+            'name'      => 'required|min:3|max:191',
+            'email'     => 'required|min:5|max:191|email|unique:users',
+            'password'  => 'sometimes|min:7|max:96',
         ]);
 
         if ($request->has('password') && !empty($request->password)) {
@@ -125,8 +126,9 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $this->validate($request, [
-            'name'  => 'required|min:3|max:191',
-            'email' => 'required|email|max:191|unique:users,email,'.$id
+            'name'      => 'required|min:3|max:191',
+            'email'     => 'required|min:5|max:191|email|unique:users,email,'.$id,
+            'password'  => 'sometimes|min:7|max:96',
         ]);
 
         $user = User::findOrFail($id);

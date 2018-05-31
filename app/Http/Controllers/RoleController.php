@@ -45,10 +45,17 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
+        // We explode the permissions into an array so that they may be handled by validate
+        // & syncPermissions. Warning explode will create an empty element [0] if input is null. 
+        $permissions = $request->permissions ? explode(',', $request->permissions) : [];
+        $request->merge(['permissions' => $permissions]);
+    
         $this->validate($request, [
             'display_name'  => 'required|min:3|max:191',
             'name'          => 'required|min:3|max:96|alpha_dash|unique:roles,name',            
-            'description'   => 'sometimes|max:191'
+            'description'   => 'sometimes|max:191',
+            'permissions'   => 'sometimes|array',
+            'permissions.*' => 'exists:permissions,id'
         ]);  
 
         $role = new Role();
@@ -57,8 +64,8 @@ class RoleController extends Controller
         $role->description  = $request->description; 
         $myrc = $role->save();
 
-        if ($request->permissions) {
-            $role->syncPermissions(explode(',', $request->permissions));
+        if ($myrc) {
+            $myrc = $role->syncPermissions($permissions);
         }
 
         if ($myrc) {
@@ -66,7 +73,7 @@ class RoleController extends Controller
             return redirect()->route('roles.show', $role->id);
         } else {
             Session::flash('failure', 'The Role was NOT saved.');
-            return redirect()->route('roles.create')->withInput();
+            return redirect()->route('manage.roles.create')->withInput();
         }
     }
 
@@ -117,9 +124,16 @@ class RoleController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // We explode the permissions into an array so that they may be handled by validate
+        // & syncPermissions. Warning explode will create an empty element [0] if input is null. 
+        $permissions = $request->permissions ? explode(',', $request->permissions) : [];
+        $request->merge(['permissions' => $permissions]);
+    
         $this->validate($request, [
             'display_name'  => 'required|min:3|max:191',
-            'description'   => 'sometimes|max:191'
+            'description'   => 'sometimes|max:191',
+            'permissions'   => 'sometimes|array',
+            'permissions.*' => 'exists:permissions,id'
         ]);  
 
         $role = Role::findOrFail($id);
@@ -127,8 +141,8 @@ class RoleController extends Controller
         $role->description  = $request->description; 
         $myrc = $role->save();
 
-        if ($request->permissions) {
-            $role->syncPermissions(explode(',', $request->permissions));
+        if ($myrc) {
+            $myrc = $role->syncPermissions($permissions);
         }
 
         if ($myrc) {

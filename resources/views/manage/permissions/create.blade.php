@@ -20,7 +20,7 @@
 					{{ Form::text('display_name', null, ['class'=>'form-control form-control-lg', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'3', 'data-parsley-maxlength'=>'191', 'v-focus'=>'']) }}
 
 					{{ Form::label('name', 'Slug:', ['class'=>'font-bold form-spacing-top']) }}
-					{{ Form::text('name', null, ['class'=>'form-control', 'data-parsley-required'=>'', 'data-parsley-maxlength'=>'191', 'data-parsley-minlength'=>'3']) }} 
+					{{ Form::text('name', null, ['class'=>'form-control', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'3', 'data-parsley-maxlength'=>'191' ]) }} 
 
 					{{ Form::label('description', 'Description:',['class'=>'font-bold form-spacing-top']) }}
 					{{ Form::text('description', null, ['class'=>'form-control', 'data-parsley-maxlength'=>'191']) }} 
