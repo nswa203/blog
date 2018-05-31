@@ -131,6 +131,7 @@
 		   }
 	    },
 	});
+	
 	var app=new Vue({
 		el: '#app2',
 		data: commonData,			

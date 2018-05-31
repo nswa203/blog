@@ -6,7 +6,9 @@
 	<div class="row">
 		<div class="col-md-12">
 			<div class="jumbotron">
-				<h1 class="display-4">Welcome to {{ env('APP_NAME') }}!</h1>
+				<h1 class="display-4 float-left">Welcome to {{ env('APP_NAME') }}!</h1>
+				<img class="float-right" style="margin-top:-32px;" src="{{ asset('favicon.ico') }}" height="128">
+				<div class="clearfix"></div>
 				<p class="lead">Thank you so much for visiting. This is my test website built with Laravel. Please read my latest post!</p>
 				<a class="btn btn-primary btn-lg mt-4" href="/blog" role="button">Popular Post</a>
 			</div>

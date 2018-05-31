@@ -33,7 +33,7 @@ class RoleController extends Controller
      */
     public function create()
     {
-        $permissions = Permission::orderBy('display_name', 'asc')->paginate(10);
+        $permissions = Permission::orderBy('display_name', 'asc')->paginate(999);
         return view('manage.roles.create', ['permissions' => $permissions]);
     }
 
@@ -106,7 +106,7 @@ class RoleController extends Controller
     public function edit($id)
     {
         $role = Role::where('id', $id)->with('permissions')->first();
-        $permissions = Permission::orderBy('display_name', 'asc')->paginate(10);
+        $permissions = Permission::orderBy('display_name', 'asc')->paginate(999);
 
         if ($role) {
 

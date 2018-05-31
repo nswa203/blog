@@ -21,7 +21,7 @@
 			<div id="app3"> <!-- Vue 2 -->
 				{{ Form::label('password', 'Password:', ['class'=>'font-bold form-spacing-top', 'v-if'=>'passwordOption == "manual"']) }}
 				{{ Form::password('password', ['class'=>'form-control mt-2', 'id'=>'password', 'v-if'=>'passwordOption == "manual"', 'placeholder'=>'Manually provide a password for this User', 'v-focus'=>'']) }}
-				<input type="hidden" name="roles" 			:value="rolesSelected">
+				<input type="hidden" name="roles" 			:value="itemsSelected">
 				<input type="hidden" name="password_option" :value="passwordOption">
 			</div> <!-- Vue 2 -->
 		</div>
@@ -76,7 +76,6 @@
 					</div>
 				</div>
 			</div>
-		{!! Form::close() !!}
 		</div>
 	</div>
 
@@ -87,7 +86,12 @@
 				<table class="table table-hover">
 					<thead class="thead-dark">
 						<th>#</th>
-						<th>Assign</th>
+						<th width="10px">
+							<label for="itemsCheckAll" >
+						    	<input hidden type="checkbox" id="itemsCheckAll" @click="checkAll('all')" value="all" v-model="itemsCheckAll" name=":custom-value2" />
+								<span class="span"></span>
+						    </label>
+						</th>
 						<th>Name</th>
 						<th>Slug</th>
 						<th>Description</th>
@@ -100,7 +104,7 @@
 								<th>{{ $role->id }}</th>
 								<td>
 									<label for="{!! $role->id !!}">
-								    	<input hidden type="checkbox" id="{!! $role->id !!}" value="{!! $role->id !!}" v-model="rolesSelected" name=":custom-value" />
+								    	<input hidden type="checkbox" id="{!! $role->id !!}" value="{!! $role->id !!}" v-model="itemsSelected" name=":custom-value" @change="checkAll('item')" />
 										<span class="span"></span>
 								    </label>
 								</td>
@@ -122,7 +126,6 @@
 			</div> <!-- Vue 2 -->
 		</div>
 		{!! Form::close() !!}
-	</div>	
 @endsection
 
 @section('scripts')
@@ -132,7 +135,9 @@
 	<script>
 		var commonData = {
 			passwordOption: 'keep',
-			rolesSelected: {!! $user->roles->pluck('id') !!},
+			itemsAll: {!! $roles->pluck('id') !!},
+			itemsSelected: {!! $user->roles->pluck('id') !!},
+			itemsCheckAll: false,
 		};
 
 		Vue.directive('focus', {
@@ -150,7 +155,20 @@
 
 		var app=new Vue({
 			el: '#app',
-			data: commonData
+			data: commonData,
+			methods: {
+			    checkAll: function(op='item') {
+			    	if (op=='all'){
+			    		if (itemsCheckAll.checked) {
+			    			this.itemsSelected=this.itemsAll;
+						} else {
+		    				this.itemsSelected=[];
+		    			}	
+			    	} else {
+		    			this.$nextTick(() => { itemsCheckAll.checked=false; });
+			    	}
+			   }
+		    },						
 		});
 
 		var app=new Vue({

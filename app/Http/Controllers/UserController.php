@@ -34,7 +34,8 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('manage.users.create');
+        $roles = Role::orderBy('display_name', 'asc')->paginate(999);
+        return view('manage.users.create', ['roles' => $roles]);
     }
 
     /**
@@ -45,10 +46,17 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        // We explode the roles into an array so that they may be handled by validate
+        // & syncRoles. Warning explode will create an empty element [0] if input is null. 
+        $roles = $request->roles ? explode(',', $request->roles) : [];
+        $request->merge(['roles' => $roles]);
+    
         $this->validate($request, [
             'name'      => 'required|min:3|max:191',
             'email'     => 'required|min:5|max:191|email|unique:users',
             'password'  => 'sometimes|min:7|max:96',
+            'roles'     => 'sometimes|array',
+            'roles.*'   => 'exists:roles,id'            
         ]);
 
         if ($request->has('password') && !empty($request->password)) {
@@ -69,6 +77,10 @@ class UserController extends Controller
         $user->email    = $request->email;
         $user->password = Hash::make($password);
         $myrc = $user->save();
+
+        if ($myrc) {
+            $myrc = $user->syncRoles($roles);
+        }
 
         if ($myrc) {
             Session::flash('success', 'The User was successfully saved.');
@@ -106,7 +118,7 @@ class UserController extends Controller
     public function edit($id)
     {
         $user = User::where('id', $id)->with('roles')->first();
-        $roles = Role::orderBy('display_name','asc')->paginate(10);
+        $roles = Role::orderBy('display_name','asc')->paginate(999);
 
         if ($user) {
 
@@ -125,10 +137,17 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // We explode the roles into an array so that they may be handled by validate
+        // & syncRoles. Warning explode will create an empty element [0] if input is null. 
+        $roles = $request->roles ? explode(',', $request->roles) : [];
+        $request->merge(['roles' => $roles]);
+   
         $this->validate($request, [
             'name'      => 'required|min:3|max:191',
             'email'     => 'required|min:5|max:191|email|unique:users,email,'.$id,
             'password'  => 'sometimes|min:7|max:96',
+            'roles'     => 'sometimes|array',
+            'roles.*'   => 'exists:roles,id'            
         ]);
 
         $user = User::findOrFail($id);
@@ -150,8 +169,8 @@ class UserController extends Controller
 
         $myrc = $user->save();
 
-        if ($request->roles) {
-            $user->syncRoles(explode(',', $request->roles));
+        if ($myrc) {
+            $myrc = $user->syncRoles($roles);
         }
 
         if ($myrc) {
@@ -161,7 +180,6 @@ class UserController extends Controller
         }
         return redirect()->route('users.show', $user->id);
     }
-
     /**
      * Remove the specified resource from storage.
      *
