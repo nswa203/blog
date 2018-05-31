@@ -85,15 +85,16 @@ class RoleController extends Controller
      */
     public function show($id)
     {
-        $role = Role::findOrFail($id);
-        $permissions = Role::where('id', $id)->first()->permissions()->orderBy('display_name','asc')->paginate(5);
+        $role = Role::where('id', $id)->with('permissions')->with('users')->first();
+        $permissions = $role->permissions()->orderBy('display_name','asc')->paginate(10);
+        $users = $role->users()->orderBy('name','asc')->paginate(10);
 
         if ($role) {
 
         } else {
             Session::flash('failure', 'Role "' . $id . '" was NOT found.');
         }
-        return view('manage.roles.show', ['role' => $role, 'permissions' => $permissions]);
+        return view('manage.roles.show', ['role' => $role, 'permissions' => $permissions, 'users' => $users]);
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Permission;
+use App\Role;
 use Session;
 use Illuminate\Support\Facades\Validator;
 
@@ -108,14 +109,15 @@ class PermissionController extends Controller
      */
     public function show($id)
     {
-        $permission = Permission::findOrFail($id);
+        $permission = Permission::where('id', $id)->with('roles')->first();
+        $roles = $permission->roles()->orderBy('display_name','asc')->paginate(10);
 
         if ($permission) {
 
         } else {
             Session::flash('failure', 'Permission "' . $id . '" was NOT found.');
         }
-        return view('manage.permissions.show', ['permission' => $permission]);
+        return view('manage.permissions.show', ['permission' => $permission, 'roles' => $roles]);
     }
 
     /**

@@ -55,7 +55,7 @@
 				<div class="card card-body bg-light">
 				<h1>
 					Roles
-					<span class="h1-suffix">(This User has {{ $user->roles->count()==1 ? '1 role' : $user->roles->count().' roles' }} assigned.)</span>
+					<span class="h1-suffix">(This User has {{ $user->roles->count()==1 ? '1 Role' : $user->roles->count().' Roles' }} assigned.)</span>
 				</h1>
 					<table class="table table-hover">
 						<thead class="thead-dark">

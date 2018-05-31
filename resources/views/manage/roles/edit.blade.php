@@ -23,7 +23,7 @@
 			{{ 	Form::text('description', null, ['class'=>'form-control', 'data-parsley-maxlength'=>'191']) }}
 
 			<div id="app2"> <!-- Vue 2 -->
-				<input type="hidden" name="permissions" :value="permissionsSelected">
+				<input type="hidden" name="permissions" :value="itemsSelected">
 			</div> <!-- Vue 2 -->
 		</div>
 
@@ -64,7 +64,12 @@
 				<table class="table table-hover">
 					<thead class="thead-dark">
 						<th>#</th>
-						<th>Assign</th>
+						<th width="10px">
+							<label for="itemsCheckAll" >
+						    	<input hidden type="checkbox" id="itemsCheckAll" @click="checkAll('all')" value="all" v-model="itemsCheckAll" name=":custom-value2" />
+								<span class="span"></span>
+						    </label>
+						</th>
 						<th>Name</th>
 						<th>Slug</th>
 						<th>Description</th>
@@ -77,7 +82,7 @@
 								<th>{{ $permission->id }}</th>
 								<td>
 									<label for="{!! $permission->id !!}">
-								    	<input hidden type="checkbox" id="{!! $permission->id !!}" value="{!! $permission->id !!}" v-model="permissionsSelected" name=":custom-value" />
+								    	<input hidden type="checkbox" id="{!! $permission->id !!}" value="{!! $permission->id !!}" v-model="itemsSelected" name=":custom-value" @change="checkAll('item')" />
 										<span class="span"></span>
 								    </label>
 								</td>
@@ -108,12 +113,27 @@
 
 	<script>
 	var commonData = {
-		permissionsSelected: {!! $role->permissions->pluck('id') !!},
+		itemsAll: {!! $permissions->pluck('id') !!},
+		itemsSelected: {!! $role->permissions->pluck('id') !!},
+		itemsCheckAll: false,
 	};
 	
 	var app=new Vue({
 			el: '#app',
-			data: commonData,			
+			data: commonData,
+			methods: {
+			    checkAll: function(op='item') {
+			    	if (op=='all'){
+			    		if (itemsCheckAll.checked) {
+			    			this.itemsSelected=this.itemsAll;
+						} else {
+		    				this.itemsSelected=[];
+		    			}	
+			    	} else {
+		    			this.$nextTick(() => { itemsCheckAll.checked=false; });
+			    	}
+			   }
+		    },						
 		});
 	var app=new Vue({
 			el: '#app2',

@@ -51,7 +51,47 @@
 					</div>
 				</div>
 			</div>
-		</div>	
+		</div>
+
+		<div class="row mt-3">
+			<div class="col-md-12">
+				<div class="card card-body bg-light">
+					<h1>
+						Roles
+						<span class="h1-suffix">(This Permission is associated with {{ $roles->count()==1 ? '1 Role.' : $roles->count().' Roles.' }})</span>
+					</h1>
+					<table class="table table-hover">
+						<thead class="thead-dark">
+							<th>#</th>
+							<th>Name</th>
+							<th>Slug</th>
+							<th>Description</th>
+							<th width="120px">Created At</th>
+							<th width="120px">Updated At</th>
+							<th width="120px">Page {{$roles->currentPage()}} of {{$roles->lastPage()}}</th>
+						</thead>
+						<tbody>	
+							@foreach($roles as $role)
+								<tr>
+									<th>{{ $role->id }}</th>
+									<td>{{ $role->display_name }}</td>
+									<td>{{ $role->name }}</td>
+									<td>{{ $role->description }}</td>
+									<td>{{ date('j M Y', strtotime($role->created_at)) }}</td>
+									<td>{{ date('j M Y', strtotime($role->updated_at)) }}</td>
+									<td>
+										<a href="{{ route('roles.show', $role->id)}}" class="btn btn-sm btn-outline-dark">View Role</a>
+									</td>
+								</tr>
+							@endforeach
+						</tbody>
+					</table>
+					<div class="d-flex justify-content-center">
+						{!! $roles->render() !!} 
+					</div>
+				</div>
+			</div>
+		</div>					
 	@endif
 @endsection
 

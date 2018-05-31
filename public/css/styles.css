@@ -319,7 +319,7 @@ input[type="radio"] + .span:before{
  font-size:32px;
  line-height: 0px;
  vertical-align: middle;
- color:#80bdff;
+ color:#080bdff;
  animation:mymove2 200ms ease-out;
 }
 input[type="radio"]:checked + .span:before{
@@ -355,4 +355,25 @@ input[type="radio"]:checked + .span:before{
  to{
   transform: scale(0);
  }
+}
+
+.checkbox-h1 {
+  font-size:36px;
+  line-height: 22px;
+  vertical-align: bottom;
+}
+.checkbox-h2 {
+  font-size:30px;
+  line-height: 22px;
+  vertical-align: bottom;
+}
+.checkbox-h3 {
+  font-size:24px;
+  line-height: 22px;
+  vertical-align: bottom;
+}
+.checkbox-h4 {
+  font-size:18px;
+  line-height: 22px;
+  vertical-align: bottom;
 }
