@@ -26,6 +26,9 @@ Route::prefix('manage')->middleware('role:superadministrator|administrator')->gr
 	// Permissions
 	Route::resource('/permissions', 'PermissionController');
 	Route::get('permissions/{id}/delete',	'PermissionController@delete')->name('permissions.delete');
+	// Posts
+	Route::resource('/posts', 'PostController');
+	Route::get('/posts/{id}/delete', 'PostController@delete')->name('posts.delete');
 });
 
 // Tests
@@ -38,9 +41,7 @@ Route::get('about',		'PagesController@getAbout');
 Route::get('blog',		'BlogController@getIndex')->name('blog.index');
 Route::get('/',			'PagesController@getIndex');
 
-// Posts
-Route::resource('posts',		'PostController');
-Route::get('posts/{id}/delete',	'PostController@delete')->name('posts.delete');
+
 
 // Categories
 Route::resource('categories',		'CategoryController')->except(['create']);

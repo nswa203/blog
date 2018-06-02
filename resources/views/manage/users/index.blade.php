@@ -27,9 +27,9 @@
 						<th>#</th>
 						<th>Name</th>
 						<th>eMail</th>
-						<th width="120px">Created At</th>
-						<th width="120px">Updated At</th>
-						<th width="120px">Page {{$users->currentPage()}} of {{$users->lastPage()}}</th>
+						<th>Created At</th>
+						<th>Updated At</th>
+						<th class="text-right">Page {{$users->currentPage()}} of {{$users->lastPage()}}</th>
 					</thead>
 					<tbody>						
 						@foreach($users as $user)
@@ -39,7 +39,7 @@
 								<td>{{ $user->email }}</td>
 								<td>{{ date('j M Y', strtotime($user->created_at)) }}</td>
 								<td>{{ date('j M Y', strtotime($user->updated_at)) }}</td>
-								<td>
+								<td class="text-right">
 									<a href="{{ route('users.show', $user->id)}}" class="btn btn-sm btn-outline-dark">View</a>
 									<a href="{{ route('users.edit', $user->id)}}" class="btn btn-sm btn-outline-dark">Edit</a>
 								</td>

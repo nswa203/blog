@@ -66,9 +66,9 @@
 							<th>Name</th>
 							<th>Slug</th>
 							<th>Description</th>
-							<th width="120px">Created At</th>
-							<th width="120px">Updated At</th>
-							<th width="120px">Page {{$roles->currentPage()}} of {{$roles->lastPage()}}</th>
+							<th>Created At</th>
+							<th>Updated At</th>
+							<th class="text-right">Page {{$roles->currentPage()}} of {{$roles->lastPage()}}</th>
 						</thead>
 						<tbody>	
 							@foreach($roles as $role)
@@ -79,7 +79,7 @@
 									<td>{{ $role->description }}</td>
 									<td>{{ date('j M Y', strtotime($role->created_at)) }}</td>
 									<td>{{ date('j M Y', strtotime($role->updated_at)) }}</td>
-									<td>
+									<td class="text-right">
 										<a href="{{ route('roles.show', $role->id)}}" class="btn btn-sm btn-outline-dark">View Role</a>
 									</td>
 								</tr>

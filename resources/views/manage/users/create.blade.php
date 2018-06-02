@@ -27,10 +27,9 @@
 					{{ Form::checkbox('auto_generate', '1', null, ['class'=>'', 'v-model'=>'auto_password', 'id'=>'auto_generate', 'hidden'=>'']) }}
 					<span class="span"></span>
 				</label>
-				<input type="hidden" name="roles" :value="itemsSelected">
+				<input type="hidden" name="itemsSelected" :value="itemsSelected">
 			</div> <!-- Vue 2 -->
 		</div>
-
 		<div class="col-md-4">
 			<div class="card card-body bg-light">
 				<dl class="row">
@@ -60,12 +59,12 @@
 	<div class="row mt-5">
 		<div class="col-md-12">
 			<div class="card card-body bg-light" id="app2"> <!-- Vue 2 -->
-				<h1>Roles<span class="h1-suffix">({{ $roles->total() }} may be assigned to this User.)</span></h1>
+				<h1>Roles<span class="h1-suffix">({{ $roles->total() }} Roles may be assigned to this User.)</span></h1>
 				<table class="table table-hover">
 					<thead class="thead-dark">
 						<th>#</th>
 						<th width="10px">
-							<label for="itemsCheckAll" >
+							<label for="itemsCheckAll">
 						    	<input hidden type="checkbox" id="itemsCheckAll" @click="checkAll('all')" value="all" v-model="itemsCheckAll" name=":custom-value2" />
 								<span class="span"></span>
 						    </label>
@@ -73,8 +72,8 @@
 						<th>Name</th>
 						<th>Slug</th>
 						<th>Description</th>
-						<th width="120px">Updated At</th>
-						<th width="120px">Page {{$roles->currentPage()}} of {{$roles->lastPage()}}</th>
+						<th>Updated At</th>
+						<th class="text-right">Page {{$roles->currentPage()}} of {{$roles->lastPage()}}</th>
 					</thead>
 					<tbody>	
 						@foreach($roles as $role)
@@ -90,7 +89,7 @@
 								<td>{{ $role->name }}</td>
 								<td>{{ $role->description }}</td>
 								<td>{{ date('j M Y', strtotime($role->updated_at)) }}</td>
-								<td>
+								<td class="text-right">
 									<a href="{{ route('roles.show', $role->id)}}" class="btn btn-sm btn-outline-dark">View Role</a>
 								</td>
 							</tr>
@@ -114,9 +113,9 @@
 	<script>
 		var commonData = {
 			auto_password: true,
-			itemsAll: {!! $roles->pluck('id') !!},
-			itemsSelected: [],
 			itemsCheckAll: false,
+			itemsAll: {!! $roles->pluck('id') !!},
+			itemsSelected: [{!! Request::old('itemsSelected') !!}],
 		};
 
 		Vue.directive('focus', {

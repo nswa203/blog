@@ -35,7 +35,7 @@ class PostController extends Controller {
 		} else {
 			Session::flash('failure', 'No blog Posts were found.');
 		}
-		return view('posts.index', ['posts' => $posts]);
+		return view('manage.posts.index', ['posts' => $posts]);
 	}
 
 	/**
@@ -48,7 +48,7 @@ class PostController extends Controller {
 
 		$categories=Category::orderBy('name','asc')->pluck('name','id');
 		$tags=Tag::orderBy('name','asc')->pluck('name','id');
-		return view('posts.create',['categories'=>$categories,'tags'=>$tags]);
+		return view('manage.posts.create',['categories'=>$categories,'tags'=>$tags]);
 	}
 
 	/**
@@ -91,7 +91,7 @@ class PostController extends Controller {
 		} else {
 			Session::flash('failure', 'The blog Post was NOT saved.');
 		}
-		return redirect()->route('posts.show', $post->id);
+		return redirect()->route('manage.posts.show', $post->id);
 	}
 
 	/**
@@ -108,7 +108,7 @@ class PostController extends Controller {
 		} else {
 			Session::flash('failure', 'Blog Post ' . $id . ' was NOT found.');
 		}
-		return view('posts.show', ['post' => $post]);
+		return view('manage.posts.show', ['post' => $post]);
 	}
 
 	/**
@@ -127,7 +127,7 @@ class PostController extends Controller {
 		} else {
 			Session::flash('failure', 'Blog Post ' . $id . ' was NOT found.');
 		}
-		return view('posts.edit', ['post'=>$post, 'categories'=>$categories,'tags'=>$tags]);
+		return view('manage.posts.edit', ['post'=>$post, 'categories'=>$categories,'tags'=>$tags]);
 	}
 
 	/**
@@ -185,7 +185,7 @@ class PostController extends Controller {
 			Session::flash('failure', 'The blog Post was NOT updated.');
 		}
 
-		return redirect()->route('posts.show', $post->id);
+		return redirect()->route('manage.posts.show', $post->id);
 	}
 
     /**
@@ -202,7 +202,7 @@ class PostController extends Controller {
         } else {
             Session::flash('failure', 'Post ' . $id . ' was NOT found.');
         }
-        return view('posts.delete', ['post'=>$post]);
+        return view('manage.posts.delete', ['post'=>$post]);
     }
 
 	/**
@@ -228,6 +228,6 @@ class PostController extends Controller {
 		} else {
 			Session::flash('failure', 'The blog Post was NOT deleted.');
 		}
-		return redirect()->route('posts.index');
+		return redirect()->route('manage.posts.index');
 	}
 }

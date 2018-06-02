@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redirect;
 use App\User;
 use App\Role;
 use Session;
@@ -48,9 +49,9 @@ class UserController extends Controller
     {
         // We explode the roles into an array so that they may be handled by validate
         // & syncRoles. Warning explode will create an empty element [0] if input is null. 
-        $roles = $request->roles ? explode(',', $request->roles) : [];
+        $roles = $request->itemsSelected ? explode(',', $request->itemsSelected) : [];
         $request->merge(['roles' => $roles]);
-    
+   
         $this->validate($request, [
             'name'      => 'required|min:3|max:191',
             'email'     => 'required|min:5|max:191|email|unique:users',
@@ -83,11 +84,12 @@ class UserController extends Controller
         }
 
         if ($myrc) {
-            Session::flash('success', 'The User was successfully saved.');
+            Session::flash('success', 'User "' . $user->name . '"" was successfully saved.');
+            return redirect()->route('users.show', $user->id);
         } else {
-            Session::flash('failure', 'The User was NOT saved.');
+            Session::flash('failure', 'User "' . $request->name . '" was NOT saved.');
+            return redirect()->route('manage.users.create')->withInput();
         }
-        return redirect()->route('users.show', $user->id);
     }
 
     /**
@@ -102,11 +104,11 @@ class UserController extends Controller
         $roles = User::where('id', $id)->first()->roles()->orderBy('display_name','asc')->paginate(5);
 
         if ($user) {
-
+            return view('manage.users.show', ['user' => $user, 'roles' => $roles]);
         } else {
             Session::flash('failure', 'User "' . $id . '" was NOT found.');
+            return Redirect::back();
         }
-        return view('manage.users.show', ['user' => $user, 'roles' => $roles]);
     }
 
     /**
@@ -121,11 +123,11 @@ class UserController extends Controller
         $roles = Role::orderBy('display_name','asc')->paginate(999);
 
         if ($user) {
-
+            return view('manage.users.edit', ['user' => $user, 'roles' => $roles]);
         } else {
             Session::flash('failure', 'User "' . $id . '" was NOT found.');
+            return Redirect::back();
         }
-        return view('manage.users.edit', ['user' => $user, 'roles' => $roles]);
     }
 
     /**
@@ -139,7 +141,7 @@ class UserController extends Controller
     {
         // We explode the roles into an array so that they may be handled by validate
         // & syncRoles. Warning explode will create an empty element [0] if input is null. 
-        $roles = $request->roles ? explode(',', $request->roles) : [];
+        $roles = $request->itemsSelected ? explode(',', $request->itemsSelected) : [];
         $request->merge(['roles' => $roles]);
    
         $this->validate($request, [
@@ -174,11 +176,12 @@ class UserController extends Controller
         }
 
         if ($myrc) {
-            Session::flash('success', 'The User was successfully saved.');
+            Session::flash('success', 'User "' . $user->name . '" was successfully saved.');
+            return redirect()->route('users.show', $user->id);
         } else {
-            Session::flash('failure', 'The User was NOT saved.');
+            Session::flash('failure', 'User "' . $id . '" was NOT saved.');
+            return redirect()->route('manage.users.edit', $id)->withInput();
         }
-        return redirect()->route('users.show', $user->id);
     }
     /**
      * Remove the specified resource from storage.
@@ -190,11 +193,11 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         if ($user) {
-            
+            return view('manage.users.delete', ['user' => $user]);
         } else {
             Session::flash('failure', 'User "' . $id . '" was NOT found.');
+            return Redirect::back();            
         }
-        return view('manage.users.delete', ['user' => $user]);
     }
 
     /**
@@ -208,13 +211,14 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $user->roles()->detach();
-        $myrc = $user->delete();
+        $myrc = $user->delete(); 
 
         if ($myrc) {
-            Session::flash('success', 'User successfully deleted.');
+            Session::flash('success', 'User "' . $user->name . '" was successfully deleted.');
+            return redirect()->route('users.index');
         } else {
-            Session::flash('failure', 'The User was NOT deleted.');
+            Session::flash('failure', 'User "' . $id . '" was NOT deleted.');
+            return Redirect::back();            
         }
-        return redirect()->route('users.index');
     }
 }

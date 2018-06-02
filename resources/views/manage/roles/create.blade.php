@@ -23,7 +23,7 @@
 			{{ 	Form::text('description', null, ['class'=>'form-control', 'data-parsley-maxlength'=>'191']) }}
 
 			<div id="app2"> <!-- Vue 2 -->
-				<input type="hidden" name="permissions" :value="itemsSelected">
+				<input type="hidden" name="itemsSelected" :value="itemsSelected">
 			</div> <!-- Vue 2 -->
 		</div>
 
@@ -56,7 +56,7 @@
 	<div class="row mt-5">
 		<div class="col-md-12">
 			<div class="card card-body bg-light" id="app"> <!-- Vue 2 -->
-				<h1>Permissions<span class="h1-suffix">({{ $permissions->total() }} may be assigned to this Role.)</span></h1>
+				<h1>Permissions<span class="h1-suffix">({{ $permissions->total() }} Permissions may be assigned to this Role.)</span></h1>
 				<table class="table table-hover">
 					<thead class="thead-dark">
 						<th>#</th>
@@ -69,8 +69,8 @@
 						<th>Name</th>
 						<th>Slug</th>
 						<th>Description</th>
-						<th width="120px">Updated At</th>
-						<th width="120px">Page {{$permissions->currentPage()}} of {{$permissions->lastPage()}}</th>
+						<th>Updated At</th>
+						<th class="text-right">Page {{$permissions->currentPage()}} of {{$permissions->lastPage()}}</th>
 					</thead>
 					<tbody>	
 						@foreach($permissions as $permission)
@@ -86,7 +86,7 @@
 								<td>{{ $permission->name }}</td>
 								<td>{{ $permission->description }}</td>
 								<td>{{ date('j M Y', strtotime($permission->updated_at)) }}</td>
-								<td>
+								<td class="text-right">
 									<a href="{{ route('permissions.show', $permission->id)}}" class="btn btn-sm btn-outline-dark">View Permission</a>
 								</td>
 							</tr>
@@ -109,9 +109,9 @@
 
 	<script>
 	var commonData = {
-		itemsAll: {!! $permissions->pluck('id') !!},
-		itemsSelected: [],
 		itemsCheckAll: false,
+		itemsAll: {!! $permissions->pluck('id') !!},
+		itemsSelected: [{!! Request::old('itemsSelected') !!}],
 	};
 	
 	var app=new Vue({

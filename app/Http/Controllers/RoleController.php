@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 use App\Role;
 use App\Permission;
 use Session;
@@ -46,8 +47,8 @@ class RoleController extends Controller
     public function store(Request $request)
     {
         // We explode the permissions into an array so that they may be handled by validate
-        // & syncPermissions. Warning explode will create an empty element [0] if input is null. 
-        $permissions = $request->permissions ? explode(',', $request->permissions) : [];
+        // & syncPermissions. Warning explode will create an empty element [0] if input is null.
+        $permissions = $request->itemsSelected ? explode(',', $request->itemsSelected) : [];
         $request->merge(['permissions' => $permissions]);
     
         $this->validate($request, [
@@ -69,10 +70,10 @@ class RoleController extends Controller
         }
 
         if ($myrc) {
-            Session::flash('success', 'The Role was successfully saved.');
+            Session::flash('success', 'Role "' . $role->display_name . '" was successfully saved.');
             return redirect()->route('roles.show', $role->id);
         } else {
-            Session::flash('failure', 'The Role was NOT saved.');
+            Session::flash('failure', 'Role "' . $request->display_name . '" was NOT saved.');
             return redirect()->route('manage.roles.create')->withInput();
         }
     }
@@ -90,11 +91,11 @@ class RoleController extends Controller
         $users = $role->users()->orderBy('name','asc')->paginate(10);
 
         if ($role) {
-
+            return view('manage.roles.show', ['role' => $role, 'permissions' => $permissions, 'users' => $users]);
         } else {
             Session::flash('failure', 'Role "' . $id . '" was NOT found.');
+            return Redirect::back();
         }
-        return view('manage.roles.show', ['role' => $role, 'permissions' => $permissions, 'users' => $users]);
     }
 
     /**
@@ -109,11 +110,11 @@ class RoleController extends Controller
         $permissions = Permission::orderBy('display_name', 'asc')->paginate(999);
 
         if ($role) {
-
+            return view('manage.roles.edit', ['role' => $role, 'permissions' => $permissions]);
         } else {
             Session::flash('failure', 'Role "' . $id . '" was NOT found.');
+            return Redirect::back();
         }
-        return view('manage.roles.edit', ['role' => $role, 'permissions' => $permissions]);
     }
 
     /**
@@ -127,7 +128,7 @@ class RoleController extends Controller
     {
         // We explode the permissions into an array so that they may be handled by validate
         // & syncPermissions. Warning explode will create an empty element [0] if input is null. 
-        $permissions = $request->permissions ? explode(',', $request->permissions) : [];
+        $permissions = $request->itemsSelected ? explode(',', $request->itemsSelected) : [];
         $request->merge(['permissions' => $permissions]);
     
         $this->validate($request, [
@@ -147,11 +148,11 @@ class RoleController extends Controller
         }
 
         if ($myrc) {
-            Session::flash('success', 'The Role was successfully saved.');
-            return redirect()->route('roles.show', $id);
+            Session::flash('success', 'Role "' . $role->display_name . '" was successfully saved.');
+            return redirect()->route('roles.show', $role->id);
         } else {
-            Session::flash('failure', 'The Role was NOT saved.');
-            return redirect()->route('roles.create')->withInput();
+            Session::flash('failure', 'Role "' . $id . '" was NOT saved.');
+            return redirect()->route('manage.roles.edit')->withInput();
         }
     }
 
@@ -166,11 +167,11 @@ class RoleController extends Controller
         $role = Role::findOrFail($id);
 
         if ($role) {
-            
+           return view('manage.roles.delete', ['role' => $role]);
         } else {
             Session::flash('failure', 'Role "' . $id . '" was NOT found.');
+            return Redirect::back();            
         }
-        return view('manage.roles.delete', ['role' => $role]);
     }
 
     /**
@@ -184,10 +185,11 @@ class RoleController extends Controller
         $role = Role::findOrFail($id);
 
         if ($role) {
-            Session::flash('failure', 'Role "' . $id . '" was NOT DELETED. DELETE Not yet supported!');
+            Session::flash('failure', 'Role "' . $id . '" was NOT DELETED.<br>Delete "Role" Not yet supported!');
+            return redirect()->route('roles.index');
         } else {
-            Session::flash('failure', 'Role "' . $id . '" was NOT found.');
+            Session::flash('failure', 'Role "' . $id . '" was NOT deleted.');
+            return Redirect::back();            
         }
-        return view('manage.roles.delete', ['role' => $role]);
     }
 }

@@ -28,9 +28,9 @@
 						<th>Name</th>
 						<th>Slug</th>
 						<th>Description</th>
-						<th width="120px">Created At</th>
-						<th width="120px">Updated At</th>
-						<th width="120px">Page {{$permissions->currentPage()}} of {{$permissions->lastPage()}}</th>
+						<th>Created At</th>
+						<th>Updated At</th>
+						<th class="text-right">Page {{$permissions->currentPage()}} of {{$permissions->lastPage()}}</th>
 					</thead>
 					<tbody>						
 						@foreach($permissions as $permission)
@@ -41,7 +41,7 @@
 								<td>{{ $permission->description }}</td>
 								<td>{{ date('j M Y', strtotime($permission->created_at)) }}</td>
 								<td>{{ date('j M Y', strtotime($permission->updated_at)) }}</td>
-								<td>
+								<td class="text-right">
 									<a href="{{ route('permissions.show', $permission->id)}}" class="btn btn-sm btn-outline-dark">View</a>
 									<a href="{{ route('permissions.edit', $permission->id)}}" class="btn btn-sm btn-outline-dark">Edit</a>
 								</td>

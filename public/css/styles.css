@@ -76,12 +76,16 @@ html {
     width: 100vw;
 }
 
-.evenColor {
-	background-color: white;
+.h1-suffix {
+  font-size: 18px;
+  font-style: italic;
+  color: dark-grey;
+  margin-left: 15px;
+  vertical-align: 4px;
 }
 
-.oddColor {
-	background-color: white;
+.navbar-toggler {
+  border: none;
 }
 
 /*!
@@ -162,7 +166,8 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
-.sidebar-nav li a:active, .sidebar-nav li a:focus {
+.sidebar-nav li a:active,
+.sidebar-nav li a:focus {
   text-decoration: none;
 }
 
@@ -181,7 +186,7 @@ body {
   background: none;
 }
 
-@media(min-width:768px) {
+@media screen and (min-width:769px) {
   #wrapper {
     padding-left: 0;
   }
@@ -204,13 +209,23 @@ body {
   }
 }
 
-.h1-suffix {
-  font-size: 18px;
-  font-style: italic;
-  color: dark-grey;
-  margin-left: 15px;
-  vertical-align: 4px;
+/*
+/* ********************************************************* */
+/* End Offical Sidebar                                       */
+/* ********************************************************* */
+
+/* ********************************************************* */
+/* Start NS Custom Sidebar                                   */
+/* ********************************************************* */
+.sidebar-nav span.active {
+  color:#80bdff;
 }
+.sidebar-nav li .active {
+  color:#80bdff;
+}
+/* ********************************************************* */
+/* End NS Custom Sidebar                                     */
+/* ********************************************************* */
 
 /* ********************************************************* */
 /* Custom Check Boxes                                        */ 

@@ -21,7 +21,7 @@
 			<div id="app3"> <!-- Vue 2 -->
 				{{ Form::label('password', 'Password:', ['class'=>'font-bold form-spacing-top', 'v-if'=>'passwordOption == "manual"']) }}
 				{{ Form::password('password', ['class'=>'form-control mt-2', 'id'=>'password', 'v-if'=>'passwordOption == "manual"', 'placeholder'=>'Manually provide a password for this User', 'v-focus'=>'']) }}
-				<input type="hidden" name="roles" 			:value="itemsSelected">
+				<input type="hidden" name="itemsSelected" 	:value="itemsSelected">
 				<input type="hidden" name="password_option" :value="passwordOption">
 			</div> <!-- Vue 2 -->
 		</div>
@@ -82,12 +82,12 @@
 	<div class="row mt-4">
 		<div class="col-md-12">
 			<div class="card card-body bg-light" id="app"> <!-- Vue 2 -->
-				<h1>Roles<span class="h1-suffix">({{ $user->roles->count() }} from {{ $roles->total() }} assigned to this User.)</span></h1>
+				<h1>Roles<span class="h1-suffix">({{ $user->roles->count() }} Roles from {{ $roles->total() }}  have been assigned to this User.)</span></h1>
 				<table class="table table-hover">
 					<thead class="thead-dark">
 						<th>#</th>
 						<th width="10px">
-							<label for="itemsCheckAll" >
+							<label for="itemsCheckAll">
 						    	<input hidden type="checkbox" id="itemsCheckAll" @click="checkAll('all')" value="all" v-model="itemsCheckAll" name=":custom-value2" />
 								<span class="span"></span>
 						    </label>
@@ -95,8 +95,8 @@
 						<th>Name</th>
 						<th>Slug</th>
 						<th>Description</th>
-						<th width="120px">Updated At</th>
-						<th width="120px">Page {{$roles->currentPage()}} of {{$roles->lastPage()}}</th>
+						<th>Updated At</th>
+						<th class="text-right">Page {{$roles->currentPage()}} of {{$roles->lastPage()}}</th>
 					</thead>
 					<tbody>						
 						@foreach($roles as $role)
@@ -112,7 +112,7 @@
 								<td>{{ $role->name }}</td>
 								<td>{{ $role->description }}</td>
 								<td>{{ date('j M Y', strtotime($role->updated_at)) }}</td>
-								<td>
+								<td class="text-right">
 									<a href="{{ route('roles.show', $role->id)}}" class="btn btn-sm btn-outline-dark">View Role</a>
 								</td>
 							</tr>
@@ -135,9 +135,9 @@
 	<script>
 		var commonData = {
 			passwordOption: 'keep',
+			itemsCheckAll: false,
 			itemsAll: {!! $roles->pluck('id') !!},
 			itemsSelected: {!! $user->roles->pluck('id') !!},
-			itemsCheckAll: false,
 		};
 
 		Vue.directive('focus', {

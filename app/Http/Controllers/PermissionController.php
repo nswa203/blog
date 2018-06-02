@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 use App\Permission;
 use App\Role;
 use Session;
@@ -63,7 +64,7 @@ class PermissionController extends Controller
             $permission->name           = $request->name;
             $permission->display_name   = $request->display_name;
             $permission->description    = $request->description;
-            $msgOK = 'The Permission for "'.$permission->display_name.'" was successfully saved.';
+            $msgOK = 'Permission "' . $permission->display_name . '" was successfully saved.';
             $myrc = $permission->save();
 
         } elseif ($request->permission_type == 'crud') {
@@ -72,9 +73,9 @@ class PermissionController extends Controller
             if (count($crud)>0) {
                 foreach ($crud as $x) {
                     $resource = [
-                        'display_name'  => ucwords($request->resource.' '.$x),
-                        'name'          => strtolower($request->resource.'-'.$x),
-                        'description'   => "Permits a User to ".strtoupper($x)." resource ".ucwords($request->resource)
+                        'display_name'  => ucwords($request->resource . ' ' . $x),
+                        'name'          => strtolower($request->resource . '-' . $x),
+                        'description'   => "Permits a User to " . strtoupper($x) . " resource " . ucwords($request->resource)
                     ];
                     $validator = Validator::make($resource, $rules_basic);
                     if($validator->fails()) {
@@ -86,18 +87,18 @@ class PermissionController extends Controller
                         $permission->description    = $resource['description'];
                         $myrc = $permission->save();
                     }      
-                    if (!$myrc) { break; } else { $msgOK = $msgOK.', '.$permission->display_name; }
+                    if (!$myrc) { break; } else { $msgOK = $msgOK . ', ' . $permission->display_name; }
                 }
-            $msgOK = 'Permissions for "'.trim($msgOK,',').'" were sucessfully saved.';
+            $msgOK = 'Permissions for "' . trim($msgOK,',') . '" were sucessfully saved.';
             }    
         } else { $myrc = false; }
 
         if ($myrc) {
             Session::flash('success', $msgOK);
-            return redirect()->route('permissions.index');
+            return redirect()->route('permissions.show', $permission->id);
         } else {
-            Session::flash('failure', 'The Permission was NOT saved.');
-            return redirect()->route('permissions.create')->withInput();
+            Session::flash('failure', 'Permission "' . $request->display_name .'" was NOT saved.');
+            return redirect()->route('manage.permissions.create')->withInput();
         }
     }
 
@@ -110,14 +111,14 @@ class PermissionController extends Controller
     public function show($id)
     {
         $permission = Permission::where('id', $id)->with('roles')->first();
-        $roles = $permission->roles()->orderBy('display_name','asc')->paginate(10);
+        $roles = $permission->roles()->orderBy('display_name', 'asc')->paginate(10);
 
         if ($permission) {
-
+            return view('manage.permissions.show', ['permission' => $permission, 'roles' => $roles]);
         } else {
             Session::flash('failure', 'Permission "' . $id . '" was NOT found.');
+            return Redirect::back();
         }
-        return view('manage.permissions.show', ['permission' => $permission, 'roles' => $roles]);
     }
 
     /**
@@ -131,11 +132,11 @@ class PermissionController extends Controller
         $permission = Permission::findOrFail($id);
 
         if ($permission) {
-
+            return view('manage.permissions.edit', ['permission' => $permission]);
         } else {
             Session::flash('failure', 'Permission "' . $id . '" was NOT found.');
+            return Redirect::back();
         }
-        return view('manage.permissions.edit', ['permission' => $permission]);
     }
 
     /**
@@ -159,11 +160,12 @@ class PermissionController extends Controller
         $myrc = $permission->save();
 
         if ($myrc) {
-            Session::flash('success', 'The Permission was successfully saved.');
+            Session::flash('success', 'Permission "' . $permission->display_name . '" was successfully saved.');
+            return redirect()->route('permissions.show', $permission->id);
         } else {
-            Session::flash('failure', 'The Permission was NOT saved.');
+            Session::flash('failure', 'Permission "' . $id . '" was NOT saved.');
+            return redirect()->route('manage.permissions.edit')->withInput();
         }
-        return redirect()->route('permissions.show', $permission->id);
     }
 
     /**
@@ -176,11 +178,11 @@ class PermissionController extends Controller
         $permission = Permission::findOrFail($id);
 
         if ($permission) {
-            
+            return view('manage.permissions.delete', ['permission' => $permission]);
         } else {
             Session::flash('failure', 'Permission "' . $id . '" was NOT found.');
+            return Redirect::back();            
         }
-        return view('manage.permissions.delete', ['permission' => $permission]);
     }
 
     /**
@@ -194,10 +196,11 @@ class PermissionController extends Controller
         $permission = Permission::findOrFail($id);
 
         if ($permission) {
-            Session::flash('failure', 'Permission "' . $id . '" was NOT DELETED. DELETE Not yet supported!');
+            Session::flash('failure', 'Permission "' . $id . '" was NOT DELETED.<br>Delete Not yet supported!');
+            return redirect()->route('permissions.index');
         } else {
-            Session::flash('failure', 'Permission "' . $id . '" was NOT found.');
+            Session::flash('failure', 'Permission "' . $id . '" was NOT deleted.');
+            return Redirect::back();            
         }
-        return view('manage.permissions.delete', ['permission' => $permission]);
     }
 }
