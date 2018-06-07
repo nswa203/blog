@@ -8,7 +8,7 @@ use Session;
 class BlogController extends Controller {
 
 	public function getIndex() {
-		$posts = Post::orderBy('id', 'desc')->paginate(5);
+		$posts = Post::orderBy('id', 'desc')->where('status', '>=', '4')->paginate(5);
 
 		if ($posts) {
 
@@ -19,7 +19,7 @@ class BlogController extends Controller {
 	}
 
 	public function getSingle($slug) {
-		$post = Post::where('slug', '=', $slug)->first();
+		$post = Post::where('slug', '=', $slug)->where('status', '>=', '4')->first();
 
 		if ($post) {
 			// We only include "Approved" comments in this public view.
@@ -28,7 +28,7 @@ class BlogController extends Controller {
 			$post->comments=$post->comments->where('approved', '=', '1');
 			return view('blog.single', ['post' => $post]);
 		} else {
-			Session::flash('failure', 'Blog Post ' . $slug . ' not found.');
+			Session::flash('failure', 'Blog Post "' . $slug . '" not found.');
 			return redirect()->route('home');
 		}
 	}

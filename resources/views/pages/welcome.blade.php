@@ -2,18 +2,27 @@
 
 @section('title','| Homepage')
 
+@section('stylesheets')
+@endsection
+
 @section('content')
 	<div class="row">
 		<div class="col-md-12">
 			<div class="jumbotron">
-				<h1 class="display-4 float-left">Welcome to {{ env('APP_NAME') }}!</h1>
-				<img class="float-right" style="margin-top:-32px;" src="{{ asset('favicon.ico') }}" height="128">
-				<div class="clearfix"></div>
+				<div class="row">
+					<div class="col-md-2 inline">
+						<img style="margin-top:-32px; max-width:100%; max-height:128px; float:left;" src="{{ asset('favicon.ico') }}">
+					</div>
+
+					<div class="col-md-10 mb-5">
+						<h1 class="display-4">Welcome to {{ env('APP_NAME') }}!</h1>
+					</div>
+				</div>	
 				<p class="lead">Thank you so much for visiting. This is my test website built with Laravel. Please read my latest post!</p>
 				<a class="btn btn-primary btn-lg mt-4" href="/blog" role="button">Popular Post</a>
 			</div>
 		</div>
-	</div>
+	</div>	
 
 	<div class="row mt-5">
 		<div class="col-md-8">
@@ -34,4 +43,7 @@
 			<p>Just some text to show the extent of the sidebar.</p>
 		</div>
 	</div>
+@endsection
+
+@section('scripts')
 @endsection

@@ -28,7 +28,7 @@ class CommentsController extends Controller
         } else {
             Session::flash('failure', 'No Post Comments were found.');
         }
-        return view('comments.index', ['comments' => $comments]);
+        return view('manage.comments.index', ['comments' => $comments]);
     }
 
     /**
@@ -38,7 +38,7 @@ class CommentsController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request, $post_id) {
-        
+       
         $this->validate($request, [
             'name'      => 'required|min:3|max:191',
             'email'     => 'required|email|max:191|',
@@ -75,11 +75,11 @@ class CommentsController extends Controller
         $post = Post::find($comment->post_id);
 
         if ($comment) {
-
+            return view('manage.comments.edit', ['comment' => $comment, 'post' => $post]);
         } else {
-            Session::flash('failure', 'Post Comment ' . $id . ' was NOT found.');
+            Session::flash('failure', 'Comment "' . $id . '" was NOT found.');
+            return Redirect::back();
         }
-        return view('comments.edit', ['comment'=>$comment, 'post'=>$post]);
     }
 
     /**
@@ -98,21 +98,22 @@ class CommentsController extends Controller
 
         $post = Post::find($comment->post_id);
 
-        $comment->comment   = Purifier::clean($request->comment);;
+        $comment->comment = Purifier::clean($request->comment);;
         if ($request->approved) {
             $comment->approved = '1';
         } else {
             $comment->approved = '0';
-         }   
+        }   
 
         $myrc = $comment->save();
 
         if ($myrc) {
-            Session::flash('success', 'Your Comment was successfully saved.');
+            Session::flash('success', 'Comment "' . $id .'" was successfully saved.');
+            return redirect()->route('posts.show', [$comment->post->id]);
         } else {
-            Session::flash('failure', 'Your Comment was NOT saved.');
+            Session::flash('failure', 'Comment "' . $id . '" was NOT saved.');
+            return redirect()->route('comments.edit', $id)->withInput();            
         }
-        return redirect()->route('posts.show',[$comment->post->id]);
     }
 
     /**
@@ -125,12 +126,12 @@ class CommentsController extends Controller
         $comment = Comment::find($id);
         $post = Post::find($comment->post_id);
 
-       if ($comment) {
-            
+        if ($comment) {
+            return view('manage.comments.delete', ['comment' => $comment, 'post' => $post]);
         } else {
-            Session::flash('failure', 'Post Comment ' . $id . ' was NOT found.');
+            Session::flash('failure', 'Comment "' . $id . '" was NOT found.');
+            return Redirect::back();
         }
-        return view('comments.delete', ['comment'=>$comment, 'post'=>$post]);
     }
 
     /**
@@ -142,13 +143,14 @@ class CommentsController extends Controller
     public function destroy($id) {
         $comment = Comment::find($id);
         $post_id = $comment->post->id;
-        $myrc = $comment->delete();
 
        if ($comment) {
-            Session::flash('success', 'Post Comment was successfully Deleted.');
+            $myrc = $comment->delete();
+            Session::flash('success', 'Comment "' . $id . '" was successfully Deleted.');
+            return redirect()->route('posts.show', $post_id);
         } else {
-            Session::flash('failure', 'Post Comment ' . $id . ' was NOT Deleted.');
+            Session::flash('failure', 'Comment "' . $id . '" was NOT Deleted.');
+            return Redirect::back();
         }
-        return redirect()->route('posts.show', $post_id);
     }
 }

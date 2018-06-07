@@ -13,7 +13,7 @@
 		</div>
 	</div>	
 
-<div class="row">
+	<div class="row">
 		<div class="col-md-12">
 			<div class="jumbotron">
 				<div class="row">
@@ -29,6 +29,7 @@
 				<a class="btn btn-primary btn-lg mt-4" href="/blog" role="button">Popular Post</a>
 			</div>
 		</div>
+	</div>	
 @endsection
 
 @section('scripts')

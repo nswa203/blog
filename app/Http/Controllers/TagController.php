@@ -9,16 +9,6 @@ use Session;
 class TagController extends Controller
 {
     /**
-     * We lock down the complete PostController here using the __construct()
-     * which is like an init function for instantiation of an object of this class.
-     * Lock-down is achieved with middleware that ensures only authorised (Logged In)
-     * users have access.
-     */
-    public function __construct() {
-        $this->middleware('auth');
-    }
-
-    /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
@@ -32,7 +22,7 @@ class TagController extends Controller
         } else {
             Session::flash('failure', 'No Tags were found.');
         }
-        return view('tags.index', ['tags' => $tags]);
+        return view('manage.tags.index', ['tags' => $tags]);
     }
     
     /**
@@ -44,7 +34,7 @@ class TagController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'name' => 'required|min:3|max:191',
+            'name' => 'required|min:3|max:191|unique:tags,name',
         ]);
 
         $tag = new Tag;
@@ -52,11 +42,12 @@ class TagController extends Controller
         $myrc = $tag->save();
 
         if ($myrc) {
-            Session::flash('success', 'The Tag was successfully saved.');
+            Session::flash('success', 'Tag "' . $tag->name . '" was successfully saved.');
+            return redirect()->route('tags.index');
         } else {
-            Session::flash('failure', 'The Tag was NOT saved.');
+            Session::flash('failure', 'Tag "' . $request->name . '" was NOT saved.');
+            return redirect()->route('tags.index')->withInput();
         }
-        return redirect()->route('tags.index');
     }
 
      /**
@@ -66,14 +57,15 @@ class TagController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id) {
-        $tag=Tag::find($id);
+        $tag=Tag::findOrFail($id);
+        $posts = Tag::where('id', $id)->first()->posts()->orderBy('id', 'desc')->paginate(5);
 
         if ($tag) {
-
+            return view('manage.tags.show', ['tag' => $tag, 'posts' => $posts]);
         } else {
-            Session::flash('failure', 'Tag ' . $id . ' was NOT found.');
+            Session::flash('failure', 'Tag "' . $id . '" was NOT found.');
+            return Redirect::back();
         }
-        return view('tags.show', ['tag' => $tag]);
     }
 
     /**
@@ -96,21 +88,21 @@ class TagController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $tag = Tag::find($id);
+        $tag = Tag::findOrFail($id);
 
         $this->validate($request, [
-            'name' => 'required|min:3|max:191',
+            'name' => 'required|min:3|max:191|unique:tags,name,' . $id,
         ]);
 
         $tag->name = $request->name;
         $myrc = $tag->save();
 
         if ($myrc) {
-            Session::flash('success', 'The Tag was successfully saved.');
+            Session::flash('success', 'Tag "' . $tag->name . '" was successfully saved.');
         } else {
-            Session::flash('failure', 'The Tag was NOT saved.');
+            Session::flash('failure', 'Tag "' . $request->name . '" was NOT saved.');
         }
-        return redirect()->route('tags.index',['page'=>$request->page]);
+        return redirect()->route('tags.index', ['page' => $request->page]);
     }
 
     /**
@@ -120,14 +112,14 @@ class TagController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function delete($id) {
-        $tag = Tag::find($id);
+        $tag = Tag::findOrFail($id);
 
        if ($tag) {
-            
+            return view('manage.tags.delete', ['tag' => $tag]);
         } else {
-            Session::flash('failure', 'Tag ' . $id . ' was NOT found.');
+            Session::flash('failure', 'Tag "' . $id . '" was NOT found.');
+            return Redirect::back();            
         }
-        return view('tags.delete', ['tag'=>$tag]);
     }
 
     /**
@@ -138,19 +130,19 @@ class TagController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $tag = Tag::find($id);
+        $tag = Tag::findOrFail($id);
 
         if ($tag){
-            $tagName=$tag->name;
             $tag->posts()->detach();
             $myrc = $tag->delete();
         } else { $myrc=false; }
             
         if ($myrc) {
-            Session::flash('success', 'The "' . $tagName . '" Tag was successfully deleted.');
+            Session::flash('success', 'The "' . $tag->name . '" Tag was successfully deleted.');
+            return redirect()->route('tags.index',['page' => $request->page]);
         } else {
-            Session::flash('failure', 'The Tag was NOT deleted.');
+            Session::flash('failure', 'Tag "' . $id . '"was NOT deleted.');
+            return Redirect::back();            
         }        
-        return redirect()->route('tags.index',['page'=>$request->page]);
     }
 }

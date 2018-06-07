@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <!doctype html>
 <html lang="en">
     <head>
@@ -8,15 +7,15 @@
     
     <body>
         @include('partials._nav_main')
+
         <div id="wrapper">
             @include('partials._nav_manage')
 
             <div id="page-content-wrapper">
                 <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-md-10 offset-md-1 mt-4">
+                    <div classx="col-md-0 col-xs-12 col-sm-12">
+                        <div class="col-md-10 offset-md-1 col-md-auto col-xs-12 offset-xs-0 mt-4">
                             @include('partials._messages')
-
                             @yield('content')
                         </div>
                     </div>

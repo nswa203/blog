@@ -1,11 +1,14 @@
-@extends('main')
+@extends('manage')
 
-@section('title','| All Comments')
+@section('title','| Manage Comments')
+
+@section('stylesheets')
+@endsection
 
 @section('content')
 	<div class="row">
 		<div class="col-md-12">
-			<h1><span class="fas fa-comment-alt mr-4"></span>All Comments</h1>
+			<h1><a id="menu-toggle2"><span class="fas fa-comment-alt mr-4"></span>Manage Comments</a></h1>
 			<hr>
 		</div>
 	</div>		
@@ -22,24 +25,28 @@
 						<th>eMail</th>
 						<th>Comment</th>
 						<th width="120px">Created At</th>
-						<th width="120px">Page {{$comments->currentPage()}} of {{$comments->lastPage()}}</th>
+						<th width="130px">Page {{$comments->currentPage()}} of {{$comments->lastPage()}}</th>
 					</thead>
 					<tbody>
 						@foreach($comments as $comment)
 							<tr>
 								<th>{{ $comment->id }}</th>
-								<th>{{ $comment->post_id }}</th>
-								<td>{{ $comment->approved?'Y':'N' }}</td>
+								<th>
+									<a href="{{ route('posts.show', $comment->post_id) }}">{{ $comment->post_id }}</a>
+								</th>
+								<td>
+									{!! $comment->approved ? "<span class='fas fa-check text-success'></span>" : "<span class='fas fa-times text-danger'></span>" !!}
+								</td>
 								<td>{{ $comment->name }}</td>
 								<td>{{ $comment->email }}</td>
 								<td>{{ substr(strip_tags($comment->comment),0,256)}}{{ strlen(strip_tags($comment->comment))>256?'...':'' }}</td>
 								<td>{{ date('j M Y',strtotime($comment->created_at)) }}</td>
 
-								<td>
-									<a href="{{ route('comments.edit',$comment->id) }}" class="btn btn-sm btn-primary">
+								<td class="text-center">
+									<a href="{{ route('comments.edit', $comment->id) }}" class="btn btn-sm btn-primary">
 										<span class="far fa-edit"></span>
 									</a>
-									<a href="{{ route('comments.delete',$comment->id) }}" class="btn btn-sm btn-danger">
+									<a href="{{ route('comments.delete', $comment->id) }}" class="btn btn-sm btn-danger">
 										<span class="far fa-trash-alt"></span>
 									</a>	
 								</td>
@@ -53,4 +60,7 @@
 			</div>
 		</div>
 	@endif
+@endsection
+
+@section('scripts')
 @endsection

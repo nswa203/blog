@@ -58,8 +58,6 @@
 				<dl class="row">
 					<dt class="col-sm-5">Created At:</dt>
 					<dd class="col-sm-7">{{ date('j M Y, h:i a') }}</dd>
-					<dt class="col-sm-5">Last Updated:</dt>
-					<dd class="col-sm-7">{{ date('j M Y, h:i a') }}</dd>
 				</dl>
 				<hr class="hr-spacing-top">
 				<div id="app2"> <!-- Vue 2 -->

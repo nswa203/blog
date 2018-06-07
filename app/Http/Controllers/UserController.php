@@ -9,6 +9,8 @@ use App\User;
 use App\Role;
 use Session;
 
+use Illuminate\Support\Facades\Password;
+
 class UserController extends Controller
 {
     /**
@@ -51,6 +53,7 @@ class UserController extends Controller
         // & syncRoles. Warning explode will create an empty element [0] if input is null. 
         $roles = $request->itemsSelected ? explode(',', $request->itemsSelected) : [];
         $request->merge(['roles' => $roles]);
+        $msg = '';
    
         $this->validate($request, [
             'name'      => 'required|min:3|max:191',
@@ -81,10 +84,23 @@ class UserController extends Controller
 
         if ($myrc) {
             $myrc = $user->syncRoles($roles);
+      
+            // php artisan make:notification CustomResetPassword
+            // edit CustomResetPassword.php
+            // edit CanRestPassword.php
+            // edit PasswordBroker.php
+            $credentials = ['email' => $user->email]; 
+            $response = Password::sendResetLink($credentials, $user);        
+            if (Password::RESET_LINK_SENT) {
+                $msg = ' and eMail notification was sent to ' . $user->email;
+            } else {
+                $msg = ' but eMail notification could NOT be sent to ' . $user->email;
+            }   
+
         }
 
         if ($myrc) {
-            Session::flash('success', 'User "' . $user->name . '"" was successfully saved.');
+            Session::flash('success', 'User "' . $user->name . '" was successfully saved' . $msg);
             return redirect()->route('users.show', $user->id);
         } else {
             Session::flash('failure', 'User "' . $request->name . '" was NOT saved.');
@@ -101,7 +117,7 @@ class UserController extends Controller
     public function show($id)
     {
         $user = User::findOrFail($id);
-        $roles = User::where('id', $id)->first()->roles()->orderBy('display_name','asc')->paginate(5);
+        $roles = User::where('id', $id)->first()->roles()->orderBy('display_name', 'asc')->paginate(5);
 
         if ($user) {
             return view('manage.users.show', ['user' => $user, 'roles' => $roles]);
@@ -146,7 +162,7 @@ class UserController extends Controller
    
         $this->validate($request, [
             'name'      => 'required|min:3|max:191',
-            'email'     => 'required|min:5|max:191|email|unique:users,email,'.$id,
+            'email'     => 'required|min:5|max:191|email|unique:users,email,' . $id,
             'password'  => 'sometimes|min:7|max:96',
             'roles'     => 'sometimes|array',
             'roles.*'   => 'exists:roles,id'            

@@ -13,8 +13,14 @@
 
 // Manage
 Route::prefix('manage')->middleware('role:superadministrator|administrator|editor|author|contributor')->group(function () {
+	// Dashboard
 	Route::get('/dashboard', 'ManageController@dashboard')->name('manage.dashboard');
 	Route::get('/',			 'ManageController@dashboard')->name('manage.dashboard');
+	// Posts
+	Route::resource('/posts', 'PostController');
+	Route::get('/posts/{id}/delete', 'PostController@delete')->name('posts.delete');
+	Route::post('/posts/{search}/search', 'PostController@search')->name('posts.search');	
+	
 });
 Route::prefix('manage')->middleware('role:superadministrator|administrator')->group(function () {
 	// Users
@@ -25,10 +31,13 @@ Route::prefix('manage')->middleware('role:superadministrator|administrator')->gr
 	Route::get('roles/{id}/delete',	'RoleController@delete')->name('roles.delete');
 	// Permissions
 	Route::resource('/permissions', 'PermissionController');
-	Route::get('permissions/{id}/delete',	'PermissionController@delete')->name('permissions.delete');
-	// Posts
-	Route::resource('/posts', 'PostController');
-	Route::get('/posts/{id}/delete', 'PostController@delete')->name('posts.delete');
+	Route::get('permissions/{id}/delete', 'PermissionController@delete')->name('permissions.delete');
+	// Categories
+	Route::resource('categories', 'CategoryController')->except(['create']);
+	Route::get('categories/{id}/delete', 'CategoryController@delete')->name('categories.delete');
+	// Tags
+	Route::resource('tags', 'TagController')->except(['create']);
+	Route::get('tags/{id}/delete', 'TagController@delete')->name('tags.delete');
 });
 
 // Tests
@@ -43,13 +52,7 @@ Route::get('/',			'PagesController@getIndex');
 
 
 
-// Categories
-Route::resource('categories',		'CategoryController')->except(['create']);
-Route::get('categories/{id}/delete','CategoryController@delete')->name('categories.delete');
 
-// Tags
-Route::resource('tags',			'TagController')->except(['create']);
-Route::get('tags/{id}/delete',	'TagController@delete')->name('tags.delete');
 
 // Comments
 Route::post('comments/{post_id}',	'CommentsController@store'	)->name('comments.store');

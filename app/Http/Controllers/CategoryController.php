@@ -9,16 +9,6 @@ use Session;
 class CategoryController extends Controller
 {
     /**
-     * We lock down the complete PostController here using the __construct()
-     * which is like an init function for instantiation of an object of this class.
-     * Lock-down is achieved with middleware that ensures only authorised (Logged In)
-     * users have access.
-     */
-    public function __construct() {
-        $this->middleware('auth');
-    }
-
-    /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
@@ -32,7 +22,7 @@ class CategoryController extends Controller
         } else {
             Session::flash('failure', 'No Categories were found.');
         }
-        return view('categories.index', ['categories' => $categories]);
+        return view('manage.categories.index', ['categories' => $categories]);
     }
 
     /**
@@ -44,7 +34,7 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'name' => 'required|min:5|max:191',
+            'name' => 'required|min:5|max:191|unique:categories,name',
         ]);
 
         $category = new Category;
@@ -52,11 +42,12 @@ class CategoryController extends Controller
         $myrc = $category->save();
 
         if ($myrc) {
-            Session::flash('success', 'The Category was successfully saved.');
+            Session::flash('success', 'Category "' . $category->name . '" was successfully saved.');
+            return redirect()->route('categories.index');
         } else {
-            Session::flash('failure', 'The Category was NOT saved.');
+            Session::flash('failure', 'Category "' . $request->name . '" was NOT saved.');
+            return redirect()->route('categories.index')->withInput();
         }
-        return redirect()->route('categories.index');
     }
 
      /**
@@ -66,14 +57,15 @@ class CategoryController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id) {
-        $category=Category::find($id);
+        $category = Category::findOrFail($id);
+        $posts = Category::where('id', $id)->first()->posts()->orderBy('id', 'desc')->paginate(5);
 
         if ($category) {
-
+            return view('manage.categories.show', ['category' => $category, 'posts' => $posts]);
         } else {
-            Session::flash('failure', 'Category ' . $id . ' was NOT found.');
+            Session::flash('failure', 'Category "' . $id . '" was NOT found.');
+            return Redirect::back();
         }
-        return view('categories.show', ['category' => $category]);
     }
 
     /**
@@ -84,7 +76,7 @@ class CategoryController extends Controller
      */
     public function edit($id)
     {
-        return redirect()->route('categories.index',['edit'=>$id]);
+        return redirect()->route('categories.index', ['edit' => $id]);
     }
 
     /**
@@ -99,18 +91,18 @@ class CategoryController extends Controller
         $category = Category::find($id);
 
         $this->validate($request, [
-            'name' => 'required|min:5|max:191',
+            'name' => 'required|min:5|max:191|unique:categories,name,' . $id,
         ]);
 
         $category->name = $request->name;
         $myrc = $category->save();
 
         if ($myrc) {
-            Session::flash('success', 'The Category was successfully saved.');
+            Session::flash('success', 'Category "' . $category->name . '" was successfully saved.');
         } else {
-            Session::flash('failure', 'The Category was NOT saved.');
+            Session::flash('failure', 'Category "' . $request->name . '" was NOT saved.');
         }
-        return redirect()->route('categories.index',['page'=>$request->page]);
+        return redirect()->route('categories.index', ['page' => $request->page]);
     }
 
     /**
@@ -120,14 +112,14 @@ class CategoryController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function delete($id) {
-        $category = Category::find($id);
+        $category = Category::findOrFail($id);
 
        if ($category) {
-            
+            return view('manage.categories.delete', ['category' => $category]);
         } else {
-            Session::flash('failure', 'Category ' . $id . ' was NOT found.');
+            Session::flash('failure', 'Category "' . $id . '" was NOT found.');
+            return Redirect::back();            
         }
-        return view('categories.delete', ['category'=>$category]);
     }
 
     /**
@@ -138,23 +130,17 @@ class CategoryController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $category = Category::find($id);
+        $category = Category::findOrFail($id);
         // Can't yet delete Categories because
-        // 1. blades don't supprt null Category & No default Category set up
+        // 1. blades don't support null Category & No default Category set up
         // 2. Don't know how to set all posts category-id fields to null easily 
-        $category = false;
 
-        if ($category){
-            $categoryName=$category->name;
-
-            $myrc = $category->delete();
-        } else { $myrc=false; }
-            
-        if ($myrc) {
-            Session::flash('success', 'The "' . $categoryName . '" Category was successfully deleted.');
+        if ($category) {
+            Session::flash('failure', 'Category "' . $id . '" was NOT DELETED.<br>Delete Not yet supported!');
+            return redirect()->route('categories.index');
         } else {
-            Session::flash('failure', 'The Category was NOT deleted.');
-        }        
-        return redirect()->route('categories.index',['page'=>$request->page]);
+            Session::flash('failure', 'Category "' . $id . '" was NOT deleted.');
+            return Redirect::back();            
+        }
     }
 }

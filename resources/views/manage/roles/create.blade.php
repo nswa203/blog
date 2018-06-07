@@ -32,8 +32,6 @@
 				<dl class="row">
 					<dt class="col-sm-5">Created At:</dt>
 					<dd class="col-sm-7">{{ date('j M Y, h:i a') }}</dd>
-					<dt class="col-sm-5">Last Updated:</dt>
-					<dd class="col-sm-7">{{ date('j M Y, h:i a') }}</dd>
 				</dl>
 				<hr class="hr-spacing-top">
 				<div class="row">
@@ -41,7 +39,7 @@
 						{!! Html::decode('<a href='.url()->previous().' class="btn btn-danger btn-block"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
 					</div>
 					<div class="col-sm-6">
-						{{ Form::button('<i class="fas fa-user-plus mr-2"></i>Create Role', ['type'=>'submit', 'class'=>'btn btn-success btn-block']) }}
+						{{ Form::button('<i class="fas fa-user-plus mr-2"></i>Create', ['type'=>'submit', 'class'=>'btn btn-success btn-block']) }}
 					</div>
 				</div>
 				<div class="row mt-3">
@@ -59,7 +57,7 @@
 				<h1>Permissions<span class="h1-suffix">({{ $permissions->total() }} Permissions may be assigned to this Role.)</span></h1>
 				<table class="table table-hover">
 					<thead class="thead-dark">
-						<th>#</th>
+						<th><span class="fas fa-hashtag mb-2 ml-1"></span></th>
 						<th width="10px">
 							<label for="itemsCheckAll" >
 						    	<input hidden type="checkbox" id="itemsCheckAll" @click="checkAll('all')" value="all" v-model="itemsCheckAll" name=":custom-value2" />
@@ -69,8 +67,8 @@
 						<th>Name</th>
 						<th>Slug</th>
 						<th>Description</th>
-						<th>Updated At</th>
-						<th class="text-right">Page {{$permissions->currentPage()}} of {{$permissions->lastPage()}}</th>
+						<th width="120px">Updated At</th>
+						<th width="130px">Page {{$permissions->currentPage()}} of {{$permissions->lastPage()}}</th>
 					</thead>
 					<tbody>	
 						@foreach($permissions as $permission)

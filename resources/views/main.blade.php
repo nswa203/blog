@@ -10,6 +10,7 @@
 
         <div id="wrapper">
             {{-- @include('partials._nav_manage') --}}
+            
             <div id="page-content-wrapper">
                 <div class="container-fluid">
    					<div class="col-md-0 col-xs-12 col-sm-12">

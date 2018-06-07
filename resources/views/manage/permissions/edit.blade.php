@@ -41,7 +41,7 @@
 						{!! Html::decode('<a href='.url()->previous().' class="btn btn-danger btn-block"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
 					</div>
 					<div class="col-sm-6">
-						{{ Form::button('<i class="fas fa-user-edit mr-2"></i>Save Changes', ['type'=>'submit', 'class'=>'btn btn-success btn-block']) }}
+						{{ Form::button('<i class="fas fa-user-edit mr-2"></i>Save', ['type'=>'submit', 'class'=>'btn btn-success btn-block']) }}
 					</div>
 				</div>
 				<div class="row mt-3">

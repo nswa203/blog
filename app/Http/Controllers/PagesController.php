@@ -11,7 +11,7 @@ use Session;
 class PagesController extends Controller {
 
 	public function getIndex() {
-		$posts = Post::orderBy('created_at', 'desc')->paginate(4);
+		$posts = Post::orderBy('created_at', 'desc')->where('status', '>=', '4')->paginate(4);
 
 		if ($posts) {
 

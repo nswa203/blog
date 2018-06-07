@@ -27,9 +27,9 @@
 						<th>#</th>
 						<th>Name</th>
 						<th>eMail</th>
-						<th>Created At</th>
-						<th>Updated At</th>
-						<th class="text-right">Page {{$users->currentPage()}} of {{$users->lastPage()}}</th>
+						<th width="120">Created At</th>
+						<th width="120">Updated At</th>
+						<th width="130" class="text-right">Page {{$users->currentPage()}} of {{$users->lastPage()}}</th>
 					</thead>
 					<tbody>						
 						@foreach($users as $user)

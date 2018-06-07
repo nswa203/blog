@@ -88,6 +88,10 @@ html {
   border: none;
 }
 
+.table-grey {
+  background: #e6e6e6;
+}
+
 /*!
  * Start Bootstrap - Simple Sidebar (https://startbootstrap.com/template-overviews/simple-sidebar)
  * Copyright 2013-2017 Start Bootstrap

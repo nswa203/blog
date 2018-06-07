@@ -45,7 +45,7 @@
 						{!! Html::decode('<a href='.url()->previous().' class="btn btn-danger btn-block"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
 					</div>
 					<div class="col-sm-6">
-						{{ Form::button('<i class="fas fa-user-edit mr-2"></i>Save Changes', ['type'=>'submit', 'class'=>'btn btn-success btn-block']) }}
+						{{ Form::button('<i class="fas fa-user-edit mr-2"></i>Save', ['type'=>'submit', 'class'=>'btn btn-success btn-block']) }}
 					</div>
 				</div>
 				<div class="row mt-3">
@@ -63,7 +63,7 @@
 				<h1>Permissions<span class="h1-suffix">({{ $role->permissions->count() }} Permissions from {{ $permissions->total() }} have been assigned to this Role.)</span></h1>
 				<table class="table table-hover">
 					<thead class="thead-dark">
-						<th>#</th>
+						<th><span class="fas fa-hashtag mb-2 ml-1"></span></th>
 						<th width="10px">
 							<label for="itemsCheckAll" >
 						    	<input hidden type="checkbox" id="itemsCheckAll" @click="checkAll('all')" value="all" v-model="itemsCheckAll" name=":custom-value2" />
@@ -73,8 +73,8 @@
 						<th>Name</th>
 						<th>Slug</th>
 						<th>Description</th>
-						<th>Updated At</th>
-						<th class="text-right">Page {{$permissions->currentPage()}} of {{$permissions->lastPage()}}</th>
+						<th width="120px">Updated At</th>
+						<th width="130px">Page {{$permissions->currentPage()}} of {{$permissions->lastPage()}}</th>
 					</thead>
 					<tbody>						
 						@foreach($permissions as $permission)

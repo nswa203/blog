@@ -2,6 +2,9 @@
 
 @section('title','| Delete Comment')
 
+@section('stylesheets')
+@endsection
+
 @section('content')
 	@if($comment)
 		<div class="row">
@@ -21,18 +24,18 @@
 				<div class="card card-body bg-light">
 					<dl class="row">
 						<dt class="col-sm-5">Post URL:</dt>
-						<dd class="col-sm-7"><a href="{{ route('blog.single',$post->slug) }}">{{ route('blog.single',$post->slug) }}</a></dd>
+						<dd class="col-sm-7"><a href="{{ route('blog.single', $post->slug) }}">{{ route('blog.single', $post->slug) }}</a></dd>
 						<dt class="col-sm-5">Comment ID</dt>
-						<dd class="col-sm-7">{{ $comment->id }}</dd>							
+						<dd class="col-sm-7"><a href="{{ route('blog.single', $post->slug) }}">{{ $comment->id }}</a></dd>						
 						<dt class="col-sm-5">Created At:</dt>
-						<dd class="col-sm-7">{{ date('j M Y, h:i a',strtotime($comment->created_at)) }}</dd>
+						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($comment->created_at)) }}</dd>
 						<dt class="col-sm-5">Last Updated:</dt>
-						<dd class="col-sm-7">{{ date('j M Y, h:i a',strtotime($comment->updated_at)) }}</dd>
+						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($comment->updated_at)) }}</dd>
 					</dl>
 					<hr class="hr-spacing-top">
 					<div class="row">
 						<div class="col-sm-12">
-							{{ Form::submit('YES DELETE NOW',['class'=>'btn btn-danger btn-block font-weight-bold']) }}
+							{{ Form::submit('YES DELETE NOW', ['class'=>'btn btn-danger btn-block font-weight-bold']) }}
 							<a href="{{ url()->previous() }}" class="form-control btn btn-outline-dark btn-block">Cancel</a>
 						</div>
 					</div>
@@ -41,4 +44,7 @@
 			</div>
 		</div>
 	@endif
+@endsection
+
+@section('scripts')
 @endsection

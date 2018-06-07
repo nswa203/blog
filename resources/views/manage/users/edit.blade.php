@@ -40,7 +40,7 @@
 				</dl>
 				<hr class="hr-spacing-top">
 
-				<div id="app2"> <!-- Vue 2 -->
+				<div id="app2" class="font-weight-bold"> <!-- Vue 2 -->
 					<div class="field">
 						<label for="password_options1" class="">
 							{{ Form::radio('password_option', 'keep', null, 		['class'=>'', 'v-model'=>'passwordOption', 'hidden'=>'', 'id'=>'password_options1']) }}
@@ -67,7 +67,7 @@
 						{!! Html::decode('<a href='.url()->previous().' class="btn btn-danger btn-block"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
 					</div>
 					<div class="col-sm-6">
-						{{ Form::button('<i class="fas fa-user-edit mr-2"></i>Save Changes', ['type'=>'submit', 'class'=>'btn btn-success btn-block']) }}
+						{{ Form::button('<i class="fas fa-user-edit mr-2"></i>Save', ['type'=>'submit', 'class'=>'btn btn-success btn-block']) }}
 					</div>
 				</div>
 				<div class="row mt-3">
@@ -85,7 +85,7 @@
 				<h1>Roles<span class="h1-suffix">({{ $user->roles->count() }} Roles from {{ $roles->total() }}  have been assigned to this User.)</span></h1>
 				<table class="table table-hover">
 					<thead class="thead-dark">
-						<th>#</th>
+						<th><span class="fas fa-hashtag mb-2 ml-1"></th>
 						<th width="10px">
 							<label for="itemsCheckAll">
 						    	<input hidden type="checkbox" id="itemsCheckAll" @click="checkAll('all')" value="all" v-model="itemsCheckAll" name=":custom-value2" />
@@ -95,8 +95,8 @@
 						<th>Name</th>
 						<th>Slug</th>
 						<th>Description</th>
-						<th>Updated At</th>
-						<th class="text-right">Page {{$roles->currentPage()}} of {{$roles->lastPage()}}</th>
+						<th width="120px">Updated At</th>
+						<th width="130px" class="text-right">Page {{$roles->currentPage()}} of {{$roles->lastPage()}}</th>
 					</thead>
 					<tbody>						
 						@foreach($roles as $role)
