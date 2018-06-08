@@ -14,13 +14,16 @@
 			{!! Form::model($user, ['route'=>['users.update', $user->id], 'method'=>'PUT', 'data-parsley-validate'=>'']) !!}
 			{{ 	Form::label('name', 'Name:', ['class'=>'font-bold form-spacing-top']) }}
 			{{ 	Form::text('name', null, ['class'=>'form-control form-control-lg', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'3', 'data-parsley-maxlength'=>'191', 'v-model'=>'title', 'autofocus'=>'']) }}
-	
-			{{ 	Form::label('email', 'eMail:', ['class'=>'font-bold form-spacing-top']) }}
-			{{ 	Form::text('email', null, ['class'=>'form-control', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'5', 'data-parsley-maxlength'=>'191', 'placeholder'=>"User's eMail address"]) }} 
-
+			
 			<div id="app3"> <!-- Vue 2 -->
-				{{ Form::label('password', 'Password:', ['class'=>'font-bold form-spacing-top', 'v-if'=>'passwordOption == "manual"']) }}
-				{{ Form::password('password', ['class'=>'form-control mt-2', 'id'=>'password', 'v-if'=>'passwordOption == "manual"', 'placeholder'=>'Manually provide a password for this User', 'v-focus'=>'']) }}
+				{{ 	Form::label('email', 'eMail:', ['class'=>'font-bold form-spacing-top mr-3']) }}
+					<span v-if='passwordOption !== "keep"'>
+						<span class="text-danger fas fa-envelope mr-2"></span><span class="font-weight-bold text-danger">A notification eMail will be sent to the user.</span>
+					</span>
+				{{ 	Form::text('email', null, ['class'=>'form-control', 'disabled'=>'']) }} 
+
+				{{ Form::label('password', 'Password:', ['class'=>'font-bold form-spacing-top mr-3', 'v-if'=>'passwordOption == "manual"']) }}
+				{{ Form::password('password', ['class'=>'form-control', 'id'=>'password', 'v-if'=>'passwordOption == "manual"', 'placeholder'=>'Manually provide a password for this User', 'v-focus'=>'']) }}
 				<input type="hidden" name="itemsSelected" 	:value="itemsSelected">
 				<input type="hidden" name="password_option" :value="passwordOption">
 			</div> <!-- Vue 2 -->

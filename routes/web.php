@@ -19,7 +19,7 @@ Route::prefix('manage')->middleware('role:superadministrator|administrator|edito
 	// Posts
 	Route::resource('/posts', 'PostController');
 	Route::get('/posts/{id}/delete', 'PostController@delete')->name('posts.delete');
-	Route::post('/posts/{search}/search', 'PostController@search')->name('posts.search');	
+	Route::post('/posts/search', 'PostController@search')->name('posts.search');		
 	
 });
 Route::prefix('manage')->middleware('role:superadministrator|administrator')->group(function () {

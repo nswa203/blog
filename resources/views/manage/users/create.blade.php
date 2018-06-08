@@ -15,7 +15,8 @@
 			{{ 	Form::label('name', 'Name:', ['class'=>'font-bold form-spacing-top']) }}
 			{{ 	Form::text('name', null, ['class'=>'form-control form-control-lg', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'3', 'data-parsley-maxlength'=>'191', 'v-model'=>'title', 'autofocus'=>'']) }}
 	
-			{{ 	Form::label('email', 'eMail:', ['class'=>'font-bold form-spacing-top']) }}
+			{{ 	Form::label('email', 'eMail:', ['class'=>'font-bold form-spacing-top mr-3']) }}
+			<span class="text-danger fas fa-envelope mr-2"></span><span class="font-weight-bold text-danger">A notification eMail will be sent to the user.</span>
 			{{ 	Form::text('email', null, ['class'=>'form-control', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'5', 'data-parsley-maxlength'=>'191', 'placeholder'=>"User's eMail address"]) }} 
 
 			<div id="app"> <!-- Vue 2 -->
@@ -36,6 +37,7 @@
 					<dt class="col-sm-5">Created At:</dt>
 					<dd class="col-sm-7">{{ date('j M Y, h:i a') }}</dd>
 				</dl>
+
 				<hr class="hr-spacing-top">
 				<div class="row">
 					<div class="col-sm-6">

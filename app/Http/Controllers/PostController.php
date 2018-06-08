@@ -122,8 +122,8 @@ class PostController extends Controller {
 	 * @param  int  $id
 	 * @return \Illuminate\Http\Response
 	 */
-	public function search($search) {
-	echo $search;
+	public function search(Request $request) {
+	dd($request);
 	}
 
 	/**
