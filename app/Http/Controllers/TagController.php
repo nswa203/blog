@@ -6,23 +6,53 @@ use Illuminate\Http\Request;
 use App\Tag;
 use Session;
 
+function searchQuery($search = '') {
+    $searchable1 = ['name'];
+    $searchable2 = [];
+    $query = Tag::select('*');
+
+    if ($search !== '') {
+        foreach ($searchable1 as $column) {
+            $query->orWhere($column, 'LIKE', '%' . $search . '%');
+        }
+        foreach ($searchable2 as $table => $column) {
+            $query->orWhereHas($table, function($q) use ($column, $search){
+                $q->where($column, 'LIKE', '%' . $search . '%');
+            }); 
+        }
+    }   
+    return $query;
+}
+
 class TagController extends Controller
 {
+    public function __construct(Request $request)
+    {
+        $this->middleware(function ($request, $next) {
+            session(['zone' => 'Tags']);
+            return $next($request);
+        });
+    }
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-       $tags = Tag::orderBy('id', 'desc')->paginate(10);
+        if ($request->s) {
+            $tags = searchQuery(session('search'))->orderBy('name', 'asc')->paginate(10);
+        } else {
+           $tags = Tag::orderBy('name', 'asc')->paginate(10);
+        }   
 
         if ($tags) {
 
         } else {
             Session::flash('failure', 'No Tags were found.');
         }
-        return view('manage.tags.index', ['tags' => $tags]);
+        return view('manage.tags.index', ['tags' => $tags, 'search' => $request->s]);
     }
     
     /**

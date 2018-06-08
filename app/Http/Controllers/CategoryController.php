@@ -6,23 +6,53 @@ use Illuminate\Http\Request;
 use App\Category;
 use Session;
 
+function searchQuery($search = '') {
+    $searchable1 = ['name'];
+    $searchable2 = [];
+    $query = Category::select('*');
+
+    if ($search !== '') {
+        foreach ($searchable1 as $column) {
+            $query->orWhere($column, 'LIKE', '%' . $search . '%');
+        }
+        foreach ($searchable2 as $table => $column) {
+            $query->orWhereHas($table, function($q) use ($column, $search){
+                $q->where($column, 'LIKE', '%' . $search . '%');
+            }); 
+        }
+    }   
+    return $query;
+}
+
 class CategoryController extends Controller
 {
+    public function __construct(Request $request)
+    {
+        $this->middleware(function ($request, $next) {
+            session(['zone' => 'Categories']);
+            return $next($request);
+        });
+    }
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::orderBy('id', 'desc')->paginate(10);
+        if ($request->s) {
+            $categories = searchQuery(session('search'))->orderBy('name', 'asc')->paginate(10);
+        } else {
+            $categories = Category::orderBy('name', 'asc')->paginate(10);
+        }   
 
         if ($categories) {
 
         } else {
             Session::flash('failure', 'No Categories were found.');
         }
-        return view('manage.categories.index', ['categories' => $categories]);
+        return view('manage.categories.index', ['categories' => $categories, 'search' => $request->s]);
     }
 
     /**

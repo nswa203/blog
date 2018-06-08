@@ -12,6 +12,15 @@
 			<li class="nav-item {{ Request::is('contact'	)?'active':'' }}"><a class="nav-link" href="/contact"	>Contact</a></li>
 		</ul>
 
+		{!! Form::open(['route'=>['search.index'], 'method'=>'POST', 'class'=>'mr-3']) !!}
+			<div class="input-group">
+				{{ Form::text('search', null,  ['class'=>'form-control', 'placeholder'=>'Search ' . Session::get('zone') . '...']) }} 
+				<div class="input-group-append">
+					<button class="btn btn-outline-secondary" type="submit"><span class="fas fa-search"></span></button>
+				</div>
+			</div>
+		{!! Form::close() !!}
+
 		<ul class="navbar-nav navbar-right">
 			@if (Auth::check())
 				<li class="nav-item dropdown">

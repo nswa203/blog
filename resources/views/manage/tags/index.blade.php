@@ -9,8 +9,12 @@
 	@if($tags)
 		<div class="row">
 			<div class="col-md-12">
-				<h1><a id="menu-toggle2"><span class="fas fa-tag mr-4"></span>Manage Tags</a></h1>
-				<hr>
+				<h1><a id="menu-toggle2">
+					@if (isset($search)) <span class="fas fa-search mr-4"></span>
+					@else 				 <span class="fas fa-tag mr-4"></span>
+					@endif 				 Manage Tags
+				</a></h1>				<hr>
+				
 				<table class="table table-hover">
 					<thead class="thead-dark">
 						<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>

@@ -24,15 +24,45 @@ function status($default = -1) {
 	return $status;
 }
 
+function searchQuery($search = '') {
+	$searchable1 = ['title', 'slug', 'image', 'body', 'excerpt'];
+	$searchable2 = ['user' => 'name', 'category' => 'name', 'tags' => 'name'];
+	$query = Post::select('*')->with('user')->with('category');
+
+	if ($search !== '') {
+		foreach ($searchable1 as $column) {
+			$query->orWhere($column, 'LIKE', '%' . $search . '%');
+		}
+		foreach ($searchable2 as $table => $column) {
+			$query->orWhereHas($table, function($q) use ($column, $search){
+	    		$q->where($column, 'LIKE', '%' . $search . '%');
+	    	});	
+		}
+	}	
+	return $query;
+}
+
 class PostController extends Controller {
+	public function __construct(Request $request)
+	{
+        $this->middleware(function ($request, $next) {
+            session(['zone' => 'Posts']);
+            return $next($request);
+        });
+	}
 
 	/**
 	 * Display a listing of the resource.
 	 *
 	 * @return \Illuminate\Http\Response
 	 */
-	public function index() {
-		$posts = Post::orderBy('id', 'desc')->with('user')->paginate(10);
+	public function index(Request $request) {
+		if ($request->s) {
+			$posts = searchQuery(session('search'))->orderBy('id', 'desc')->paginate(10);
+		} else {
+			$posts = Post::orderBy('id', 'desc')->with('user')->paginate(10);
+        }
+        	
         $posts->status_names = ['Dead', 'Witheld', 'In Draft', 'Under Review', 'Published', 'Test'];	
 
 		if ($posts) {
@@ -40,7 +70,7 @@ class PostController extends Controller {
 		} else {
 			Session::flash('failure', 'No blog Posts were found.');
 		}
-		return view('manage.posts.index', ['posts' => $posts]);
+		return view('manage.posts.index', ['posts' => $posts, 'search' => $request->s]);
 	}
 
 	/**
@@ -114,16 +144,6 @@ class PostController extends Controller {
 			Session::flash('failure', 'Post "' . $post->slug . '" was NOT saved.');
             return redirect()->route('posts.create', $id)->withInput();
 		}
-	}
-
-	/**
-	 * Display the specified resource.
-	 *
-	 * @param  int  $id
-	 * @return \Illuminate\Http\Response
-	 */
-	public function search(Request $request) {
-	dd($request);
 	}
 
 	/**

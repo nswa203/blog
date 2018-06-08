@@ -8,11 +8,35 @@ use App\Post;
 use Session;
 use Purifier;
 
+
+function searchQuery($search = '') {
+    $searchable1 = ['name', 'email', 'comment'];
+    $searchable2 = [];
+    $query = Comment::select('*');
+
+    if ($search !== '') {
+        foreach ($searchable1 as $column) {
+            $query->orWhere($column, 'LIKE', '%' . $search . '%');
+        }
+        foreach ($searchable2 as $table => $column) {
+            $query->orWhereHas($table, function($q) use ($column, $search){
+                $q->where($column, 'LIKE', '%' . $search . '%');
+            }); 
+        }
+    }    
+    return $query;
+}
+
+
 class CommentsController extends Controller
 {
 
     public function __construct() {
         $this->middleware('auth',['except' => 'store']);
+        $this->middleware(function ($request, $next) {
+            session(['zone' => 'Comments']);
+            return $next($request);
+        });
     }
 
     /**
@@ -20,15 +44,19 @@ class CommentsController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index() {
-        $comments = Comment::orderBy('post_id', 'desc')->paginate(5);
+    public function index(Request $request) {
+        if ($request->s) {
+            $comments = searchQuery(session('search'))->orderBy('post_id', 'desc')->paginate(10);
+        } else {
+            $comments = Comment::orderBy('post_id', 'desc')->paginate(5);
+        }   
 
         if ($comments) {
 
         } else {
             Session::flash('failure', 'No Post Comments were found.');
         }
-        return view('manage.comments.index', ['comments' => $comments]);
+        return view('manage.comments.index', ['comments' => $comments, 'search' => $request->s]);
     }
 
     /**

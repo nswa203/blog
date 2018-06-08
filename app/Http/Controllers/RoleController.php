@@ -8,23 +8,53 @@ use App\Role;
 use App\Permission;
 use Session;
 
+function searchQuery($search = '') {
+    $searchable1 = ['name', 'display_name', 'description'];
+    $searchable2 = ['permissions' => 'name', 'permissions' => 'display_name', 'permissions' => 'description'];
+    $query = Role::select('*')->with('permissions');
+
+    if ($search !== '') {
+        foreach ($searchable1 as $column) {
+            $query->orWhere($column, 'LIKE', '%' . $search . '%');
+        }
+        foreach ($searchable2 as $table => $column) {
+            $query->orWhereHas($table, function($q) use ($column, $search){
+                $q->where($column, 'LIKE', '%' . $search . '%');
+            }); 
+        }
+    }   
+    return $query;
+}
+
 class RoleController extends Controller
 {
+    public function __construct(Request $request)
+    {
+        $this->middleware(function ($request, $next) {
+            session(['zone' => 'Roles']);
+            return $next($request);
+        });
+    }
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $roles = Role::orderBy('display_name', 'asc')->paginate(10);
+        if ($request->s) {
+            $roles = searchQuery(session('search'))->orderBy('display_name', 'asc')->paginate(10);
+        } else {
+            $roles = Role::orderBy('display_name', 'asc')->paginate(10);
+        }
 
         if ($roles) {
 
         } else {
             Session::flash('failure', 'No Roles were found.');
         }
-        return view('manage.roles.index', ['roles' => $roles]);
+        return view('manage.roles.index', ['roles' => $roles, 'search' => $request->s]);
     }
 
     /**

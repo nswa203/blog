@@ -9,7 +9,11 @@
 	@if($posts)
 		<div class="row">
 			<div class="col-md-9">
-				<h1><a id="menu-toggle2"><span class="fas fa-file-alt mr-4"></span>Manage Posts</a></h1>
+				<h1><a id="menu-toggle2">
+					@if (isset($search)) <span class="fas fa-search mr-4"></span>
+					@else 				 <span class="fas fa-file-alt mr-4"></span>
+					@endif 				 Manage Posts
+				</a></h1>
 			</div>
 
 			<div class="col-md-3">

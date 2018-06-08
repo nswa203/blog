@@ -8,7 +8,11 @@
 @section('content')
 	<div class="row">
 		<div class="col-md-9">
-			<h1><a id="menu-toggle2"><span class="fas fa-user-cog mr-4"></span>Manage Roles</a></h1>
+			<h1><a id="menu-toggle2">
+				@if (isset($search)) <span class="fas fa-search mr-4"></span>
+				@else 				 <span class="fas fa-user-cog mr-4"></span>
+				@endif 				 Manage Roles
+			</a></h1>
 		</div>
 
 		<div class="col-md-3">

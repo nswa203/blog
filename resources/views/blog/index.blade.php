@@ -5,7 +5,11 @@
 @section('content')
 	<div class="row">
 		<div class="col-md8 offset-md-2">
-			<h1><span class="fas fa-list-alt mr-4"></span>Blog</h1>
+			<h1><a id="menu-toggle2">
+				@if (isset($search)) <span class="fas fa-search mr-4"></span>
+				@else 				 <span class="fas fa-list-alt mr-4"></span>
+				@endif 				 Manage Posts
+			</a></h1>			
 		</div>
 	</div>
 

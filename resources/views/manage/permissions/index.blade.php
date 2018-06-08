@@ -8,9 +8,12 @@
 @section('content')
 	<div class="row">
 		<div class="col-md-9">
-			<h1><a id="menu-toggle2"><span class="fas fa-user-cog mr-4"></span>Manage Permissions</a></h1>
+			<h1><a id="menu-toggle2">
+				@if (isset($search)) <span class="fas fa-search mr-4"></span>
+				@else 				 <span class="fas fa-user-cog mr-4"></span>
+				@endif 				 Manage Permissions
+			</a></h1>
 		</div>
-
 		<div class="col-md-3">
 			<a href="{{ route('permissions.create') }}" class="btn btn-lg btn-block btn-primary btn-h1-spacing"><span class="fas fa-user-plus mr-2"></span>Create New Permission</a>
 		</div>

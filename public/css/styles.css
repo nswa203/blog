@@ -71,6 +71,14 @@ body {
 	margin-bottom: 25px;
 }
 
+.comment-evenColor {
+  background: #f2f2f2;
+}
+
+.comment-oddColor {
+  background: #ffffff;
+}
+
 html {
     width: 100%;
     width: 100vw;

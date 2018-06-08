@@ -9,7 +9,11 @@
 	@if($categories)
 		<div class="row">
 			<div class="col-md-12">
-				<h1><a id="menu-toggle2"><span class="fas fa-list-alt mr-4"></span>Manage Categories</a></h1>
+				<h1><a id="menu-toggle2">
+					@if (isset($search)) <span class="fas fa-search mr-4"></span>
+					@else 				 <span class="fas fa-list-alt mr-4"></span>
+					@endif 				 Manage Categories
+				</a></h1>				
 				<hr>
 				<table class="table table-hover">
 					<thead class="thead-dark">

@@ -11,23 +11,54 @@ use Session;
 
 use Illuminate\Support\Facades\Password;
 
+function searchQuery($search = '') {
+    $searchable1 = ['name', 'email'];
+    $searchable2 = ['roles' => 'name', 'roles' => 'display_name', 'roles' => 'description'];
+    $query = User::select('*')->with('roles');
+
+    if ($search !== '') {
+        foreach ($searchable1 as $column) {
+            $query->orWhere($column, 'LIKE', '%' . $search . '%');
+        }
+        foreach ($searchable2 as $table => $column) {
+            $query->orWhereHas($table, function($q) use ($column, $search){
+                $q->where($column, 'LIKE', '%' . $search . '%');
+            }); 
+        }
+    }  
+    //dd($query); 
+    return $query;
+}
+
 class UserController extends Controller
 {
+    public function __construct(Request $request)
+    {
+        $this->middleware(function ($request, $next) {
+            session(['zone' => 'Users']);
+            return $next($request);
+        });
+    }
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::orderBy('id', 'desc')->paginate(10);
+        if ($request->s) {
+            $users = searchQuery(session('search'))->orderBy('name', 'asc')->paginate(10);
+        } else {
+            $users = User::orderBy('name', 'asc')->paginate(10);
+        }   
 
         if ($users) {
 
         } else {
             Session::flash('failure', 'No Users were found.');
         }
-        return view('manage.users.index', ['users' => $users]);
+        return view('manage.users.index', ['users' => $users, 'search' => $request->s]);
     }
 
     /**
