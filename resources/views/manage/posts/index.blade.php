@@ -9,7 +9,7 @@
 	@if($posts)
 		<div class="row">
 			<div class="col-md-9">
-				<h1><a id="menu-toggle2">
+				<h1><a id="menu-toggle2" data-toggle="tooltip", data-placement="top", title="Toggle NavBar">
 					@if (isset($search)) <span class="fas fa-search mr-4"></span>
 					@else 				 <span class="fas fa-file-alt mr-4"></span>
 					@endif 				 Manage Posts
@@ -61,7 +61,10 @@
 					</tbody>
 				</table>
 				<div class="d-flex justify-content-center">
-					{!! $posts->render() !!}
+					{{-- {{$posts->appends(Request::only(['sort','sd','keywords']))->links()}} 
+					{!! $posts->render() !!} --}}
+
+					{{$posts->appends(Request::only(['s']))->appends(['search' => session('search')])->render()}} 
 				</div>
 			</div>
 		</div>

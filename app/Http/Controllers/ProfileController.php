@@ -4,36 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class SearchController extends Controller
+class ProfileController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
-        $zone = session('zone');
-        $search = $request->search ? $request->search : false;
-        $s = $search ? 's=1' : false;
-
-        if ($zone == 'Posts')               {
-            return redirect()->route('posts.index',         $s)->with('search', $search);
-        } elseif ($zone == 'Comments')      {
-            return redirect()->route('comments.index',      $s)->with('search', $search);
-        } elseif ($zone == 'Categories')    {
-            return redirect()->route('categories.index',    $s)->with('search', $search);
-        } elseif ($zone == 'Tags')          {
-            return redirect()->route('tags.index',          $s)->with('search', $search);
-        } elseif ($zone == 'Users')         {
-            return redirect()->route('users.index',         $s)->with('search', $search);
-        } elseif ($zone == 'Roles')         {
-            return redirect()->route('roles.index',         $s)->with('search', $search);
-        } elseif ($zone == 'Permissions')   {
-            return redirect()->route('permissions.index',   $s)->with('search', $search);
-        } else                              {
-            return redirect()->route('blog.index',          $s)->with('search', $search);
-        }
+        //
     }
 
     /**

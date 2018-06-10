@@ -25,6 +25,7 @@ function status($default = -1) {
 }
 
 function searchQuery($search = '') {
+	dd($search);
 	$searchable1 = ['title', 'slug', 'image', 'body', 'excerpt'];
 	$searchable2 = ['user' => 'name', 'category' => 'name', 'tags' => 'name'];
 	$query = Post::select('*')->with('user')->with('category');
@@ -63,7 +64,7 @@ class PostController extends Controller {
 			$posts = Post::orderBy('id', 'desc')->with('user')->paginate(10);
         }
         	
-        $posts->status_names = ['Dead', 'Witheld', 'In Draft', 'Under Review', 'Published', 'Test'];	
+        $posts->status_names = status();	
 
 		if ($posts) {
 
@@ -97,7 +98,6 @@ class PostController extends Controller {
 	 * @return \Illuminate\Http\Response
 	 */
 	public function store(Request $request) {
-
 		$this->validate($request, [
 			'title' 			=> 'required|min:8|max:191',
 			'slug' 				=> 'required|alpha_dash|min:5|max:191|unique:posts,slug',
@@ -156,7 +156,7 @@ class PostController extends Controller {
 		$post = Post::findOrFail($id);
         $post->author_name = User::select('name')->where('id', $post->author_id)->get()->pluck('name')[0]; 	
         $post->category_name = Category::select('name')->where('id', $post->category_id)->get()->pluck('name')[0]; 	
-        $post->status_name = ['Dead', 'Witheld', 'In Draft', 'Under Review', 'Published', 'Test'][$post->status]; 	
+        $post->status_name = status()[$post->status]; 	
 
 		if ($post) {
             return view('manage.posts.show', ['post' => $post]);
@@ -180,7 +180,7 @@ class PostController extends Controller {
 		$users = User::orderBy('name', 'asc')->pluck('name', 'id');
         $post->author_name = User::select('name')->where('id', $post->author_id)->get()->pluck('name')[0]; 	
         $post->category_name = Category::select('name')->where('id', $post->category_id)->get()->pluck('name')[0]; 	
-        $post->status_name = ['Dead', 'Witheld', 'In Draft', 'Under Review', 'Published', 'Test'][$post->status]; 	
+        $post->status_name = status()[$post->status]; 	
 
 	    if ($post) {
             return view('manage.posts.edit', ['post' => $post,
@@ -272,7 +272,7 @@ class PostController extends Controller {
         $post = Post::findOrFail($id);
         $post->author_name = User::select('name')->where('id', $post->author_id)->get()->pluck('name')[0]; 	
         $post->category_name = Category::select('name')->where('id', $post->category_id)->get()->pluck('name')[0]; 	
-        $post->status_name = ['Dead', 'Witheld', 'In Draft', 'Under Review', 'Published', 'Test'][$post->status]; 	
+        $post->status_name = status()[$post->status]; 	
 
         if ($post) {
             

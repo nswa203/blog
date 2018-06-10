@@ -114,7 +114,7 @@
     	},
         created: function() {
             this.resetSlug();
-        }
+        },
        	watch: {
     		title: _.debounce(function() {
     			if (this.wasEdited == false) this.setSlug(this, this.title);

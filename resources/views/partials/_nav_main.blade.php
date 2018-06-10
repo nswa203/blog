@@ -14,9 +14,12 @@
 
 		{!! Form::open(['route'=>['search.index'], 'method'=>'POST', 'class'=>'mr-3']) !!}
 			<div class="input-group">
-				{{ Form::text('search', null,  ['class'=>'form-control', 'placeholder'=>'Search ' . Session::get('zone') . '...']) }} 
+				{{ Form::text('search', null,  ['class'=>'form-control', 'id'=>'search', 'placeholder'=>'Search ' . Session::get('zone') . '...']) }} 
 				<div class="input-group-append">
 					<button class="btn btn-outline-secondary" type="submit"><span class="fas fa-search"></span></button>
+					@if(isset($search))
+						<button class="btn btn-outline-secondary" type="submit" onClick="clearField('search')"><span class="fas fa-sync-alt"></span></button>
+					@endif
 				</div>
 			</div>
 		{!! Form::close() !!}
@@ -50,3 +53,19 @@
 
 	</div>
 </nav>
+
+@section('scripts')
+	<script>	
+		/* Used by Bootstrap Tooltip to identify elements with tooltips *********** */
+		$(function(){
+			$('[data-toggle="tooltip"]').tooltip();
+		})
+	</script>	
+	
+	<script>
+		/* Used within the Search form to clear the Search input field ************ */
+		function clearField(id){
+			document.getElementById(id).value=null;
+		}
+	</script>	
+@append

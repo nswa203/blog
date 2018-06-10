@@ -9,6 +9,13 @@ use Mail;
 use Session;
 
 class PagesController extends Controller {
+	public function __construct(Request $request)
+	{
+        $this->middleware(function ($request, $next) {
+            session(['zone' => 'Blog']);
+            return $next($request);
+        });
+	}
 
 	public function getIndex() {
 		$posts = Post::orderBy('created_at', 'desc')->where('status', '>=', '4')->paginate(4);

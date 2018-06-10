@@ -91,7 +91,9 @@
 							@foreach($post->comments as $comment)
 								<tr>
 									<th>{{ $comment->id }}</th>
-									<td>{{ $comment->approved?'Y':'N' }}</td>
+									<td>
+										{!! $comment->approved ? "<span class='fas fa-check text-success'></span>" : "<span class='fas fa-times text-danger'></span>" !!}
+									</td>
 									<td>{{ $comment->name }}</td>
 									<td>{{ $comment->email }}</td>
 									<td>{{ substr(strip_tags($comment->comment), 0, 256)}}{{ strlen(strip_tags($comment->comment))>256 ? '...' : '' }}</td>
