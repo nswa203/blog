@@ -11,6 +11,12 @@
 			<div class="col-md-8">
 				<h1><a id="menu-toggle2"><span class="fas fa-file-alt mr-4"></span>{{ $post->title }}</a></h1>
 				<hr>
+				@if($post->banner)
+					<div class="image-crop-height mt-3 mb-5" style="--croph:232px">
+						<img src="{{ asset('images/'.$post->banner) }}" width="100%" />
+					</div>
+				@endif
+
 				<p class="lead">{!! $post->body !!}</p>
 				<hr>
 				<div class="tags">
@@ -29,7 +35,7 @@
 						<dd class="col-sm-7"><a href="{{ route('posts.show', $post->id) }}">{{ $post->id }}</a></dd>
 						<dt class="col-sm-5">Category:</dt>						
 						<dd class="col-sm-7">
-							<a href="{{ route('categories.show', $post->category_id) }}"><span class="badge badge-info">{{ $post->category_name }}</span></a>
+							<a href="{{ route('categories.show', $post->category->id) }}"><span class="badge badge-info">{{ $post->category->name }}</span></a>
 						</dd>
 						<dt class="col-sm-5">Published:</dt>						
 						<dd class="col-sm-7">
@@ -40,7 +46,10 @@
 							@endif	
 						</dd>							
 						<dt class="col-sm-5">Author:</dt>
-						<dd class="col-sm-7">{{ $post->author_name }}</dd>													
+						<dd class="col-sm-7">
+							@if($post->user->id)
+								<a href="{{ route('users.show', $post->user->id) }}">{{ $post->user->name }}</a>
+							@endif	
 						<dt class="col-sm-5">Created At:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($post->created_at)) }}</dd>
 						<dt class="col-sm-5">Last Updated:</dt>
@@ -122,4 +131,3 @@
 
 @section('scripts')
 @endsection
-

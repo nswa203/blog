@@ -19,7 +19,7 @@
 					</div>
 				</div>	
 				<p class="lead">Thank you so much for visiting. This is my test website built with Laravel. Please read my latest post!</p>
-				<a class="btn btn-primary btn-lg mt-4" href="/blog" role="button">Popular Post</a>
+				<a class="btn btn-primary btn-lg mt-4" href="/blog" role="button">Popular Posts</a>
 			</div>
 		</div>
 	</div>	
@@ -30,7 +30,7 @@
 				@foreach($posts as $post)
 					<div class="post">
 						<h3>{{ $post->title}}</h3>
-						<p>{{ substr(strip_tags($post->body),0,256)}}{{ strlen(strip_tags($post->body))>256?'...':'' }}</p>
+						<p>{{ substr(strip_tags($post->body), 0, 256)}}{{ strlen(strip_tags($post->body))>256 ? '...' : '' }}</p>
 						<a href="{{ url($post->slug) }}" class="btn btn-primary">Read More</a>
 					</div>
 					<hr>

@@ -54,7 +54,7 @@
 					</tbody>
 				</table>
 				<div class="d-flex justify-content-center">
-					{!! $roles->render() !!}
+					{{ $roles->appends(Request::only(['search']))->render() }} 
 				</div>
 			</div>
 		</div>

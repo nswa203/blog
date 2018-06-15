@@ -9,7 +9,7 @@
 	@if($posts)
 		<div class="row">
 			<div class="col-md-9">
-				<h1><a id="menu-toggle2" data-toggle="tooltip", data-placement="top", title="Toggle NavBar">
+				<h1><a id="menu-toggle2" data-toggle="tooltip" data-placement="top" title="Toggle NavBar">
 					@if (isset($search)) <span class="fas fa-search mr-4"></span>
 					@else 				 <span class="fas fa-file-alt mr-4"></span>
 					@endif 				 Manage Posts
@@ -45,7 +45,11 @@
 								<td>
 									<a href="{{ route('categories.show', $post->category_id) }}"><span class="badge badge-info">{{ $post->category->name }}</span></a>
 								</td>
-								<td>{{ $post->user->name }}</td>
+								<td>
+									@if($post->user->id)
+										<a href="{{ route('users.show', $post->user->id) }}">{{ $post->user->name }}</a>
+									@endif	
+								</td>
 								<th>
 									@if($post->published_at)
 										<span class="text-success">{{ date('j M Y', strtotime($post->published_at)) }}</span>
@@ -53,18 +57,15 @@
 										<span class="text-danger">{{ $posts->status_names[$post->status] }}</span>
 									@endif	
 								<th>
-									<a href="{{ route('posts.show',$post->id)}}" class="btn btn-sm btn-outline-dark">View</a>
-									<a href="{{ route('posts.edit',$post->id)}}" class="btn btn-sm btn-outline-dark">Edit</a>
+									<a href="{{ route('posts.show', $post->id)}}" class="btn btn-sm btn-outline-dark">View</a>
+									<a href="{{ route('posts.edit', $post->id)}}" class="btn btn-sm btn-outline-dark">Edit</a>
 								</td>
 							</tr>
 						@endforeach
 					</tbody>
 				</table>
 				<div class="d-flex justify-content-center">
-					{{-- {{$posts->appends(Request::only(['sort','sd','keywords']))->links()}} 
-					{!! $posts->render() !!} --}}
-
-					{{$posts->appends(Request::only(['s']))->appends(['search' => session('search')])->render()}} 
+					{{ $posts->appends(Request::only(['search']))->render() }} 
 				</div>
 			</div>
 		</div>

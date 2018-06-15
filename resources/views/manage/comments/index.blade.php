@@ -59,7 +59,7 @@
 					</tbody>
 				</table>
 				<div class="d-flex justify-content-center">
-					{!! $comments->render() !!}
+					{{ $comments->appends(Request::only(['search']))->render() }} 
 				</div>
 			</div>
 		</div>

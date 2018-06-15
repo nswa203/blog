@@ -104,19 +104,25 @@
 						<thead class="thead-dark">
 							<th>#</th>
 							<th>Name</th>
-							<th>Slug</th>
-							<th>Description</th>
-							<th>Created At</th>
-							<th>Updated At</th>
-							<th class="text-right">Page {{$users->currentPage()}} of {{$users->lastPage()}}</th>
+							<th>eMail</th>
+							<th>Username</th>
+							<th width="120px">Created At</th>
+							<th width="120px">Updated At</th>
+							<th width="130px" class="text-right">Page {{$users->currentPage()}} of {{$users->lastPage()}}</th>
 						</thead>
 						<tbody>	
 							@foreach($users as $user)
 								<tr>
 									<th>{{ $user->id }}</th>
-									<td>{{ $user->display_name }}</td>
 									<td>{{ $user->name }}</td>
-									<td>{{ $user->description }}</td>
+									<td>{{ $user->email }}</td>
+									<td>
+										@if($user->profile['id'])
+											<a href="{{ route('profiles.show', $user->profile['id']) }}">{{ $user->profile['username'] }}</a>
+										@else
+											{{ $user->profile['username'] }}
+										@endif
+									</td>
 									<td>{{ date('j M Y', strtotime($user->created_at)) }}</td>
 									<td>{{ date('j M Y', strtotime($user->updated_at)) }}</td>
 									<td class="text-right">

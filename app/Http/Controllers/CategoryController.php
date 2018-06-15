@@ -15,12 +15,14 @@ function searchQuery($search = '') {
         foreach ($searchable1 as $column) {
             $query->orWhere($column, 'LIKE', '%' . $search . '%');
         }
-        foreach ($searchable2 as $table => $column) {
-            $query->orWhereHas($table, function($q) use ($column, $search){
-                $q->where($column, 'LIKE', '%' . $search . '%');
-            }); 
+        foreach ($searchable2 as $table => $columns) {
+            foreach ($columns as $column) {
+                $query->orWhereHas($table, function($q) use ($column, $search){
+                    $q->where($column, 'LIKE', '%' . $search . '%');
+                }); 
+            }
         }
-    }   
+    }  
     return $query;
 }
 
@@ -41,8 +43,8 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->s) {
-            $categories = searchQuery(session('search'))->orderBy('name', 'asc')->paginate(10);
+        if ($request->search) {
+            $categories = searchQuery($request->search)->orderBy('name', 'asc')->paginate(10);
         } else {
             $categories = Category::orderBy('name', 'asc')->paginate(10);
         }   
@@ -52,7 +54,7 @@ class CategoryController extends Controller
         } else {
             Session::flash('failure', 'No Categories were found.');
         }
-        return view('manage.categories.index', ['categories' => $categories, 'search' => $request->s]);
+        return view('manage.categories.index', ['categories' => $categories, 'search' => $request->search]);
     }
 
     /**

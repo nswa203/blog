@@ -11,19 +11,21 @@ use Illuminate\Support\Facades\Validator;
 
 function searchQuery($search = '') {
     $searchable1 = ['name', 'display_name', 'description'];
-    $searchable2 = ['roles' => 'name', 'roles' => 'display_name', 'roles' => 'description'];
+    $searchable2 = ['roles' => ['name', 'display_name', 'description']];
     $query = Permission::select('*')->with('roles')->with('users');
 
     if ($search !== '') {
         foreach ($searchable1 as $column) {
             $query->orWhere($column, 'LIKE', '%' . $search . '%');
         }
-        foreach ($searchable2 as $table => $column) {
-            $query->orWhereHas($table, function($q) use ($column, $search){
-                $q->where($column, 'LIKE', '%' . $search . '%');
-            }); 
+        foreach ($searchable2 as $table => $columns) {
+            foreach ($columns as $column) {
+                $query->orWhereHas($table, function($q) use ($column, $search){
+                    $q->where($column, 'LIKE', '%' . $search . '%');
+                }); 
+            }
         }
-    }   
+    }  
     return $query;
 }
 
@@ -44,8 +46,8 @@ class PermissionController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->s) {
-            $permissions = searchQuery(session('search'))->orderBy('display_name', 'asc')->paginate(10);
+        if ($request->search) {
+            $permissions = searchQuery($request->search)->orderBy('display_name', 'asc')->paginate(10);
         } else {
             $permissions = Permission::orderBy('display_name', 'asc')->paginate(10);
         }
@@ -55,7 +57,7 @@ class PermissionController extends Controller
         } else {
             Session::flash('failure', 'No Permissions were found.');
         }
-        return view('manage.permissions.index', ['permissions' => $permissions, 'search' => $request->s]);
+        return view('manage.permissions.index', ['permissions' => $permissions, 'search' => $request->search]);
     }
 
     /**

@@ -77,16 +77,17 @@ class MovieSeeder extends Seeder
         foreach ($data as $obj) {
         	$i++;
           	Post::create(array(
-           		'id' 			=> $i,
-            	'title' 		=> utf8_decode($obj->title),
-            	'body' 			=> utf8_decode($obj->plot),
-            	'excerpt' 		=> utf8_decode($obj->title),
-            	'slug' 			=> 'movie-'.$i,
-            	'author_id' 	=> '1',
-            	'category_id' 	=> $obj->series==''?'1':'2',
-            	'status' 		=> $obj->moviefiles==''?'2':'4',
-            	'image' 		=> substr(strrchr($obj->frontcover, "\\"), 1),
-            	'published_at' 	=> $obj->moviefiles==''?null:($obj->moviereleaseyear==''?date('Y-m-d H:i:s'):date('Y-m-d H:i:s',strtotime('01/01/'.$obj->moviereleaseyear)))
+           		'id' 			     => $i,
+            	'title' 		   => utf8_decode($obj->title),
+            	'body' 			   => utf8_decode($obj->plot),
+            	'excerpt' 		 => utf8_decode($obj->title),
+            	'slug'         => 'movie-'.$i,
+            	'author_id'    => '1',
+            	'category_id'  => $obj->series==''?'1':'2',
+            	'status' 		   => $obj->moviefiles==''?'2':'4',
+            	'image'        => substr(strrchr($obj->frontcover, "\\"), 1),
+              'banner'       => substr(strrchr($obj->backdrop, "\\"), 1),
+            	'published_at' => $obj->moviefiles==''?null:($obj->moviereleaseyear==''?date('Y-m-d H:i:s'):date('Y-m-d H:i:s',strtotime('01/01/'.$obj->moviereleaseyear)))
           	));
           	genres($i, $obj->genre);
         }

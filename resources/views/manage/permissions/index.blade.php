@@ -53,7 +53,7 @@
 					</tbody>
 				</table>
 				<div class="d-flex justify-content-center">
-					{!! $permissions->render() !!}
+					{{ $permissions->appends(Request::only(['search']))->render() }} 
 				</div>
 			</div>
 		</div>

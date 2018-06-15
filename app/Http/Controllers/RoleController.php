@@ -10,19 +10,21 @@ use Session;
 
 function searchQuery($search = '') {
     $searchable1 = ['name', 'display_name', 'description'];
-    $searchable2 = ['permissions' => 'name', 'permissions' => 'display_name', 'permissions' => 'description'];
+    $searchable2 = ['permissions' => ['name', 'display_name', 'description']];
     $query = Role::select('*')->with('permissions');
 
     if ($search !== '') {
         foreach ($searchable1 as $column) {
             $query->orWhere($column, 'LIKE', '%' . $search . '%');
         }
-        foreach ($searchable2 as $table => $column) {
-            $query->orWhereHas($table, function($q) use ($column, $search){
-                $q->where($column, 'LIKE', '%' . $search . '%');
-            }); 
+        foreach ($searchable2 as $table => $columns) {
+            foreach ($columns as $column) {
+                $query->orWhereHas($table, function($q) use ($column, $search){
+                    $q->where($column, 'LIKE', '%' . $search . '%');
+                }); 
+            }
         }
-    }   
+    }  
     return $query;
 }
 
@@ -43,8 +45,8 @@ class RoleController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->s) {
-            $roles = searchQuery(session('search'))->orderBy('display_name', 'asc')->paginate(10);
+        if ($request->search) {
+            $roles = searchQuery($request->search)->orderBy('display_name', 'asc')->paginate(10);
         } else {
             $roles = Role::orderBy('display_name', 'asc')->paginate(10);
         }
@@ -54,7 +56,7 @@ class RoleController extends Controller
         } else {
             Session::flash('failure', 'No Roles were found.');
         }
-        return view('manage.roles.index', ['roles' => $roles, 'search' => $request->s]);
+        return view('manage.roles.index', ['roles' => $roles, 'search' => $request->search]);
     }
 
     /**

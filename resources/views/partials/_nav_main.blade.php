@@ -18,7 +18,8 @@
 				<div class="input-group-append">
 					<button class="btn btn-outline-secondary" type="submit"><span class="fas fa-search"></span></button>
 					@if(isset($search))
-						<button class="btn btn-outline-secondary" type="submit" onClick="clearField('search')"><span class="fas fa-sync-alt"></span></button>
+						<button class="btn btn-outline-secondary" type="submit" onClick="clearField('search')" data-toggle="tooltip" data-placement="right" title="Clear Search"><span class="fas fa-sync-alt"></span>
+						</button>
 					@endif
 				</div>
 			</div>

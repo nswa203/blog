@@ -25,22 +25,23 @@ function status($default = -1) {
 }
 
 function searchQuery($search = '') {
-	dd($search);
 	$searchable1 = ['title', 'slug', 'image', 'body', 'excerpt'];
-	$searchable2 = ['user' => 'name', 'category' => 'name', 'tags' => 'name'];
+	$searchable2 = ['user' => ['name'], 'category' => ['name'], 'tags' => ['name']];
 	$query = Post::select('*')->with('user')->with('category');
 
-	if ($search !== '') {
-		foreach ($searchable1 as $column) {
-			$query->orWhere($column, 'LIKE', '%' . $search . '%');
-		}
-		foreach ($searchable2 as $table => $column) {
-			$query->orWhereHas($table, function($q) use ($column, $search){
-	    		$q->where($column, 'LIKE', '%' . $search . '%');
-	    	});	
-		}
-	}	
-	return $query;
+    if ($search !== '') {
+        foreach ($searchable1 as $column) {
+            $query->orWhere($column, 'LIKE', '%' . $search . '%');
+        }
+        foreach ($searchable2 as $table => $columns) {
+            foreach ($columns as $column) {
+                $query->orWhereHas($table, function($q) use ($column, $search){
+                    $q->where($column, 'LIKE', '%' . $search . '%');
+                }); 
+            }
+        }
+    }  
+    return $query;
 }
 
 class PostController extends Controller {
@@ -58,8 +59,8 @@ class PostController extends Controller {
 	 * @return \Illuminate\Http\Response
 	 */
 	public function index(Request $request) {
-		if ($request->s) {
-			$posts = searchQuery(session('search'))->orderBy('id', 'desc')->paginate(10);
+		if ($request->search) {
+			$posts = searchQuery($request->search)->orderBy('id', 'desc')->paginate(10);
 		} else {
 			$posts = Post::orderBy('id', 'desc')->with('user')->paginate(10);
         }
@@ -71,7 +72,7 @@ class PostController extends Controller {
 		} else {
 			Session::flash('failure', 'No blog Posts were found.');
 		}
-		return view('manage.posts.index', ['posts' => $posts, 'search' => $request->s]);
+		return view('manage.posts.index', ['posts' => $posts, 'search' => $request->search]);
 	}
 
 	/**
@@ -102,7 +103,8 @@ class PostController extends Controller {
 			'title' 			=> 'required|min:8|max:191',
 			'slug' 				=> 'required|alpha_dash|min:5|max:191|unique:posts,slug',
 			'category_id' 		=> 'required|integer|exists:categories,id',
-			'featured_image' 	=> 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
+			'image'	 			=> 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
+			'banner'	 		=> 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
 			'body' 				=> 'required|min:1',
 			'excerpt' 			=> 'sometimes',
 			'author_id' 		=> 'sometimes|integer|exists:users,id',
@@ -126,22 +128,32 @@ class PostController extends Controller {
 
 		if ($post->status == '4') { $post->published_at = date('Y-m-d H:i:s'); }
 
-		if ($request->hasFile('featured_image')) {
-			$image = $request->file('featured_image');
-			$filename = time() . '.' . $image->getClientOriginalExtension();
-			$location = public_path('images\\' . $filename);
-			Image::make($image)->resize(800, null, function ($constraint) { $constraint->aspectRatio(); })->save($location);
-			$post->image = $filename;
-		}
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $filename = microtime() . '.' . $image->getClientOriginalExtension();
+            $location = public_path('images\\' . $filename);
+            Image::make($image)->resize(800, null, function ($constraint) { $constraint->aspectRatio(); })->save($location);
+            $post->image = $filename;
+            $msgs[] = 'Image "' . $image->getClientOriginalName() . '" was successfully saved as ' . $filename;
+        }
+        if ($request->hasFile('banner')) {
+            $image = $request->file('banner');
+            $filename = microtime() . '.' . $image->getClientOriginalExtension();
+            $location = public_path('images\\' . $filename);
+            Image::make($image)->resize(800, null, function ($constraint) { $constraint->aspectRatio(); })->save($location);
+            $post->banner = $filename;
+            $msgs[] = 'Image "' . $image->getClientOriginalName() . '" was successfully saved as ' . $filename;
+        }
 
 		$myrc = $post->save();
 
+        if (isset($msgs)) { session()->flash('msgs', $msgs); }
 		if ($myrc) {
 			$myrc = $post->tags()->sync($request->tags, false);
 			Session::flash('success', 'Post "' . $post->slug . '" was successfully saved.');
 			return redirect()->route('posts.show', $post->id);
 		} else {
-			Session::flash('failure', 'Post "' . $post->slug . '" was NOT saved.');
+			Session::flash('failure', 'Post "' . $id . '" was NOT saved.');
             return redirect()->route('posts.create', $id)->withInput();
 		}
 	}
@@ -154,8 +166,6 @@ class PostController extends Controller {
 	 */
 	public function show($id) {
 		$post = Post::findOrFail($id);
-        $post->author_name = User::select('name')->where('id', $post->author_id)->get()->pluck('name')[0]; 	
-        $post->category_name = Category::select('name')->where('id', $post->category_id)->get()->pluck('name')[0]; 	
         $post->status_name = status()[$post->status]; 	
 
 		if ($post) {
@@ -178,8 +188,6 @@ class PostController extends Controller {
 		$categories = Category::orderBy('name', 'asc')->pluck('name', 'id');
 		$tags = Tag::orderBy('name', 'asc')->pluck('name', 'id');
 		$users = User::orderBy('name', 'asc')->pluck('name', 'id');
-        $post->author_name = User::select('name')->where('id', $post->author_id)->get()->pluck('name')[0]; 	
-        $post->category_name = Category::select('name')->where('id', $post->category_id)->get()->pluck('name')[0]; 	
         $post->status_name = status()[$post->status]; 	
 
 	    if ($post) {
@@ -205,7 +213,8 @@ class PostController extends Controller {
 			'title' 			=> 'required|min:8|max:191',
 			'slug' 				=> 'required|alpha_dash|min:5|max:191|unique:posts,slug,' . $id,
 			'category_id' 		=> 'required|integer|exists:categories,id',
-			'featured_image' 	=> 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
+			'image'			 	=> 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
+			'banner'	 		=> 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
 			'body' 				=> 'required|min:1',
 			'excerpt' 			=> 'sometimes',
 			'author_id' 		=> 'sometimes|integer|exists:users,id',
@@ -229,35 +238,48 @@ class PostController extends Controller {
 		if 		( $post->published_at && $post->status !== '4') { $post->published_at = null; }
 		elseif 	(!$post->published_at && $post->status  == '4') { $post->published_at = date('Y-m-d H:i:s'); }
 
-		if ($request->hasFile('featured_image')) {
-			$oldFilename = $post->image;
+        if ($request->hasFile('image')) {
+            $oldFiles[]=$post->image;
+            $image = $request->file('image');
+            $filename = microtime() . '.' . $image->getClientOriginalExtension();
+            $location = public_path('images\\' . $filename);
+            Image::make($image)->resize(800, null, function ($constraint) { $constraint->aspectRatio(); })->save($location);
+            $post->image = $filename;
+            $msgs[] = 'Image "' . $image->getClientOriginalName() . '" was successfully saved as ' . $filename;
+        } elseif ($request->delete_image) {
+            $oldFiles[] = $post->image;
+            $msgs[] = 'Image "' . $post->image . '" deleted.';
+            $post->image = null;
+        } else {
+            //$msgs[] = 'Image "' . $post->image . '" was successfully saved.';
+        }
 
-			$image = $request->file('featured_image');
-			$filename = time() . '.' . $image->getClientOriginalExtension();
-			$location = public_path('images\\' . $filename);
-			$myrc = Image::make($image)->resize(800, null, function ($constraint) { $constraint->aspectRatio(); })->save($location);
-			$post->image = $filename;
-			$msgOK = 'Post "' . $post->slug . '" and its image file "' . $image->getClientOriginalName() . '" were successfully saved.';
-		} elseif ($request->delete_image) {
-			$oldFilename = $post->image;
-			$post->image = null;
-			$msgOK = 'Post "' . $post->slug . '" was successfully saved and its image file "' . $oldFilename . '" deleted.';
-		} else {
-			$oldFilename = false;
-			$msgOK = 'Post "' . $post->slug . '" was successfully saved.';
-		}
+        if ($request->hasFile('banner')) {
+            $oldFiles[] = $post->banner;
+            $banner = $request->file('banner');
+            $filename = microtime() . '.' . $banner->getClientOriginalExtension();
+            $location = public_path('images\\' . $filename);
+            Image::make($banner)->resize(800, null, function ($constraint) { $constraint->aspectRatio(); })->save($location);
+            $post->banner = $filename;
+            $msgs[] = 'Image "' . $banner->getClientOriginalName() . '" was successfully saved as ' . $filename;
+        } elseif ($request->delete_banner) {
+            $oldFiles[] = $post->banner;
+            $msgs[] = 'Image "' . $post->banner . '" deleted.';
+            $post->banner = null;
+        } else {
+            //$msgs[] = 'Image "' . $post->banner . '" was successfully saved.';
+        }
 
 		$myrc = $post->save();
 
+        if (isset($msgs)) { session()->flash('msgs', $msgs); }
 		if ($myrc) {
 			$myrc = $post->tags()->sync($request->tags, true);
-			if ($oldFilename) {
-				Storage::delete($oldFilename);
-			}
-			Session::flash('success', $msgOK);
-			return redirect()->route('posts.show', $post->id);
+            if (isset($oldFiles)) { Storage::delete($oldFiles); }
+            Session::flash('success', 'Post "' . $post->slug . '" was successfully saved.');
+            return redirect()->route('posts.show', $id);
 		} else {
-			Session::flash('failure', 'Post "' . $post->slug . '" was NOT saved.');
+			Session::flash('failure', 'Post "' . $id . '" was NOT saved.');
             return redirect()->route('posts.edit', $id)->withInput();
 		}
 	}
@@ -270,8 +292,6 @@ class PostController extends Controller {
      */
     public function delete($id) {
         $post = Post::findOrFail($id);
-        $post->author_name = User::select('name')->where('id', $post->author_id)->get()->pluck('name')[0]; 	
-        $post->category_name = Category::select('name')->where('id', $post->category_id)->get()->pluck('name')[0]; 	
         $post->status_name = status()[$post->status]; 	
 
         if ($post) {
@@ -297,15 +317,19 @@ class PostController extends Controller {
 		if ($myrc) {
 			if ($post->image) {
 				Storage::delete($post->image);
-				$msgOK = ' and its image file ' . $post->image . ' were ';
-			} else {
-				$msgOK = ' was ';
+                $msgs[] = 'Image "' . $post->image . '" was successfully deleted.';
 			}
-			Session::flash('success', 'Blog Post ' . $id . $msgOK . 'successfully deleted.');
-		} else {
-			Session::flash('failure', 'The blog Post was NOT deleted.');
-		}
-		return redirect()->route('posts.index');
+			if ($post->banner) {
+				Storage::delete($post->banner);
+                $msgs[] = 'Image "' . $post->banner . '" was successfully deleted.';
+			}
+			Session::flash('success', 'Blog Post ' . $post->slug . ' was successfully deleted.');
+            if (isset($msgs)) { session()->flash('msgs', $msgs); }
+			return redirect()->route('posts.index');
+        } else {
+            Session::flash('failure', 'Post ' . $id . ' was NOT found.');
+            return Redirect::back();
+        }
 	}
 
 	/**

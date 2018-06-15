@@ -15,12 +15,14 @@ function searchQuery($search = '') {
         foreach ($searchable1 as $column) {
             $query->orWhere($column, 'LIKE', '%' . $search . '%');
         }
-        foreach ($searchable2 as $table => $column) {
-            $query->orWhereHas($table, function($q) use ($column, $search){
-                $q->where($column, 'LIKE', '%' . $search . '%');
-            }); 
+        foreach ($searchable2 as $table => $columns) {
+            foreach ($columns as $column) {
+                $query->orWhereHas($table, function($q) use ($column, $search){
+                    $q->where($column, 'LIKE', '%' . $search . '%');
+                }); 
+            }
         }
-    }   
+    }  
     return $query;
 }
 
@@ -41,8 +43,8 @@ class TagController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->s) {
-            $tags = searchQuery(session('search'))->orderBy('name', 'asc')->paginate(10);
+        if ($request->search) {
+            $tags = searchQuery($request->search)->orderBy('name', 'asc')->paginate(10);
         } else {
            $tags = Tag::orderBy('name', 'asc')->paginate(10);
         }   
@@ -52,7 +54,7 @@ class TagController extends Controller
         } else {
             Session::flash('failure', 'No Tags were found.');
         }
-        return view('manage.tags.index', ['tags' => $tags, 'search' => $request->s]);
+        return view('manage.tags.index', ['tags' => $tags, 'search' => $request->search]);
     }
     
     /**

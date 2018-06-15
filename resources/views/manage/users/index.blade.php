@@ -31,6 +31,7 @@
 						<th>#</th>
 						<th>Name</th>
 						<th>eMail</th>
+						<th>Username</th>
 						<th width="120">Created At</th>
 						<th width="120">Updated At</th>
 						<th width="130" class="text-right">Page {{$users->currentPage()}} of {{$users->lastPage()}}</th>
@@ -41,18 +42,25 @@
 								<th>{{ $user->id }}</th>
 								<td>{{ $user->name }}</td>
 								<td>{{ $user->email }}</td>
+								<td>
+									@if($user->profile['id'])
+										<a href="{{ route('profiles.show', $user->profile['id']) }}">{{ $user->profile['username'] }}</a>
+									@else
+										{{ $user->profile['username'] }}
+									@endif
+								</td>
 								<td>{{ date('j M Y', strtotime($user->created_at)) }}</td>
 								<td>{{ date('j M Y', strtotime($user->updated_at)) }}</td>
 								<td class="text-right">
-									<a href="{{ route('users.show', $user->id)}}" class="btn btn-sm btn-outline-dark">View</a>
-									<a href="{{ route('users.edit', $user->id)}}" class="btn btn-sm btn-outline-dark">Edit</a>
+									<a href="{{ route('users.show', $user->id) }}" class="btn btn-sm btn-outline-dark">View</a>
+									<a href="{{ route('users.edit', $user->id) }}" class="btn btn-sm btn-outline-dark">Edit</a>
 								</td>
 							</tr>
 						@endforeach
 					</tbody>
 				</table>
 				<div class="d-flex justify-content-center">
-					{!! $users->render() !!}
+					{{ $users->appends(Request::only(['search']))->render() }} 
 				</div>
 			</div>
 		</div>

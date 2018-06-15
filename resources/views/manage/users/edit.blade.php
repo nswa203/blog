@@ -34,8 +34,12 @@
 				<dl class="row">
 					<dt class="col-sm-5">URL:</dt>
 					<dd class="col-sm-7"><a href="{{ route('users.show', $user->id) }}">{{ route('users.show', $user->id) }}</a></dd>
-					<dt class="col-sm-5">User ID:</dt>
-					<dd class="col-sm-7"><a href="{{ route('users.show', $user->id) }}">{{ $user->id }}</a></dd>							
+						<dt class="col-sm-5">Profile:</dt>
+						<dd class="col-sm-7">
+							@if($user->profile['id'])
+								<a href="{{ route('profiles.show', $user->profile['id']) }}">{{ $user->profile['username'] }}</a>
+							@endif
+						</dd>								
 					<dt class="col-sm-5">Created At:</dt>
 					<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($user->created_at)) }}</dd>
 					<dt class="col-sm-5">Last Updated:</dt>

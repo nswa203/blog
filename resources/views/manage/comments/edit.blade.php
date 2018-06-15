@@ -76,7 +76,8 @@
 			plugins: "link lists",
 			menubar: false,
 			toolbar: "",
-			auto_focus : 'textarea-body'
+			forced_root_block : 'div',
+			auto_focus : 'textarea-body',
  		});
 	</script>
 @endsection

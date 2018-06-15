@@ -8,20 +8,22 @@ use Session;
 
 function searchQuery($search = '') {
 	$searchable1 = ['title', 'slug', 'image', 'body', 'excerpt'];
-	$searchable2 = ['user' => 'name', 'category' => 'name', 'tags' => 'name'];
+	$searchable2 = ['user' => ['name'], 'category' => ['name'], 'tags' => ['name']];
 	$query = Post::select('*')->with('user')->with('category');
 
-	if ($search !== '') {
-		foreach ($searchable1 as $column) {
-			$query->orWhere($column, 'LIKE', '%' . $search . '%');
-		}
-		foreach ($searchable2 as $table => $column) {
-			$query->orWhereHas($table, function($q) use ($column, $search){
-	    		$q->where($column, 'LIKE', '%' . $search . '%');
-	    	});	
-		}
-	}	
-	return $query;
+    if ($search !== '') {
+        foreach ($searchable1 as $column) {
+            $query->orWhere($column, 'LIKE', '%' . $search . '%');
+        }
+        foreach ($searchable2 as $table => $columns) {
+            foreach ($columns as $column) {
+                $query->orWhereHas($table, function($q) use ($column, $search){
+                    $q->where($column, 'LIKE', '%' . $search . '%');
+                }); 
+            }
+        }
+    }  
+    return $query;
 }
 
 class BlogController extends Controller {
@@ -34,8 +36,8 @@ class BlogController extends Controller {
 	}
 
 	public function getIndex(Request $request) {
-		if ($request->s) {
-			$posts = searchQuery(session('search'))->orderBy('id', 'desc')->where('status', '>=', '4')->paginate(5);
+		if ($request->search) {
+			$posts = searchQuery($request->search)->orderBy('id', 'desc')->where('status', '>=', '4')->paginate(5);
 		} else {
 			$posts = Post::orderBy('id', 'desc')->where('status', '>=', '4')->paginate(5);
         }
@@ -45,7 +47,7 @@ class BlogController extends Controller {
 		} else {
 			Session::flash('failure', 'No blog Posts were found.');
 		}
-		return view('blog.index', ['posts' => $posts, 'search' => $request->s]);
+		return view('blog.index', ['posts' => $posts, 'search' => $request->search]);
 	}
 
 	public function getSingle($slug) {

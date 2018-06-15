@@ -10,9 +10,18 @@
 	@section('content')
 		<div class="row">
 			<div class="col-md-8 offset-md-2">
-				@if($post->image)
-					<img src="{{ asset('images/' . $post->image) }}" height="400" class="mb-4">
-				@endif	
+				@if($post->banner)
+					<div class="image-crop-height mt-3 mb-5" style="--croph:232px">
+						<img src="{{ asset('images/'.$post->banner) }}" width="100%"
+							onerror="this.onerror=null; this.src='{{ asset('favicon.ico') }}';"
+						/>
+					</div>
+				@endif
+					<a href="{{ asset('images/'.$post->image) }}">
+						<img src="{{ asset('images/'.$post->image) }}" width="150px" class="img-frame float-left mr-4" style="margin-top:-10px; margin-bottom:10px;"
+							onerror="this.onerror=null; this.src='{{ asset('favicon.ico') }}';"
+						/>
+					</a>
 				<h1>{{ $post->title }}</h1>
 				<p>{!! $post->body !!}</p>
 				<hr>
@@ -87,7 +96,8 @@
 			selector: 'textarea',
 			plugins: "link lists",
 			menubar: false,
-			toolbar: ""
+			toolbar: "",
+			forced_root_block : 'div',
  		});
 	</script>
 @endsection

@@ -26,6 +26,9 @@ Route::prefix('manage')->middleware('role:superadministrator|administrator')->gr
 	// Users
 	Route::resource('/users', 'UserController');
 	Route::get('users/{id}/delete',	'UserController@delete')->name('users.delete');
+	// Profiles
+	Route::resource('/profiles', 'ProfileController');
+	Route::get('profiles/{id}/delete',	'ProfileController@delete')->name('profiles.delete');	
 	// Roles
 	Route::resource('/roles', 'RoleController');
 	Route::get('roles/{id}/delete',	'RoleController@delete')->name('roles.delete');
