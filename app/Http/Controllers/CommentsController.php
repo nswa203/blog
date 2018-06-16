@@ -3,32 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
+use GuzzleHttp\Client;
 use App\Comment;
 use App\Post;
 use Session;
 use Purifier;
-
-
-function searchQuery($search = '') {
-    $searchable1 = ['name', 'email', 'comment'];
-    $searchable2 = [];
-    $query = Comment::select('*');
-
-    if ($search !== '') {
-        foreach ($searchable1 as $column) {
-            $query->orWhere($column, 'LIKE', '%' . $search . '%');
-        }
-        foreach ($searchable2 as $table => $columns) {
-            foreach ($columns as $column) {
-                $query->orWhereHas($table, function($q) use ($column, $search){
-                    $q->where($column, 'LIKE', '%' . $search . '%');
-                }); 
-            }
-        }
-    }  
-    return $query;
-}
-
 
 class CommentsController extends Controller
 {
@@ -41,6 +21,26 @@ class CommentsController extends Controller
         });
     }
 
+    public function searchQuery($search = '') {
+        $searchable1 = ['name', 'email', 'comment'];
+        $searchable2 = [];
+        $query = Comment::select('*');
+
+        if ($search !== '') {
+            foreach ($searchable1 as $column) {
+                $query->orWhere($column, 'LIKE', '%' . $search . '%');
+            }
+            foreach ($searchable2 as $table => $columns) {
+                foreach ($columns as $column) {
+                    $query->orWhereHas($table, function($q) use ($column, $search){
+                        $q->where($column, 'LIKE', '%' . $search . '%');
+                    }); 
+                }
+            }
+        }  
+        return $query;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -48,7 +48,7 @@ class CommentsController extends Controller
      */
     public function index(Request $request) {
         if ($request->search) {
-            $comments = searchQuery($request->search)->orderBy('post_id', 'desc')->paginate(10);
+            $comments = $this->searchQuery($request->search)->orderBy('post_id', 'desc')->paginate(10);
         } else {
             $comments = Comment::orderBy('post_id', 'desc')->paginate(5);
         }   
@@ -68,13 +68,32 @@ class CommentsController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request, $post_id) {
-       
         $this->validate($request, [
-            'name'      => 'required|min:3|max:191',
-            'email'     => 'required|email|max:191|',
-            'comment'   => 'required|min:8|max:2048',
+            'name'    => 'required|min:3|max:191',
+            'email'   => 'required|email|min:5|max:191|',
+            'comment' => 'required|min:8|max:2048',
         ]);
 
+        // We protect this public Form with a Captcha which protects us from Bots etc.
+        // Google recaptcha account credentials were stored as ENV values. 
+        $token = $request->input('g-recaptcha-response');
+        if ($token) {
+            $client = new Client();
+            $response = $client->post(env('CAPTCHA_SERVER'), [
+                'form_params' => [
+                    'secret' => env('CAPTCHA_SECRET'),
+                    'response' => $token
+                ]
+            ]);
+            $results = json_decode($response->getBody()->getContents());
+            $myrc = $results->success;
+        } else { $myrc=false; }
+        if (!$myrc) {
+            Session::flash('failure', "You're probably not human!");
+            return Redirect::back()->withInput();
+        }
+
+        // OK we are talking to a human.
         $post = Post::find($post_id);
 
         $comment = new Comment;
@@ -87,11 +106,12 @@ class CommentsController extends Controller
         $myrc = $comment->save();
 
         if ($myrc) {
-            Session::flash('success', 'Your Comment was successfully added.');
+            Session::flash('success', 'Your Comment for "' . $post->slug . '" was successfully saved.');
+            return redirect()->route('blog.single', $post->slug);
         } else {
-            Session::flash('failure', 'Your Comment was NOT saved.');
+            Session::flash('failure', 'Your Comment for Post "' . $post_id . '" was NOT saved.');
+            return Redirect::back()->withInput();
         }
-        return redirect()->route('blog.single',[$post->slug]);
     }    
 
     /**
@@ -183,4 +203,5 @@ class CommentsController extends Controller
             return Redirect::back();
         }
     }
+    
 }

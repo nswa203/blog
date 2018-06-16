@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 use App\Post;
 use App\Tag;
 use App\Category;
@@ -24,33 +25,34 @@ function status($default = -1) {
 	return $status;
 }
 
-function searchQuery($search = '') {
-	$searchable1 = ['title', 'slug', 'image', 'body', 'excerpt'];
-	$searchable2 = ['user' => ['name'], 'category' => ['name'], 'tags' => ['name']];
-	$query = Post::select('*')->with('user')->with('category');
+class PostController extends Controller
+ {
 
-    if ($search !== '') {
-        foreach ($searchable1 as $column) {
-            $query->orWhere($column, 'LIKE', '%' . $search . '%');
-        }
-        foreach ($searchable2 as $table => $columns) {
-            foreach ($columns as $column) {
-                $query->orWhereHas($table, function($q) use ($column, $search){
-                    $q->where($column, 'LIKE', '%' . $search . '%');
-                }); 
-            }
-        }
-    }  
-    return $query;
-}
-
-class PostController extends Controller {
-	public function __construct(Request $request)
-	{
+	public function __construct(Request $request) {
         $this->middleware(function ($request, $next) {
             session(['zone' => 'Posts']);
             return $next($request);
         });
+	}
+
+	public function searchQuery($search = '') {
+		$searchable1 = ['title', 'slug', 'image', 'body', 'excerpt'];
+		$searchable2 = ['user' => ['name'], 'category' => ['name'], 'tags' => ['name']];
+		$query = Post::select('*')->with('user')->with('category');
+
+	    if ($search !== '') {
+	        foreach ($searchable1 as $column) {
+	            $query->orWhere($column, 'LIKE', '%' . $search . '%');
+	        }
+	        foreach ($searchable2 as $table => $columns) {
+	            foreach ($columns as $column) {
+	                $query->orWhereHas($table, function($q) use ($column, $search){
+	                    $q->where($column, 'LIKE', '%' . $search . '%');
+	                }); 
+	            }
+	        }
+	    }  
+	    return $query;
 	}
 
 	/**
@@ -60,7 +62,7 @@ class PostController extends Controller {
 	 */
 	public function index(Request $request) {
 		if ($request->search) {
-			$posts = searchQuery($request->search)->orderBy('id', 'desc')->paginate(10);
+			$posts = $this->searchQuery($request->search)->orderBy('id', 'desc')->paginate(10);
 		} else {
 			$posts = Post::orderBy('id', 'desc')->with('user')->paginate(10);
         }

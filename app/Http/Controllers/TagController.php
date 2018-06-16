@@ -3,37 +3,38 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 use App\Tag;
 use Session;
 
-function searchQuery($search = '') {
-    $searchable1 = ['name'];
-    $searchable2 = [];
-    $query = Tag::select('*');
-
-    if ($search !== '') {
-        foreach ($searchable1 as $column) {
-            $query->orWhere($column, 'LIKE', '%' . $search . '%');
-        }
-        foreach ($searchable2 as $table => $columns) {
-            foreach ($columns as $column) {
-                $query->orWhereHas($table, function($q) use ($column, $search){
-                    $q->where($column, 'LIKE', '%' . $search . '%');
-                }); 
-            }
-        }
-    }  
-    return $query;
-}
-
 class TagController extends Controller
 {
-    public function __construct(Request $request)
-    {
+
+    public function __construct(Request $request) {
         $this->middleware(function ($request, $next) {
             session(['zone' => 'Tags']);
             return $next($request);
         });
+    }
+
+    public function searchQuery($search = '') {
+        $searchable1 = ['name'];
+        $searchable2 = [];
+        $query = Tag::select('*');
+
+        if ($search !== '') {
+            foreach ($searchable1 as $column) {
+                $query->orWhere($column, 'LIKE', '%' . $search . '%');
+            }
+            foreach ($searchable2 as $table => $columns) {
+                foreach ($columns as $column) {
+                    $query->orWhereHas($table, function($q) use ($column, $search){
+                        $q->where($column, 'LIKE', '%' . $search . '%');
+                    }); 
+                }
+            }
+        }  
+        return $query;
     }
 
     /**
@@ -41,10 +42,9 @@ class TagController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         if ($request->search) {
-            $tags = searchQuery($request->search)->orderBy('name', 'asc')->paginate(10);
+            $tags = $this->searchQuery($request->search)->orderBy('name', 'asc')->paginate(10);
         } else {
            $tags = Tag::orderBy('name', 'asc')->paginate(10);
         }   
@@ -63,8 +63,7 @@ class TagController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $this->validate($request, [
             'name' => 'required|min:3|max:191|unique:tags,name',
         ]);
@@ -106,8 +105,7 @@ class TagController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
-    {
+    public function edit($id) {
         return redirect()->route('tags.index',['edit'=>$id]);
     }
 
@@ -118,8 +116,7 @@ class TagController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         $tag = Tag::findOrFail($id);
 
         $this->validate($request, [
@@ -160,8 +157,7 @@ class TagController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request, $id)
-    {
+    public function destroy(Request $request, $id) {
         $tag = Tag::findOrFail($id);
 
         if ($tag){
@@ -177,4 +173,5 @@ class TagController extends Controller
             return Redirect::back();            
         }        
     }
+
 }

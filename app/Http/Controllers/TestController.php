@@ -19,8 +19,7 @@ class TestController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
-    {
+    public function index() {
         return view('tests.index',['tests'=>null]);
     }
 
@@ -29,8 +28,7 @@ class TestController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
+    public function create() {
         $categories=Category::orderBy('name','asc')->pluck('name','id');
         $tags=Tag::orderBy('name','asc')->pluck('name','id');
         return view('tests.create',['categories'=>$categories,'tags'=>$tags]);
@@ -53,8 +51,7 @@ class TestController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
-    {
+    public function show($id) {
         return view('tests.show',['test'=>$id]);
     }
 
@@ -91,4 +88,5 @@ class TestController extends Controller
     {
         //
     }
+    
 }

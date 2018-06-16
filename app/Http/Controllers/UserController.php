@@ -4,41 +4,41 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Redirect;
 use App\User;
 use App\Role;
 use Session;
 
-use Illuminate\Support\Facades\Password;
-
-function searchQuery($search = '') {
-    $searchable1 = ['name', 'email'];
-    $searchable2 = ['roles' => ['name', 'display_name', 'description'], 'profile' => ['username', 'about_me', 'phone', 'address']];
-    $query = User::select('*')->with('roles')->with('profile');
-
-    if ($search !== '') {
-        foreach ($searchable1 as $column) {
-            $query->orWhere($column, 'LIKE', '%' . $search . '%');
-        }
-        foreach ($searchable2 as $table => $columns) {
-            foreach ($columns as $column) {
-                $query->orWhereHas($table, function($q) use ($column, $search){
-                    $q->where($column, 'LIKE', '%' . $search . '%');
-                }); 
-            }
-        }
-    }  
-    return $query;
-}
 
 class UserController extends Controller
 {
-    public function __construct(Request $request)
-    {
+
+    public function __construct(Request $request) {
         $this->middleware(function ($request, $next) {
             session(['zone' => 'Users']);
             return $next($request);
         });
+    }
+
+    public function searchQuery($search = '') {
+        $searchable1 = ['name', 'email'];
+        $searchable2 = ['roles' => ['name', 'display_name', 'description'], 'profile' => ['username', 'about_me', 'phone', 'address']];
+        $query = User::select('*')->with('roles')->with('profile');
+
+        if ($search !== '') {
+            foreach ($searchable1 as $column) {
+                $query->orWhere($column, 'LIKE', '%' . $search . '%');
+            }
+            foreach ($searchable2 as $table => $columns) {
+                foreach ($columns as $column) {
+                    $query->orWhereHas($table, function($q) use ($column, $search){
+                        $q->where($column, 'LIKE', '%' . $search . '%');
+                    }); 
+                }
+            }
+        }  
+        return $query;
     }
 
     /**
@@ -46,10 +46,9 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         if ($request->search) {
-            $users = searchQuery($request->search)->orderBy('name', 'asc')->paginate(10);
+            $users = $this->searchQuery($request->search)->orderBy('name', 'asc')->paginate(10);
         } else {
             $users = User::orderBy('name', 'asc')->with('profile')->paginate(10);
         }   
@@ -67,8 +66,7 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
+    public function create() {
         $roles = Role::orderBy('display_name', 'asc')->paginate(999);
         return view('manage.users.create', ['roles' => $roles]);
     }
@@ -79,8 +77,7 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         // We explode the roles into an array so that they may be handled by validate
         // & syncRoles. Warning explode will create an empty element [0] if input is null. 
         $roles = $request->itemsSelected ? explode(',', $request->itemsSelected) : [];
@@ -146,8 +143,7 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
-    {
+    public function show($id) {
         $user = User::findOrFail($id);
         $roles = User::where('id', $id)->first()->roles()->orderBy('display_name', 'asc')->paginate(5);
 
@@ -165,8 +161,7 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
-    {
+    public function edit($id) {
         $user = User::where('id', $id)->with('roles')->first();
         $roles = Role::orderBy('display_name','asc')->paginate(999);
 
@@ -185,8 +180,7 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         // We explode the roles into an array so that they may be handled by validate
         // & syncRoles. Warning explode will create an empty element [0] if input is null. 
         $roles = $request->itemsSelected ? explode(',', $request->itemsSelected) : [];
@@ -269,8 +263,7 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
-    {
+    public function destroy($id) {
         $user = User::findOrFail($id);
 
         $user->roles()->detach();
@@ -284,4 +277,5 @@ class UserController extends Controller
             return Redirect::back();            
         }
     }
+
 }

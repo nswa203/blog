@@ -8,34 +8,34 @@ use App\Role;
 use App\Permission;
 use Session;
 
-function searchQuery($search = '') {
-    $searchable1 = ['name', 'display_name', 'description'];
-    $searchable2 = ['permissions' => ['name', 'display_name', 'description']];
-    $query = Role::select('*')->with('permissions');
-
-    if ($search !== '') {
-        foreach ($searchable1 as $column) {
-            $query->orWhere($column, 'LIKE', '%' . $search . '%');
-        }
-        foreach ($searchable2 as $table => $columns) {
-            foreach ($columns as $column) {
-                $query->orWhereHas($table, function($q) use ($column, $search){
-                    $q->where($column, 'LIKE', '%' . $search . '%');
-                }); 
-            }
-        }
-    }  
-    return $query;
-}
-
 class RoleController extends Controller
 {
-    public function __construct(Request $request)
-    {
+    
+    public function __construct(Request $request) {
         $this->middleware(function ($request, $next) {
             session(['zone' => 'Roles']);
             return $next($request);
         });
+    }
+
+    public function searchQuery($search = '') {
+        $searchable1 = ['name', 'display_name', 'description'];
+        $searchable2 = ['permissions' => ['name', 'display_name', 'description']];
+        $query = Role::select('*')->with('permissions');
+
+        if ($search !== '') {
+            foreach ($searchable1 as $column) {
+                $query->orWhere($column, 'LIKE', '%' . $search . '%');
+            }
+            foreach ($searchable2 as $table => $columns) {
+                foreach ($columns as $column) {
+                    $query->orWhereHas($table, function($q) use ($column, $search){
+                        $q->where($column, 'LIKE', '%' . $search . '%');
+                    }); 
+                }
+            }
+        }  
+        return $query;
     }
 
     /**
@@ -43,10 +43,9 @@ class RoleController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         if ($request->search) {
-            $roles = searchQuery($request->search)->orderBy('display_name', 'asc')->paginate(10);
+            $roles = $this->searchQuery($request->search)->orderBy('display_name', 'asc')->paginate(10);
         } else {
             $roles = Role::orderBy('display_name', 'asc')->paginate(10);
         }
@@ -64,8 +63,7 @@ class RoleController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
+    public function create() {
         $permissions = Permission::orderBy('display_name', 'asc')->paginate(999);
         return view('manage.roles.create', ['permissions' => $permissions]);
     }
@@ -76,8 +74,7 @@ class RoleController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         // We explode the permissions into an array so that they may be handled by validate
         // & syncPermissions. Warning explode will create an empty element [0] if input is null.
         $permissions = $request->itemsSelected ? explode(',', $request->itemsSelected) : [];
@@ -116,8 +113,7 @@ class RoleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
-    {
+    public function show($id) {
         $role = Role::where('id', $id)->with('permissions')->with('users')->first();
         $permissions = $role->permissions()->orderBy('display_name','asc')->paginate(10);
         $users = $role->users()->orderBy('name','asc')->paginate(10);
@@ -136,8 +132,7 @@ class RoleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
-    {
+    public function edit($id) {
         $role = Role::where('id', $id)->with('permissions')->first();
         $permissions = Permission::orderBy('display_name', 'asc')->paginate(999);
 
@@ -156,8 +151,7 @@ class RoleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         // We explode the permissions into an array so that they may be handled by validate
         // & syncPermissions. Warning explode will create an empty element [0] if input is null. 
         $permissions = $request->itemsSelected ? explode(',', $request->itemsSelected) : [];
@@ -194,8 +188,7 @@ class RoleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function delete($id) 
-    {
+    public function delete($id) {
         $role = Role::findOrFail($id);
 
         if ($role) {
@@ -212,8 +205,7 @@ class RoleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
-    {
+    public function destroy($id) {
         $role = Role::findOrFail($id);
 
         if ($role) {
@@ -224,4 +216,5 @@ class RoleController extends Controller
             return Redirect::back();            
         }
     }
+
 }

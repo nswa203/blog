@@ -40,7 +40,7 @@
 		<div class="row">
 		 	<div class="col-md-8 offset-md-2">
 				<h3 class="comments-title">
-					<span class="fas fa-comment-alt mr-2"></span>
+					<span class="far fa-comment-alt mr-2"></span>
 					{{ $post->comments->count()=='0' ? 'No Comments yet!' : ($post->comments->count()=='1' ? '1 Comment' : $post->comments->count() . ' Comments') }}
 				</h3>
 
@@ -63,22 +63,26 @@
 
 		<div class="row">
 			<div class="col-md-8 offset-md-2 mt-5">
-				{{ Form::open(['route' => ['comments.store', $post->id], 'method' => 'POST', 'data-parsley-validate'=>'']) }}
+				{{ Form::open(['route'=>['comments.store', $post->id], 'method'=>'POST', 'data-parsley-validate'=>'']) }}
 					<div class="row">
 						<div class="col-md-6">
 							{{ Form::label('name', 'Your Name:', ['class'=>'font-bold form-spacing-top']) }}
-							{{ Form::text('name', null, ['class' => 'form-control', 'data-parsley-required'=>'', 'data-parsley-maxlength'=>'191', 'data-parsley-minlength'=>'2']) }}
+							{{ Form::text('name', null, ['class' => 'form-control', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'3', 'data-parsley-maxlength'=>'191']) }}
 						</div>
 
 						<div class="col-md-6">
 							{{ Form::label('email', 'Your eMail:', ['class'=>'font-bold form-spacing-top']) }}
-							{{ Form::text('email', null, ['class' => 'form-control', 'data-parsley-required'=>'', 'data-parsley-maxlength'=>'191']) }}
+							{{ Form::text('email', null, ['class' => 'form-control', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'5', 'data-parsley-maxlength'=>'191']) }}
 						</div>
 
 						<div class="col-md-12 mt-2">
 							{{ Form::label('comment', 'Comment:', ['class'=>'font-bold form-spacing-top']) }}
-							{{ Form::textarea('comment', null, ['class' => 'form-control', 'rows' => '5', 'placeholder' => 'Include your comments here...']) }}
-							{{ Form::submit('Add Your Comment', ['class' => 'btn btn-success btn-block form-spacing-top']) }}
+							{{ Form::textarea('comment', null, ['class' => 'form-control', 'rows' => '5', 'placeholder' => 'Include your comments here...', 'rows'=>'3', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'8', 'data-parsley-maxlength'=>'2048']) }}
+	
+							{{ Form::label('', 'Are You Human?', ['class'=>'font-bold form-spacing-top']) }}
+							{{ Form::button('<h4><i class="far fa-comment-alt mr-3"></i>Add Your Comment</h4>',
+								['type'=>'submit', 'class'=>'btn btn-success float-right', 'style'=>'margin-top:54px; height:75px; width:300px;']) }}
+							<div class="g-recaptcha" data-sitekey="{!! env('CAPTCHA_SITEKEY') !!}"></div>
 						</div>
 					</div>
 				{{ Form::close() }}

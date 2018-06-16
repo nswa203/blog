@@ -6,13 +6,13 @@ use Illuminate\Http\Request;
 
 class SearchController extends Controller
 {
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         $zone = session('zone');
         $search = $request->search ? 'search=' . $request->search : null;
 
@@ -28,4 +28,5 @@ class SearchController extends Controller
 
         return redirect()->route($route, $search);
     }
+
 }

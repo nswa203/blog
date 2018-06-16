@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 use App\Profile;
 use App\User;
 use Purifier;
@@ -10,34 +11,34 @@ use Session;
 use Image;
 use Storage;
 
-function searchQuery($search = '') {
-    $searchable1 = ['username', 'about_me', 'phone', 'address'];
-    $searchable2 = ['user' => ['name', 'email']];
-    $query = Profile::select('*')->with('user');
-
-    if ($search !== '') {
-        foreach ($searchable1 as $column) {
-            $query->orWhere($column, 'LIKE', '%' . $search . '%');
-        }
-        foreach ($searchable2 as $table => $columns) {
-            foreach ($columns as $column) {
-                $query->orWhereHas($table, function($q) use ($column, $search){
-                    $q->where($column, 'LIKE', '%' . $search . '%');
-                }); 
-            }
-        }
-    }  
-    return $query;
-}
-
 class ProfileController extends Controller
 {
-   public function __construct(Request $request)
-    {
+
+   public function __construct(Request $request) {
         $this->middleware(function ($request, $next) {
             session(['zone' => 'Profiles']);
             return $next($request);
         });
+    }
+
+    public function searchQuery($search = '') {
+        $searchable1 = ['username', 'about_me', 'phone', 'address'];
+        $searchable2 = ['user' => ['name', 'email']];
+        $query = Profile::select('*')->with('user');
+
+        if ($search !== '') {
+            foreach ($searchable1 as $column) {
+                $query->orWhere($column, 'LIKE', '%' . $search . '%');
+            }
+            foreach ($searchable2 as $table => $columns) {
+                foreach ($columns as $column) {
+                    $query->orWhereHas($table, function($q) use ($column, $search){
+                        $q->where($column, 'LIKE', '%' . $search . '%');
+                    }); 
+                }
+            }
+        }  
+        return $query;
     }
     
     /**
@@ -45,10 +46,9 @@ class ProfileController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         if ($request->search) {
-            $profiles = searchQuery($request->search)->orderBy('username', 'asc')->paginate(10);
+            $profiles = $this->searchQuery($request->search)->orderBy('username', 'asc')->paginate(10);
         } else {
             $profiles = Profile::orderBy('username', 'asc')->with('user')->paginate(10);
         }   
@@ -58,19 +58,20 @@ class ProfileController extends Controller
         } else {
             Session::flash('failure', 'No Profiles were found.');
         }
-        return view('manage.profiles.index', ['profiles' => $profiles, 'search' => $request->search]);    }
+        return view('manage.profiles.index', ['profiles' => $profiles, 'search' => $request->search]);
+    }
 
     /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
+    public function create() {
         $users = User::doesntHave('profile')->orderBy('name', 'asc')->pluck('name', 'id');
         $profile = new Profile;
 
-        return view('manage.profiles.create', ['profile' => $profile, 'users' => $users]);    }
+        return view('manage.profiles.create', ['profile' => $profile, 'users' => $users]);
+    }
 
     /**
      * Store a newly created resource in storage.
@@ -78,8 +79,7 @@ class ProfileController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $this->validate($request, [
             'username'          => 'required|min:3|max:191|unique:profiles,username',
             'image'             => 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
@@ -149,8 +149,7 @@ class ProfileController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
-    {
+    public function edit($id) {
         $profile = Profile::with('user')->findOrFail($id);
         $users = [$profile->user->id => $profile->user->name];
 
@@ -169,8 +168,7 @@ class ProfileController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         $profile = Profile::findOrFail($id);
 
         $this->validate($request, [
@@ -255,8 +253,7 @@ class ProfileController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
-    {
+    public function destroy($id) {
         $profile = Profile::findOrFail($id);
         $myrc = $profile->delete();
 
@@ -277,4 +274,5 @@ class ProfileController extends Controller
             return Redirect::back();
         }
     }
+
 }

@@ -10,7 +10,7 @@
 	@if($comment)
 		<div class="row">
 			<div class="col-md-8">
-				<h1><span class="fas fa-comment-alt mr-4"></span>Edit Comment</h1>
+				<h1><span class="far fa-comment-alt mr-4"></span>Edit Comment</h1>
 				<hr>
 				{!! Form::model($comment, ['route'=>['comments.update',$comment->id], 'method'=>'PUT', 'data-parsley-validate'=>'']) !!}
 

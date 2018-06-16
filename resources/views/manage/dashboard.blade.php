@@ -26,7 +26,7 @@
 					</div>
 				</div>	
 				<p class="lead">Thank you so much for visiting. This is my test website built with Laravel. Please read my latest post!</p>
-				<a class="btn btn-primary btn-lg mt-4" href="/blog" role="button">Popular Post</a>
+				<a class="btn btn-primary btn-lg mt-4" href="/blog" role="button">Popular Posts</a>
 			</div>
 		</div>
 	</div>	

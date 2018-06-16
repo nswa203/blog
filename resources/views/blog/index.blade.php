@@ -37,7 +37,7 @@
 	<div class="row">
 		<div class="col-md-12">
 			<div class="d-flex justify-content-center">
-				{!! $posts->render() !!}
+				{{ $posts->appends(Request::only(['search']))->render() }}
 			</div>
 		</div>
 	</div>

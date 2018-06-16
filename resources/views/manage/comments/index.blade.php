@@ -10,7 +10,7 @@
 		<div class="col-md-12">
 				<h1><a id="menu-toggle2" data-toggle="tooltip", data-placement="top", title="Toggle NavBar">
 				@if (isset($search)) <span class="fas fa-search mr-4"></span>
-				@else 				 <span class="fas fa-comment-alt mr-4"></span>
+				@else 				 <span class="far fa-comment-alt mr-4"></span>
 				@endif 				 Manage Comments
 			</a></h1>			
 			<hr>

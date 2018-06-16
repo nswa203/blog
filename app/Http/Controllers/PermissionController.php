@@ -4,39 +4,39 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Validator;
 use App\Permission;
 use App\Role;
 use Session;
-use Illuminate\Support\Facades\Validator;
-
-function searchQuery($search = '') {
-    $searchable1 = ['name', 'display_name', 'description'];
-    $searchable2 = ['roles' => ['name', 'display_name', 'description']];
-    $query = Permission::select('*')->with('roles')->with('users');
-
-    if ($search !== '') {
-        foreach ($searchable1 as $column) {
-            $query->orWhere($column, 'LIKE', '%' . $search . '%');
-        }
-        foreach ($searchable2 as $table => $columns) {
-            foreach ($columns as $column) {
-                $query->orWhereHas($table, function($q) use ($column, $search){
-                    $q->where($column, 'LIKE', '%' . $search . '%');
-                }); 
-            }
-        }
-    }  
-    return $query;
-}
 
 class PermissionController extends Controller
 {
-    public function __construct(Request $request)
-    {
+
+    public function __construct(Request $request) {
         $this->middleware(function ($request, $next) {
             session(['zone' => 'Permissions']);
             return $next($request);
         });
+    }
+
+    public function searchQuery($search = '') {
+        $searchable1 = ['name', 'display_name', 'description'];
+        $searchable2 = ['roles' => ['name', 'display_name', 'description']];
+        $query = Permission::select('*')->with('roles')->with('users');
+
+        if ($search !== '') {
+            foreach ($searchable1 as $column) {
+                $query->orWhere($column, 'LIKE', '%' . $search . '%');
+            }
+            foreach ($searchable2 as $table => $columns) {
+                foreach ($columns as $column) {
+                    $query->orWhereHas($table, function($q) use ($column, $search){
+                        $q->where($column, 'LIKE', '%' . $search . '%');
+                    }); 
+                }
+            }
+        }  
+        return $query;
     }
 
     /**
@@ -44,10 +44,9 @@ class PermissionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         if ($request->search) {
-            $permissions = searchQuery($request->search)->orderBy('display_name', 'asc')->paginate(10);
+            $permissions = $this->searchQuery($request->search)->orderBy('display_name', 'asc')->paginate(10);
         } else {
             $permissions = Permission::orderBy('display_name', 'asc')->paginate(10);
         }
@@ -65,8 +64,7 @@ class PermissionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
+    public function create() {
         return view('manage.permissions.create');
     }
 
@@ -76,8 +74,7 @@ class PermissionController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $myrc           = false;
         $msgOK          = '';
         $rules_basic    = [
@@ -140,8 +137,7 @@ class PermissionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
-    {
+    public function show($id) {
         $permission = Permission::where('id', $id)->with('roles')->first();
         $roles = $permission->roles()->orderBy('display_name', 'asc')->paginate(10);
 
@@ -159,8 +155,7 @@ class PermissionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
-    {
+    public function edit($id) {
         $permission = Permission::findOrFail($id);
 
         if ($permission) {
@@ -178,8 +173,7 @@ class PermissionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         $rules_basic = [
             'display_name'  => 'required|min:3|max:191',
             'description'   => 'sometimes|max:191',
@@ -223,8 +217,7 @@ class PermissionController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
-    {
+    public function destroy($id) {
         $permission = Permission::findOrFail($id);
 
         if ($permission) {
@@ -235,4 +228,5 @@ class PermissionController extends Controller
             return Redirect::back();            
         }
     }
+
 }
