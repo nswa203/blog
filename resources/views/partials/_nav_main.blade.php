@@ -34,8 +34,9 @@
 					<div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
 						<a class="dropdown-item" href="{{ route('manage.dashboard'	) }}"><span class="fas fa-cog	 		mr-2"></span>Manage</a>
 							<div class="dropdown-divider"></div>
-						<a class="dropdown-item" href="{{ route('tests.show','1'   	) }}"><span class="fas fa-vial			mr-2"></span>Tests Show</a>
+						<a class="dropdown-item" href="{{ route('tests.show', '1'  	) }}"><span class="fas fa-vial			mr-2"></span>Tests Show</a>
 						<a class="dropdown-item" href="{{ route('tests.create'	 	) }}"><span class="fas fa-vial			mr-2"></span>Tests Create</a>
+						<a class="dropdown-item" href="{{ route('tests.edit', '1' 	) }}"><span class="fas fa-vial			mr-2"></span>Tests Edit</a>
 							<div class="dropdown-divider"></div>
 						{!! Form::open(['route'=>['logout'],'method'=>'POST']) !!}
 						{!! Form::button('<span class="fas fa-sign-out-alt mr-2"></span>Log Out', ['type'=>'submit', 'class'=>'dropdown-item'] ) !!}

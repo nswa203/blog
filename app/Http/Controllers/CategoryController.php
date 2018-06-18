@@ -87,12 +87,16 @@ class CategoryController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id) {
+    public function show($id, $zone = '*') {
+        $albums = false;
+        $posts  = false;
+        if ($zone == 'Albums' or $zone == '*' ) { $albums = Category::where('id', $id)->first()->albums()->orderBy('id', 'desc')->paginate(5); }
+        if ($zone == 'Posts'  or $zone == '*' ) { $posts  = Category::where('id', $id)->first()->posts()->orderBy('id', 'desc')->paginate(5);  }
+
         $category = Category::findOrFail($id);
-        $posts = Category::where('id', $id)->first()->posts()->orderBy('id', 'desc')->paginate(5);
 
         if ($category) {
-            return view('manage.categories.show', ['category' => $category, 'posts' => $posts]);
+            return view('manage.categories.show', ['category' => $category, 'albums' => $albums, 'posts' => $posts]);
         } else {
             Session::flash('failure', 'Category "' . $id . '" was NOT found.');
             return Redirect::back();

@@ -21,7 +21,8 @@ var _ = require('lodash');
 Vue.component('folders',	require('./components/Folders.vue'));
 Vue.component('images',		require('./components/Images.vue'));
 Vue.component('slugwidget',	require('./components/slugWidget.vue'));
-Vue.component('slugwidget2',	require('./components/slugWidget2.vue'));
+Vue.component('slugwidget2',require('./components/slugWidget2.vue'));
+Vue.component('slugwidget3',require('./components/slugWidget3.vue'));
 
 //const app = new Vue({
 //    el: '#app'

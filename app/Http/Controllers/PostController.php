@@ -13,18 +13,6 @@ use Purifier;
 use Image; 
 use Storage;
 
-function status($default = -1) {
-	$status = [
-		'4' => 'Published',
-		'3' => 'Under Review',
-		'2' => 'In Draft',
-		'1' => 'Withheld',
-		'0' => 'Dead',
-	];
-	if ($default >= 0) { $status[$default] = '*' . $status[$default]; }
-	return $status;
-}
-
 class PostController extends Controller
  {
 
@@ -55,6 +43,18 @@ class PostController extends Controller
 	    return $query;
 	}
 
+	public function status($default = -1) {
+		$status = [
+			'4' => 'Published',
+			'3' => 'Under Review',
+			'2' => 'In Draft',
+			'1' => 'Withheld',
+			'0' => 'Dead',
+		];
+		if ($default >= 0) { $status[$default] = '*' . $status[$default]; }
+		return $status;
+	}
+
 	/**
 	 * Display a listing of the resource.
 	 *
@@ -67,7 +67,7 @@ class PostController extends Controller
 			$posts = Post::orderBy('id', 'desc')->with('user')->paginate(10);
         }
         	
-        $posts->status_names = status();	
+        $posts->status_names = $this->status();	
 
 		if ($posts) {
 
@@ -91,7 +91,7 @@ class PostController extends Controller
 		$post = new Post;
 
 		return view('manage.posts.create', ['post' => $post,
-			'categories' => $categories, 'tags' => $tags, 'users' => $users, 'status_list' => status(2)]);
+			'categories' => $categories, 'tags' => $tags, 'users' => $users, 'status_list' => $this->status(2)]);
 	}
 
 	/**
@@ -134,7 +134,8 @@ class PostController extends Controller
             $image = $request->file('image');
             $filename = microtime() . '.' . $image->getClientOriginalExtension();
             $location = public_path('images\\' . $filename);
-            Image::make($image)->resize(800, null, function ($constraint) { $constraint->aspectRatio(); })->save($location);
+            //Image::make($image)->resize(800, null, function ($constraint) { $constraint->aspectRatio(); })->save($location);
+            $myrc = Image::make($image)->widen(800, function ($constraint) { $constraint->upsize(); })->save($location);
             $post->image = $filename;
             $msgs[] = 'Image "' . $image->getClientOriginalName() . '" was successfully saved as ' . $filename;
         }
@@ -142,7 +143,8 @@ class PostController extends Controller
             $image = $request->file('banner');
             $filename = microtime() . '.' . $image->getClientOriginalExtension();
             $location = public_path('images\\' . $filename);
-            Image::make($image)->resize(800, null, function ($constraint) { $constraint->aspectRatio(); })->save($location);
+            //Image::make($image)->resize(800, null, function ($constraint) { $constraint->aspectRatio(); })->save($location);
+            $myrc = Image::make($image)->widen(800, function ($constraint) { $constraint->upsize(); })->save($location);
             $post->banner = $filename;
             $msgs[] = 'Image "' . $image->getClientOriginalName() . '" was successfully saved as ' . $filename;
         }
@@ -168,7 +170,7 @@ class PostController extends Controller
 	 */
 	public function show($id) {
 		$post = Post::findOrFail($id);
-        $post->status_name = status()[$post->status]; 	
+        $post->status_name = $this->status()[$post->status]; 	
 
 		if ($post) {
             return view('manage.posts.show', ['post' => $post]);
@@ -190,11 +192,11 @@ class PostController extends Controller
 		$categories = Category::orderBy('name', 'asc')->pluck('name', 'id');
 		$tags = Tag::orderBy('name', 'asc')->pluck('name', 'id');
 		$users = User::orderBy('name', 'asc')->pluck('name', 'id');
-        $post->status_name = status()[$post->status]; 	
+        $post->status_name = $this->status()[$post->status]; 	
 
 	    if ($post) {
             return view('manage.posts.edit', ['post' => $post,
-            		'categories' => $categories, 'tags' => $tags, 'users' => $users, 'status_list' => status()]);
+            		'categories' => $categories, 'tags' => $tags, 'users' => $users, 'status_list' => $this->status()]);
         } else {
             Session::flash('failure', 'Post "' . $id . '" was NOT found.');
             return Redirect::back();
@@ -245,7 +247,8 @@ class PostController extends Controller
             $image = $request->file('image');
             $filename = microtime() . '.' . $image->getClientOriginalExtension();
             $location = public_path('images\\' . $filename);
-            Image::make($image)->resize(800, null, function ($constraint) { $constraint->aspectRatio(); })->save($location);
+            //Image::make($image)->resize(800, null, function ($constraint) { $constraint->aspectRatio(); })->save($location);
+            $myrc = Image::make($image)->widen(800, function ($constraint) { $constraint->upsize(); })->save($location);
             $post->image = $filename;
             $msgs[] = 'Image "' . $image->getClientOriginalName() . '" was successfully saved as ' . $filename;
         } elseif ($request->delete_image) {
@@ -261,7 +264,8 @@ class PostController extends Controller
             $banner = $request->file('banner');
             $filename = microtime() . '.' . $banner->getClientOriginalExtension();
             $location = public_path('images\\' . $filename);
-            Image::make($banner)->resize(800, null, function ($constraint) { $constraint->aspectRatio(); })->save($location);
+            //Image::make($banner)->resize(800, null, function ($constraint) { $constraint->aspectRatio(); })->save($location);
+            $myrc = Image::make($image)->widen(800, function ($constraint) { $constraint->upsize(); })->save($location);
             $post->banner = $filename;
             $msgs[] = 'Image "' . $banner->getClientOriginalName() . '" was successfully saved as ' . $filename;
         } elseif ($request->delete_banner) {
@@ -294,7 +298,7 @@ class PostController extends Controller
      */
     public function delete($id) {
         $post = Post::findOrFail($id);
-        $post->status_name = status()[$post->status]; 	
+        $post->status_name = $this->status()[$post->status]; 	
 
         if ($post) {
             

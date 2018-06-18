@@ -41,6 +41,7 @@
 
 <script>
     var axios = require("axios");
+
     export default {
         props: {
             url: {
@@ -63,6 +64,7 @@
                 customSlug: '',
                 wasEdited: false,
                 api_token: this.$root.api_token,
+                post_id: this.$root.post_id,
                 button: 'Cancel',
             }
         },
@@ -91,7 +93,8 @@
                     axios.get('/api/posts/unique', {
                         params: {
                             api_token: vm.api_token,
-                            slug: slug
+                            slug: slug,
+                            id: e.post_id
                         }
                     }).then(function (response) {
                         if (response.data) {
@@ -108,6 +111,9 @@
                     e.slug = slug;
                 }
             }
+        },
+        created: function() {
+            this.resetSlug();
         },
         watch: {
             title: _.debounce(function() {

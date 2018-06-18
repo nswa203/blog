@@ -1,6 +1,6 @@
 @extends('manage')
 
-@section('title','| Manage Test Edit')
+@section('title','| Manage Create Album')
 
 @section('stylesheets')
 	{!! Html::style('css/parsley.css') 		!!}
@@ -10,22 +10,16 @@
 @section('content')
 	<div class="row">
 		<div class="col-md-8">
-			<h1><a id="menu-toggle2"><span class="fas fa-file-alt mr-4"></span>Test Edit</a></h1>
+			<h1><a id="menu-toggle2"><span class="fas fa-images mr-4"></span>Create A New Album</a></h1>
 			<hr>
-			<div class="image-crop-height mt-3 mb-0" id="myImgOld-2" style="--croph:232px; display:none">
-				<img src="{{ asset('images/'.$post->banner) }}" width="100%" />
-			</div>
-			<div class="image-crop-height mt-3 mb-0" id="myImgNew-2" style="--croph:232px; display:none">
-				<img src="{{ asset('images/'.$post->banner) }}" width="100%" />
-			</div>
 
-			{!! Form::model($post,['route'=>['posts.update', $post->id], 'method'=>'PUT', 'data-parsley-validate'=>'', 'files'=>true]) !!}
+			{!! Form::open(['route'=>'albums.store', 'data-parsley-validate'=>'', 'files'=>true]) !!}
 
 			<div id="app" width="100%">
 				{{ Form::label('title', 'Title:', ['class'=>'font-bold form-spacing-top']) }}
-				{{ Form::text('title', null, ['class'=>'form-control form-control-lg', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'8', 'data-parsley-maxlength'=>'191', 'v-model'=>'title']) }}
+				{{ Form::text('title', null, ['class'=>'form-control form-control-lg', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'5', 'data-parsley-maxlength'=>'191', 'v-model'=>'title', 'autofocus'=>'']) }}
 				
-				<slugwidget2 url="{{ url('/') }}" subdirectory="/" :title="title" @slug-changed="updateSlug"></slugwidget2>
+				<slugwidget3 url="{{ url('/') }}" subdirectory="/" :title="title" @slug-changed="updateSlug"></slugwidget3>
 			</div>
 
 			{{ Form::label('category_id', 'Category:', ['class'=>'font-bold form-spacing-top']) }}
@@ -37,15 +31,15 @@
 				{{-- Select and preview an image file ---------------------------------------------------------------------- --}}
 				{{-- Just change the data- values on the row div                                                             --}}
 				{{ Form::label('', 'Image:', ['class'=>'font-bold form-spacing-top']) }}
-				<div class="row ml-auto myFile-img" data-imgNew="myImgNew-1" data-imgOld="myImgOld-1" data-img="{{ $post->image }}">
+				<div class="row ml-auto myFile-img" data-imgNew="myImgNew-1" data-imgOld="myImgOld-1" data-img="{{ $album->image }}">
 					<div class="col-md-9 custom-file" onChange="myFile(this)">
-						{{ Form::file('image', ['class'=>'form-control custom-file-input', 'accept'=>'image/*', 'multiple'=>'' ]) }} 
+						{{ Form::file('image', ['class'=>'form-control custom-file-input', 'accept'=>'image/*', 'data-parsley-required'=>'' ]) }} 
 						{{ Form::label('image', 'Select a file...', ['class'=>'custom-file-label']) }}
 					</div>
 					<div class="col-md-3 myFile-img-delete" style="display:none">
 						{!! Html::decode(Form::label(
 							'delete_image', '<i class="fas fa-trash-alt mr-2"></i>Delete Image',
-							['class'=>'btn btn-outline-danger btn-block mb-0', 'onclick'=>"myImage(this, 'delete')"]
+							['class'=>'btn btn-outline-dark btn-block mb-0', 'onclick'=>"myImage(this, 'delete')"]
 						)) !!}
 						{{ Form::checkbox('delete_image', '1', false, ['class'=>'myFile-img-delCheck', 'hidden']) }}
 					</div>
@@ -54,69 +48,22 @@
 							'reset_image', '<i class="fas fa-sync-alt mr-2"></i>Reset Image', 
 							['class'=>'btn btn-outline-dark btn-block mb-0', 'onclick'=>"myImage(this, 'reset')"]
 						)) !!}
-						{{ Form::checkbox('reset_image','1', false, ['class'=>'myFile-img-resCheck', 'hidden']) }}
+						{{ Form::checkbox('reset_image', '1', false, ['class'=>'myFile-img-resCheck', 'hidden']) }}
 					</div>
 				</div>	
+	
+			{{ Form::label('author_id', 'Author:', ['class'=>'font-bold form-spacing-top']) }}
+			{{ Form::select('author_id', $users, auth()->user()->id, ['class'=>'form-control custom-select', 'placeholder'=>'Select an Author...', 'data-parsley-required'=>'']) }}
 
-				{{-- Select and preview an image file ---------------------------------------------------------------------- --}}
-				{{-- Just change the data- values on the row div                                                             --}}
-				{{ Form::label('', 'Banner:', ['class'=>'font-bold form-spacing-top']) }}
-				<div class="row ml-auto myFile-img" data-imgNew="myImgNew-2" data-imgOld="myImgOld-2" data-img="{{ $post->banner }}">
-					<div class="col-md-9 custom-file" onChange="myFile(this)">
-						{{ Form::file('banner', ['class'=>'form-control custom-file-input', 'accept'=>'image/*' ]) }} 
-						{{ Form::label('banner', 'Select a file...', ['class'=>'custom-file-label']) }}
-					</div>
-					<div class="col-md-3 myFile-img-delete" style="display:none">
-						{!! Html::decode(Form::label(
-							'delete_banner', '<i class="fas fa-trash-alt mr-2"></i>Delete Image',
-							['class'=>'btn btn-outline-danger btn-block mb-0', 'onclick'=>"myImage(this, 'delete')"]
-						)) !!}
-						{{ Form::checkbox('delete_banner', '1', false, ['class'=>'myFile-img-delCheck', 'hidden']) }}
-					</div>
-					<div class="col-md-3 myFile-img-reset" style="display:none">
-						{!! Html::decode(Form::label(
-							'reset_banner', '<i class="fas fa-sync-alt mr-2"></i>Reset Image', 
-							['class'=>'btn btn-outline-dark btn-block mb-0', 'onclick'=>"myImage(this, 'reset')"]
-						)) !!}
-						{{ Form::checkbox('reset_banner','1', false, ['class'=>'myFile-img-resCheck', 'hidden']) }}
-					</div>
-				</div>				
-			
-			{{ Form::label('author_id','Author:', ['class'=>'font-bold form-spacing-top']) }}
-			{{ Form::select('author_id', $users, null, ['class'=>'form-control custom-select', 'placeholder'=>'Select an Author...', 'data-parsley-required'=>'']) }}
-
-			{{ Form::label('body', 'Body:', ['class'=>'font-bold form-spacing-top']) }}
-			{{ Form::textarea('body', null, ['class'=>'form-control', 'id'=>'textarea-body', 'data-parsley-required'=>'']) }}
-
-			{{ Form::label('excerpt', 'Excerpt:', ['class'=>'font-bold form-spacing-top']) }}
-			{{ Form::textarea('excerpt', null, ['class'=>'form-control', 'rows'=>'3', 'placeholder'=>'Leave empty to auto generate...']) }}
+			{{ Form::label('description', 'Description:', ['class'=>'font-bold form-spacing-top']) }}
+			{{ Form::textarea('description', null, ['class'=>'form-control', 'id'=>'textarea-body', 'data-parsley-required'=>'', 'rows'=>'3']) }}
 		</div>
 
 		<div class="col-md-4">
 			<div class="card card-body bg-light">
 				<dl class="row">
-						<dt class="col-sm-5">URL:</dt>
-						<dd class="col-sm-7"><a href="{{ url($post->slug) }}">{{ url($post->slug) }}</a></dd>
-						<dt class="col-sm-5">Post ID:</dt>
-						<dd class="col-sm-7"><a href="{{ route('posts.show', $post->id) }}">{{ $post->id }}</a></dd>
-						<dt class="col-sm-5">Category:</dt>						
-						<dd class="col-sm-7">
-							<a href="{{ route('categories.show', $post->category_id) }}"><span class="badge badge-info">{{ $post->category->name }}</span></a>
-						</dd>
-						<dt class="col-sm-5">Published:</dt>						
-						<dd class="col-sm-7">
-							@if($post->published_at)
-								{{ date('j M Y, h:i a', strtotime($post->published_at)) }}
-							@else	
-								{{ $post->status_name }}
-							@endif	
-						</dd>							
-						<dt class="col-sm-5">Author:</dt>
-						<dd class="col-sm-7">{{ $post->user->name }}</dd>													
-						<dt class="col-sm-5">Created At:</dt>
-						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($post->created_at)) }}</dd>
-						<dt class="col-sm-5">Last Updated:</dt>
-						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($post->updated_at)) }}</dd>
+					<dt class="col-sm-5">Created At:</dt>
+					<dd class="col-sm-7">{{ date('j M Y, h:i a') }}</dd>
 				</dl>
 
 				<hr class="hr-spacing-top">
@@ -137,12 +84,12 @@
 						{!! Html::decode('<a href='.url()->previous().' class="btn btn-danger btn-block"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
 					</div>
 					<div class="col-sm-6">
-						{{ Form::button('<i class="fas fa-edit mr-2"></i>Save', ['type'=>'submit', 'class'=>'btn btn-success btn-block']) }}
+						{{ Form::button('<i class="fas fa-plus-circle mr-2"></i>Create', ['type'=>'submit', 'class'=>'btn btn-success btn-block']) }}
 					</div>
 				</div>
 				<div class="row mt-3">
 					<div class="col-sm-12">
-						{!! Html::decode(link_to_route('posts.index', '<i class="fas fa-file-alt mr-2"></i>See All Posts', [], ['class'=>'btn btn-outline-dark btn-block'])) !!}
+						{!! Html::decode(link_to_route('albums.index', '<i class="fas fa-images mr-2"></i>See All Albums', [], ['class'=>'btn btn-outline-dark btn-block'])) !!}
 					</div>
 				</div>
 			</div>
@@ -150,7 +97,7 @@
 			<div class="mt-3">
 				<div id="myImgOld-1" style="display:none">
 					{{-- Used in Edit only 												--}}
-					<img src="{{ asset('images/'.$post->image) }}" width="100%" />
+					<img src="{{ asset('images/'.$album->image) }}" width="100%" />
 				</div>
 				<div id="myImgNew-1" style="display:none">
 					{{-- Uploading image will be rendered here --}}
@@ -187,9 +134,9 @@
 
 	<script>
 		myImageAll();
-		
+
 		// ========================================================================== //
-		// Called @ page load to simulate Reset for each image unit 
+		// Called @ page load to simulate Reset for each image unit  
 		function myImageAll() {
 			var elFiles=document.getElementsByClassName('myFile-img-reset');
 			for (i=0; i< elFiles.length; i++) {
@@ -233,6 +180,7 @@
 		// ========================================================================== //
 		// Loads a file and renders the image to the specied tag
 		function renderImage(file, tagID) {
+			//alert('Loading!');
 			var reader=new FileReader();
 			reader.onload=function(event) {
     			the_url=event.target.result
@@ -255,12 +203,6 @@
 			var elLabel =$this.childNodes[3]; 									// file label element
 			var elDelete=elRow.getElementsByClassName('myFile-img-delete')[0];	// Delete Button
 			var elReset =elRow.getElementsByClassName('myFile-img-reset')[0];	// Reset Button
-
-
-			for (i=0; i< elInput.files.length; i++) {
-				alert(elInput.files[i].name);
-			}	
-			
 
 			var fileName=elInput.files[0].name;
 			var allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif|\.jpe)$/i;
@@ -301,12 +243,12 @@
 				title: this.title.value,
 				slug: this.title.slug,
 				api_token: '{{ Auth::user()->api_token }}',
-				post_id: '{{ $post->id }}'
+				post_id: '{{ $album->id }}'
 			},
 			methods: {
 				updateSlug: function(val){
 					this.slug=val
-				},
+				}
 			}
 		});
 	</script>	

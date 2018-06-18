@@ -36,5 +36,9 @@ class User extends Authenticatable
     public function profile() {
         return $this->hasOne('App\Profile');
     }
+
+    public function album() {
+        return $this->hasMany('App\Album', 'author_id');
+    }    
     
 }

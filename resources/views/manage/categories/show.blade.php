@@ -47,41 +47,81 @@
 			</div>
 		</div>
 
-		<div class="row mt-3">
-			<div class="col-md-12">
-				<div class="card card-body bg-light">
-				<h1>
-					Posts
-					<span class="h1-suffix">(This Category has {{ $category->posts->count()==1 ? '1 Post' : $category->posts->count().' Posts' }} assigned.)</span>
-				</h1>
-					<table class="table table-hover">
-						<thead class="thead-dark">
-							<th>#</th>
-							<th>Title</th>
-							<th>Excerpt</th>
-							<th width="120">Updated At</th>
-							<th width="130" class="text-right">Page {{$posts->currentPage()}} of {{$posts->lastPage()}}</th>
-						</thead>
-						<tbody>						
-							@foreach($posts as $post)
-								<tr>
-									<th>{{ $post->id }}</th>
-									<td>{{ $post->title }}</td>
-									<td>{{ substr(strip_tags($post->excerpt),0,156) }}{{ strlen(strip_tags($post->excerpt))>156 ? '...' : '' }}</td>
-									<td>{{ date('j M Y', strtotime($post->updated_at)) }}</td>
-									<td class="text-right">
-										<a href="{{ route('posts.show', $post->id)}}" class="btn btn-sm btn-outline-dark">View Post</a>
-									</td>
-								</tr>
-							@endforeach
-						</tbody>
-					</table>
-					<div class="d-flex justify-content-center">
-						{!! $posts->render() !!} 
+		@if($albums)
+			<div class="row mt-3">
+				<div class="col-md-12">
+					<div class="card card-body bg-light">
+					<h1>
+						Albums
+						<span class="h1-suffix">(This Category has {{ $category->albums->count()==1 ? '1 Album' : $category->albums->count().' Albums' }} assigned.)</span>
+					</h1>
+						<table class="table table-hover">
+							<thead class="thead-dark">
+								<th>#</th>
+								<th>Title</th>
+								<th>Description</th>
+								<th width="120">Updated At</th>
+								<th width="130" class="text-right">Page {{$albums->currentPage()}} of {{$albums->lastPage()}}</th>
+							</thead>
+							<tbody>						
+								@foreach($albums as $album)
+									<tr>
+										<th>{{ $album->id }}</th>
+										<td>{{ $album->title }}</td>
+										<td>{{ substr(strip_tags($album->description),0,156) }}{{ strlen(strip_tags($album->description))>156 ? '...' : '' }}</td>
+										<td>{{ date('j M Y', strtotime($album->updated_at)) }}</td>
+										<td class="text-right">
+											<a href="{{ route('albums.show', $album->id)}}" class="btn btn-sm btn-outline-dark">View Album</a>
+										</td>
+									</tr>
+								@endforeach
+							</tbody>
+						</table>
+						<div class="d-flex justify-content-center">
+							{!! $albums->render() !!} 
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+		@endif
+
+		@if($posts)
+			<div class="row mt-3">
+				<div class="col-md-12">
+					<div class="card card-body bg-light">
+					<h1>
+						Posts
+						<span class="h1-suffix">(This Category has {{ $category->posts->count()==1 ? '1 Post' : $category->posts->count().' Posts' }} assigned.)</span>
+					</h1>
+						<table class="table table-hover">
+							<thead class="thead-dark">
+								<th>#</th>
+								<th>Title</th>
+								<th>Excerpt</th>
+								<th width="120">Updated At</th>
+								<th width="130" class="text-right">Page {{$posts->currentPage()}} of {{$posts->lastPage()}}</th>
+							</thead>
+							<tbody>						
+								@foreach($posts as $post)
+									<tr>
+										<th>{{ $post->id }}</th>
+										<td>{{ $post->title }}</td>
+										<td>{{ substr(strip_tags($post->excerpt),0,156) }}{{ strlen(strip_tags($post->excerpt))>156 ? '...' : '' }}</td>
+										<td>{{ date('j M Y', strtotime($post->updated_at)) }}</td>
+										<td class="text-right">
+											<a href="{{ route('posts.show', $post->id)}}" class="btn btn-sm btn-outline-dark">View Post</a>
+										</td>
+									</tr>
+								@endforeach
+							</tbody>
+						</table>
+						<div class="d-flex justify-content-center">
+							{!! $posts->render() !!} 
+						</div>
+					</div>
+				</div>
+			</div>
+		@endif
 	@endif
 @endsection
 

@@ -9,6 +9,14 @@ class Tag extends Model
 
     public function posts() {
     	return $this->belongsToMany('App\Post');
-    }	
-    
+    }
+
+    public function albums() {
+    	return $this->belongsToMany('App\Album');
+    }
+
+    public function photos() {
+    	return $this->belongsToMany('App\Photo');
+    }    
+
 }

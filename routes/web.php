@@ -19,6 +19,12 @@ Route::prefix('manage')->middleware('role:superadministrator|administrator|edito
 	// Posts
 	Route::resource('/posts', 'PostController');
 	Route::get('/posts/{id}/delete', 'PostController@delete')->name('posts.delete');
+	// Albums
+	Route::resource('/albums', 'AlbumController');
+	Route::get('/albums/{id}/delete', 'AlbumController@delete')->name('albums.delete');
+	// Photos
+	Route::resource('/photos', 'PhotoController');
+	Route::get('/photos/{id}/delete', 'PhotoController@delete')->name('photos.delete');
 	// Search
 	Route::post('search', 'SearchController@index')->name('search.index');	
 });
@@ -38,9 +44,11 @@ Route::prefix('manage')->middleware('role:superadministrator|administrator')->gr
 	// Categories
 	Route::resource('categories', 'CategoryController')->except(['create']);
 	Route::get('categories/{id}/delete', 'CategoryController@delete')->name('categories.delete');
+	Route::get('categories/{category}/{zone?}', 'CategoryController@show')->name('categories.show');
 	// Tags
 	Route::resource('tags', 'TagController')->except(['create']);
 	Route::get('tags/{id}/delete', 'TagController@delete')->name('tags.delete');
+	Route::get('tags/{tag}/{zone?}', 'TagController@show')->name('tags.show');
 });
 
 // Tests
@@ -52,10 +60,6 @@ Route::post('contact',	'PagesController@postContact');
 Route::get('about',		'PagesController@getAbout');
 Route::get('blog',		'BlogController@getIndex')->name('blog.index');
 Route::get('/',			'PagesController@getIndex');
-
-
-
-
 
 // Comments
 Route::post('comments/{post_id}',	'CommentsController@store'	)->name('comments.store');

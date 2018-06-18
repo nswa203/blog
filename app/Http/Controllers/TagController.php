@@ -87,12 +87,15 @@ class TagController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id) {
+    public function show($id, $zone = '*') {
+        $albums = false;
+        $posts  = false;
+        if ($zone == 'Albums' or $zone == '*' ) { $albums = Tag::where('id', $id)->first()->albums()->orderBy('id', 'desc')->paginate(5); }
+        if ($zone == 'Posts'  or $zone == '*' ) { $posts  = Tag::where('id', $id)->first()->posts()->orderBy('id', 'desc')->paginate(5);  }        
         $tag=Tag::findOrFail($id);
-        $posts = Tag::where('id', $id)->first()->posts()->orderBy('id', 'desc')->paginate(5);
 
         if ($tag) {
-            return view('manage.tags.show', ['tag' => $tag, 'posts' => $posts]);
+            return view('manage.tags.show', ['tag' => $tag, 'albums' => $albums, 'posts' => $posts]);
         } else {
             Session::flash('failure', 'Tag "' . $id . '" was NOT found.');
             return Redirect::back();

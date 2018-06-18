@@ -35,14 +35,14 @@
 						<dd class="col-sm-7"><a href="{{ route('posts.show', $post->id) }}">{{ $post->id }}</a></dd>
 						<dt class="col-sm-5">Category:</dt>						
 						<dd class="col-sm-7">
-							<a href="{{ route('categories.show', $post->category->id) }}"><span class="badge badge-info">{{ $post->category->name }}</span></a>
+							<a href="{{ route('categories.show', [$post->category->id, session('zone')]) }}"><span class="badge badge-info">{{ $post->category->name }}</span></a>
 						</dd>
 						<dt class="col-sm-5">Published:</dt>						
 						<dd class="col-sm-7">
 							@if($post->published_at)
 								{{ date('j M Y, h:i a', strtotime($post->published_at)) }}
 							@else	
-								{{ $post->status_name }}
+								<span class="text-danger">{{ $post->status_name }}</span>
 							@endif	
 						</dd>							
 						<dt class="col-sm-5">Author:</dt>

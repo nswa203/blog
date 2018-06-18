@@ -24,6 +24,8 @@ class SearchController extends Controller
         elseif  ($zone == 'Roles')      { $route = 'roles.index'; }
         elseif  ($zone == 'Permissions'){ $route = 'permissions.index'; }
         elseif  ($zone == 'Profiles')   { $route = 'profiles.index'; }
+        elseif  ($zone == 'Albums')     { $route = 'albums.index'; }
+        elseif  ($zone == 'Photos')     { $route = 'photos.index'; }
         else                            { $route = 'blog.index'; }
 
         return redirect()->route($route, $search);

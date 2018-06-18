@@ -43,7 +43,7 @@
 								<td>{{ $post->title }}</td>
 								<td>{{ substr(strip_tags($post->excerpt),0,156) }}{{ strlen(strip_tags($post->excerpt))>156 ? '...' : '' }}</td>
 								<td>
-									<a href="{{ route('categories.show', $post->category_id) }}"><span class="badge badge-info">{{ $post->category->name }}</span></a>
+									<a href="{{ route('categories.show', [$post->category_id, session('zone')]) }}"><span class="badge badge-info">{{ $post->category->name }}</span></a>
 								</td>
 								<td>
 									@if($post->user->id)
