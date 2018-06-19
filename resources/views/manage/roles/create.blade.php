@@ -68,7 +68,7 @@
 						<th>Slug</th>
 						<th>Description</th>
 						<th width="120px">Updated At</th>
-						<th width="130px">Page {{$permissions->currentPage()}} of {{$permissions->lastPage()}}</th>
+						<th width="130px" class="text-right">Page {{$permissions->currentPage()}} of {{$permissions->lastPage()}}</th>
 					</thead>
 					<tbody>	
 						@foreach($permissions as $permission)

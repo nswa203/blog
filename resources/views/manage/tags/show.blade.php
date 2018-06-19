@@ -47,7 +47,7 @@
 			</div>
 		</div>
 
-		@if($albums)
+		@if($tag->albums->count() && $albums)
 			<div class="row mt-3">
 				<div class="col-md-12">
 					<div class="card card-body bg-light">
@@ -57,7 +57,7 @@
 					</h1>
 						<table class="table table-hover">
 							<thead class="thead-dark">
-								<th>#</th>
+								<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 								<th>Title</th>
 								<th>Description</th>
 								<th width="120px">Updated At</th>
@@ -78,14 +78,52 @@
 							</tbody>
 						</table>
 						<div class="d-flex justify-content-center">
-							{!! $albums->render() !!} 
+							{{ $albums->appends(Request::all())->render() }} 
 						</div>
 					</div>
 				</div>
 			</div>
 		@endif
 
-		@if($posts)
+		@if($tag->photos->count() && $photos)
+			<div class="row mt-3">
+				<div class="col-md-12">
+					<div class="card card-body bg-light">
+					<h1>
+						Photos
+						<span class="h1-suffix">(This Tag has {{ $tag->photos->count()==1 ? '1 Photo' : $tag->photos->count().' Photos' }} assigned.)</span>
+					</h1>
+						<table class="table table-hover">
+							<thead class="thead-dark">
+								<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
+								<th>Title</th>
+								<th>Description</th>
+								<th width="120px">Updated At</th>
+								<th width="130px" class="text-right">Page {{$photos->currentPage()}} of {{$photos->lastPage()}}</th>
+							</thead>
+							<tbody>						
+								@foreach($photos as $photo)
+									<tr>
+										<th>{{ $photo->id }}</th>
+										<td>{{ $photo->title }}</td>
+										<td>{{ substr(strip_tags($photo->description),0,156) }}{{ strlen(strip_tags($photo->description))>156 ? '...' : '' }}</td>
+										<td>{{ date('j M Y', strtotime($photo->updated_at)) }}</td>
+										<td class="text-right">
+											<a href="{{ route('photos.show', $photo->id)}}" class="btn btn-sm btn-outline-dark">View Photo</a>
+										</td>
+									</tr>
+								@endforeach
+							</tbody>
+						</table>
+						<div class="d-flex justify-content-center">
+							{{ $photos->appends(Request::all())->render() }} 
+						</div>
+					</div>
+				</div>
+			</div>
+		@endif
+
+		@if($tag->posts->count() && $posts)
 			<div class="row mt-3">
 				<div class="col-md-12">
 					<div class="card card-body bg-light">
@@ -95,7 +133,7 @@
 					</h1>
 						<table class="table table-hover">
 							<thead class="thead-dark">
-								<th>#</th>
+								<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 								<th>Title</th>
 								<th>Excerpt</th>
 								<th width="120px">Updated At</th>
@@ -116,7 +154,7 @@
 							</tbody>
 						</table>
 						<div class="d-flex justify-content-center">
-							{!! $posts->render() !!} 
+							{{ $posts->appends(Request::all())->render() }} 
 						</div>
 					</div>
 				</div>

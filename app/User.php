@@ -29,7 +29,7 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
-    public function post() {
+    public function posts() {
         return $this->hasMany('App\Post', 'author_id');
     }
 
@@ -37,7 +37,7 @@ class User extends Authenticatable
         return $this->hasOne('App\Profile');
     }
 
-    public function album() {
+    public function albums() {
         return $this->hasMany('App\Album', 'author_id');
     }    
     

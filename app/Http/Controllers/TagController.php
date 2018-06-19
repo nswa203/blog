@@ -88,14 +88,17 @@ class TagController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id, $zone = '*') {
-        $albums = false;
-        $posts  = false;
-        if ($zone == 'Albums' or $zone == '*' ) { $albums = Tag::where('id', $id)->first()->albums()->orderBy('id', 'desc')->paginate(5); }
-        if ($zone == 'Posts'  or $zone == '*' ) { $posts  = Tag::where('id', $id)->first()->posts()->orderBy('id', 'desc')->paginate(5);  }        
         $tag=Tag::findOrFail($id);
 
+        $albums = false;
+        $photos = false;
+        $posts  = false;
+        if ($zone == 'Albums' or $zone == '*' ) { $albums = $tag->albums()->orderBy('id', 'desc')->paginate(5);  }
+        if ($zone == 'Photos' or $zone == '*' ) { $photos = $tag->photos()->orderBy('id', 'desc')->paginate(5);  }
+        if ($zone == 'Posts'  or $zone == '*' ) { $posts  = $tag->posts()->orderBy('id', 'desc')->paginate(5);  }
+
         if ($tag) {
-            return view('manage.tags.show', ['tag' => $tag, 'albums' => $albums, 'posts' => $posts]);
+            return view('manage.tags.show', ['tag' => $tag, 'albums' => $albums, 'photos' => $photos, 'posts' => $posts]);
         } else {
             Session::flash('failure', 'Tag "' . $id . '" was NOT found.');
             return Redirect::back();

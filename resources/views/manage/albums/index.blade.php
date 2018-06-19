@@ -30,9 +30,10 @@
 					<thead class="thead-dark">
 						<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 						<th>Title</th>
-						<th>Description</th>
+						<th>Slug</th>
 						<th>Category</th>
 						<th>Author</th>
+						<th>#P</th>						
 						<th width="120px">Published</th>
 						<th width="130px">Page {{$albums->currentPage()}} of {{$albums->lastPage()}}</th>
 					</thead>
@@ -41,7 +42,7 @@
 							<tr>
 								<th>{{ $album->id }}</th>
 								<td>{{ $album->title }}</td>
-								<td>{{ substr(strip_tags($album->description),0,156) }}{{ strlen(strip_tags($album->description))>156 ? '...' : '' }}</td>
+								<td><a href="{{ url($album->slug) }}">{{ $album->slug }}</a></td>
 								<td>
 									<a href="{{ route('categories.show', [$album->category_id, session('zone')]) }}"><span class="badge badge-info">{{ $album->category->name }}</span></a>
 								</td>
@@ -50,13 +51,15 @@
 										<a href="{{ route('users.show', $album->user->id) }}">{{ $album->user->name }}</a>
 									@endif	
 								</td>
+								<td>{{ $album->photos->count() }}</td>
 								<th>
 									@if($album->published_at)
 										<span class="text-success">{{ date('j M Y', strtotime($album->published_at)) }}</span>
 									@else	
 										<span class="text-danger">{{ $albums->status_names[$album->status] }}</span>
 									@endif	
-								<th>
+								</th>
+								<td>
 									<a href="{{ route('albums.show', $album->id)}}" class="btn btn-sm btn-outline-dark">View</a>
 									<a href="{{ route('albums.edit', $album->id)}}" class="btn btn-sm btn-outline-dark">Edit</a>
 								</td>

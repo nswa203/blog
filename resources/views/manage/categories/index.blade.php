@@ -72,7 +72,7 @@
 					</tbody>
 				</table>
 				<div class="d-flex justify-content-center">
-					{{ $categories->appends(Illuminate\Support\Facades\Input::except('page'))->render() }}
+					{{ $categories->appends(Request::only(['search']))->render() }} 
 				</div>
 			</div>
 		</div>

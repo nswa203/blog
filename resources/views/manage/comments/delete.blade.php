@@ -36,7 +36,7 @@
 					<div class="row">
 						<div class="col-sm-12">
 							{{ Form::submit('YES DELETE NOW', ['class'=>'btn btn-danger btn-block font-weight-bold']) }}
-							<a href="{{ url()->previous() }}" class="form-control btn btn-outline-dark btn-block">Cancel</a>
+							<a href="{{ url()->previous() }}" class="form-control btn btn-outline-dark btn-block mt-3">Cancel</a>
 						</div>
 					</div>
 				</div>

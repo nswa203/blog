@@ -6,10 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Pagination\Paginator;
 use App\User;
 use App\Role;
 use Session;
-
 
 class UserController extends Controller
 {
@@ -39,6 +39,18 @@ class UserController extends Controller
             }
         }  
         return $query;
+    }
+
+    public function status($default = -1) {
+        $status = [
+            '4' => 'Published',
+            '3' => 'Under Review',
+            '2' => 'In Draft',
+            '1' => 'Withheld',
+            '0' => 'Dead',
+        ];
+        if ($default >= 0) { $status[$default] = '*' . $status[$default]; }
+        return $status;
     }
 
     /**
@@ -144,11 +156,14 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id) {
-        $user = User::findOrFail($id);
-        $roles = User::where('id', $id)->first()->roles()->orderBy('display_name', 'asc')->paginate(5);
+        $user   = User::findOrFail($id);
+
+        $albums = $user->albums()->orderBy('slug',         'asc')->paginate(5, ['*'], 'pageA');
+        $posts  = $user->posts( )->orderBy('slug',         'asc')->paginate(5, ['*'], 'pageP');
+        $roles  = $user->roles( )->orderBy('display_name', 'asc')->paginate(5, ['*'], 'pageR');
 
         if ($user) {
-            return view('manage.users.show', ['user' => $user, 'roles' => $roles]);
+            return view('manage.users.show', ['user' => $user, 'albums' => $albums, 'posts' => $posts, 'roles' => $roles, 'status_list' => $this->status()]);
         } else {
             Session::flash('failure', 'User "' . $id . '" was NOT found.');
             return Redirect::back();

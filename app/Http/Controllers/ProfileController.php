@@ -84,7 +84,7 @@ class ProfileController extends Controller
             'username'          => 'required|min:3|max:191|unique:profiles,username',
             'image'             => 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
             'banner'            => 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
-            'about_me'          => 'sometimes|max:1024',
+            'about_me'          => 'sometimes|max:2048',
             'phone'             => 'sometimes|max:191',
             'address'           => 'sometimes|max:191',
             'user_id'           => 'sometimes|integer|exists:users,id|unique:profiles,user_id',
@@ -175,7 +175,7 @@ class ProfileController extends Controller
             'username'          => 'required|min:3|max:191|unique:profiles,username,' . $id,
             'image'             => 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
             'banner'            => 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
-            'about_me'          => 'sometimes|max:1024',
+            'about_me'          => 'sometimes|max:2048',
             'phone'             => 'sometimes|max:191',
             'address'           => 'sometimes|max:191',
         ]);

@@ -13,7 +13,6 @@ use Purifier;
 use Image; 
 use Storage;
 
-
 class AlbumController extends Controller
 {
 
@@ -155,10 +154,12 @@ class AlbumController extends Controller
      */
     public function show($id) {
         $album = Album::findOrFail($id);
+
+        $photos = $album->photos()->orderBy('title', 'asc')->paginate(5);
         $album->status_name = $this->status()[$album->status];    
 
         if ($album) {
-            return view('manage.albums.show', ['album' => $album]);
+            return view('manage.albums.show', ['album' => $album, 'photos' => $photos]);
         } else {
             Session::flash('failure', 'Album "' . $id . '" was NOT found.');
             return Redirect::back();

@@ -28,7 +28,7 @@
 			<div class="col-md-12">
 				<table class="table table-hover">
 					<thead class="thead-dark">
-						<th>#</th>
+						<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 						<th>Name</th>
 						<th>eMail</th>
 						<th>Username</th>

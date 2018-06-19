@@ -47,7 +47,7 @@
 			</div>
 		</div>
 
-		@if($albums)
+		@if($category->albums->count() && $albums)
 			<div class="row mt-3">
 				<div class="col-md-12">
 					<div class="card card-body bg-light">
@@ -57,7 +57,7 @@
 					</h1>
 						<table class="table table-hover">
 							<thead class="thead-dark">
-								<th>#</th>
+								<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 								<th>Title</th>
 								<th>Description</th>
 								<th width="120">Updated At</th>
@@ -78,14 +78,14 @@
 							</tbody>
 						</table>
 						<div class="d-flex justify-content-center">
-							{!! $albums->render() !!} 
+							{{ $albums->appends(Request::all())->render() }} 
 						</div>
 					</div>
 				</div>
 			</div>
 		@endif
 
-		@if($posts)
+		@if($category->posts->count() && $posts)
 			<div class="row mt-3">
 				<div class="col-md-12">
 					<div class="card card-body bg-light">
@@ -116,7 +116,7 @@
 							</tbody>
 						</table>
 						<div class="d-flex justify-content-center">
-							{!! $posts->render() !!} 
+							{{ $posts->appends(Request::all())->render() }} 
 						</div>
 					</div>
 				</div>

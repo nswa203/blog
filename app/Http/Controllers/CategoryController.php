@@ -88,12 +88,12 @@ class CategoryController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id, $zone = '*') {
+        $category = Category::findOrFail($id);
+
         $albums = false;
         $posts  = false;
-        if ($zone == 'Albums' or $zone == '*' ) { $albums = Category::where('id', $id)->first()->albums()->orderBy('id', 'desc')->paginate(5); }
-        if ($zone == 'Posts'  or $zone == '*' ) { $posts  = Category::where('id', $id)->first()->posts()->orderBy('id', 'desc')->paginate(5);  }
-
-        $category = Category::findOrFail($id);
+        if ($zone == 'Albums' or $zone == '*' ) { $albums = $category->albums()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageA'); }
+        if ($zone == 'Posts'  or $zone == '*' ) { $posts  = $category->posts() ->orderBy('id', 'desc')->paginate(5, ['*'], 'pageP');  }
 
         if ($category) {
             return view('manage.categories.show', ['category' => $category, 'albums' => $albums, 'posts' => $posts]);

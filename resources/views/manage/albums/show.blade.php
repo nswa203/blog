@@ -11,7 +11,11 @@
 			<div class="col-md-8">
 				<h1><a id="menu-toggle2"><span class="fas fa-images mr-4"></span>Album {{ $album->title }}</a></h1>
 				<hr>
-
+				<a href="{{ asset('images/'.$album->image) }}">
+					<img src="{{ asset('images/'.$album->image) }}" width="150px" class="img-frame float-left mr-4" style="margin-top:0px; margin-bottom:10px;"
+						onerror="this.onerror=null; this.src='{{ asset('favicon.ico') }}';"
+					/>
+				</a>
 				<p class="lead">{!! $album->description !!}</p>
 				<hr>
 				<div class="tags">
@@ -26,7 +30,7 @@
 					<dl class="row">
 						<dt class="col-sm-5">URL:</dt>
 						<dd class="col-sm-7"><a href="{{ url($album->slug) }}">{{ url($album->slug) }}</a></dd>
-						<dt class="col-sm-5">Post ID:</dt>
+						<dt class="col-sm-5">Album ID:</dt>
 						<dd class="col-sm-7"><a href="{{ route('albums.show', $album->id) }}">{{ $album->id }}</a></dd>
 						<dt class="col-sm-5">Category:</dt>						
 						<dd class="col-sm-7">
@@ -44,7 +48,8 @@
 						<dd class="col-sm-7">
 							@if($album->user->id)
 								<a href="{{ route('users.show', $album->user->id) }}">{{ $album->user->name }}</a>
-							@endif	
+							@endif
+						</dd>		
 						<dt class="col-sm-5">Created At:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($album->created_at)) }}</dd>
 						<dt class="col-sm-5">Last Updated:</dt>
@@ -69,59 +74,71 @@
 					</div>
 				</div>
 				@if($album->image)
-					<img src="{{ asset('images/'.$album->image) }}" width="100%" class="mt-3"/>
+					{{-- <img src="{{ asset('images/'.$album->image) }}" width="100%" class="mt-3"/> --}}
 				@endif	
 			</div>
 		</div>	
 		
-		<div class="row mt-3">
-			<div class="col-md-12">
-				<div class="card card-body bg-light">
-				<h1>
-					Photos
-					<span class="h1-suffix">(This Album has {{ $album->photo->count()==1 ? '1 Photo' : $album->photo->count().' Photos' }} assigned.)</span>
-				</h1>
-					<table class="table table-hover">
-						<thead class="thead-dark">
-							<th>#</th>
-							<th>OK</th>
-							<th>Name</th>
-							<th>eMail</th>
-							<th>Comment</th>
-							<th width="120px">Created At</th>
-							<th width="96px"></th>
-						</thead>
-						<tbody>						
-							@foreach($album->photo as $photo)
-								<tr>
-									<th>{{ $photo->id }}</th>
-									<td>
-										{!! $photo->approved ? "<span class='fas fa-check text-success'></span>" : "<span class='fas fa-times text-danger'></span>" !!}
-									</td>
-									<td>{{ $photo->name }}</td>
-									<td>{{ $photo->email }}</td>
-									<td>{{ substr(strip_tags($photo->photo), 0, 256)}}{{ strlen(strip_tags($photo->photo))>256 ? '...' : '' }}</td>
-									<td>{{ date('j M Y', strtotime($photo->created_at)) }}</td>
-
-									<td>
-										<a href="{{ route('photo.edit', $photo->id) }}" class="btn btn-sm btn-primary">
-											<span class="far fa-edit"></span>
-										</a>
-										<a href="{{ route('photo.delete', $photo->id) }}" class="btn btn-sm btn-danger">
-											<span class="far fa-trash-alt"></span>
-										</a>	
-									</td>
-								</tr>
-							@endforeach
-						</tbody>
-					</table>
-					<div class="d-flex justify-content-center">
-						
+		@if($album->photos->count() && $photos)
+			<div class="row mt-3">
+				<div class="col-md-12">
+					<div class="card card-body bg-light">
+						<h1>
+							Photos
+							<span class="h1-suffix">(This Album has {{ $album->photos->count()==1 ? '1 Photo' : $album->photos->count().' Photos' }} assigned.)</span>
+						</h1>
+						<table class="table table-hover">
+							<thead class="thead-dark">
+								<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
+								<th>Title</th>
+								<th>Description</th>
+								<th>Albums</th>
+								<th>Tags</th>
+								<th width="120px">Published At</th>
+								<th width="96px"></th>
+							</thead>
+							<tbody>						
+								@foreach($album->photos as $photo)
+									<tr>
+										<th>{{ $photo->id }}</th>
+										<td>{{ $photo->title }}</td>
+										<td>{{ substr(strip_tags($photo->description),0,156) }}{{ strlen(strip_tags($photo->description))>156 ? '...' : '' }}</td>
+										<td>
+											@foreach ($photo->albums as $album)
+												<a href="{{ route('albums.show', $album->id) }}"><span class="badge badge-info">{{ $album->slug }}</span></a>
+											@endforeach	
+										</td>
+										<td>
+											@foreach ($photo->tags as $tag)
+												<a href="{{ route('tags.show', [$tag->id, 'Photos']) }}"><span class="badge badge-info">{{ $tag->name }}</span></a>
+											@endforeach
+										</td>
+										<th>
+											@if($album->published_at)
+												<span class="text-success">{{ date('j M Y', strtotime($photo->published_at)) }}</span>
+											@else	
+												<span class="text-danger">{{ $albums->status_names[$photo->status] }}</span>
+											@endif	
+										</th>		
+										<td>
+											<a href="{{ route('photos.edit', $photo->id) }}" class="btn btn-sm btn-primary">
+												<span class="far fa-edit"></span>
+											</a>
+											<a href="{{ route('photos.delete', $photo->id) }}" class="btn btn-sm btn-danger">
+												<span class="far fa-trash-alt"></span>
+											</a>	
+										</td>
+									</tr>
+								@endforeach
+							</tbody>
+						</table>
+						<div class="d-flex justify-content-center">
+							{{ $photos->appends(Request::all())->render() }} 
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
-		
+		@endif
 	@endif
 @endsection
 

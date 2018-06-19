@@ -23,7 +23,7 @@
 			</div>
 
 			{{ Form::label('category_id', 'Category:', ['class'=>'font-bold form-spacing-top']) }}
-			{{ Form::select('category_id', $categories,null, ['class'=>'form-control custom-select', 'placeholder'=>'Select a Category...', 'data-parsley-required'=>'']) }}
+			{{ Form::select('category_id', $categories, null, ['class'=>'form-control custom-select', 'placeholder'=>'Select a Category...', 'data-parsley-required'=>'']) }}
 
 			{{ Form::label('tags', 'Tags:', ['class'=>'font-bold form-spacing-top']) }}
 			{{ Form::select('tags[]', $tags, null, ['class'=>'form-control select2-multi', 'multiple'=>'']) }}
@@ -56,7 +56,7 @@
 			{{ Form::select('author_id', $users, auth()->user()->id, ['class'=>'form-control custom-select', 'placeholder'=>'Select an Author...', 'data-parsley-required'=>'']) }}
 
 			{{ Form::label('description', 'Description:', ['class'=>'font-bold form-spacing-top']) }}
-			{{ Form::textarea('description', null, ['class'=>'form-control', 'id'=>'textarea-body', 'data-parsley-required'=>'', 'rows'=>'3']) }}
+			{{ Form::textarea('description', null, ['class'=>'form-control', 'id'=>'textarea-description', 'data-parsley-required'=>'', 'rows'=>'3']) }}
 		</div>
 
 		<div class="col-md-4">
@@ -124,7 +124,7 @@
 
 	<script>
 		tinymce.init ({
-			selector: '#textarea-body',
+			selector: '#textarea-description',
 			plugins: "link lists",
 			menubar: false,
 			toolbar: "",

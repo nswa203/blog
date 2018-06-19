@@ -114,9 +114,11 @@ class RoleController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id) {
-        $role = Role::where('id', $id)->with('permissions')->with('users')->first();
-        $permissions = $role->permissions()->orderBy('display_name','asc')->paginate(10);
-        $users = $role->users()->orderBy('name','asc')->paginate(10);
+        //$role = Role::where('id', $id)->with('permissions')->with('users')->first();
+        $role = Role::findOrFail($id);
+
+        $permissions = $role->permissions()->orderBy('display_name','asc')->paginate(5, ['*'], 'pageP');;
+        $users = $role->users()->orderBy('name','asc')->paginate(5, ['*'], 'pageU');
 
         if ($role) {
             return view('manage.roles.show', ['role' => $role, 'permissions' => $permissions, 'users' => $users]);

@@ -170,10 +170,12 @@ class PostController extends Controller
 	 */
 	public function show($id) {
 		$post = Post::findOrFail($id);
+
+        $comments = $post->comments()->orderBy('id', 'desc')->paginate(10);
         $post->status_name = $this->status()[$post->status]; 	
 
 		if ($post) {
-            return view('manage.posts.show', ['post' => $post]);
+            return view('manage.posts.show', ['post' => $post, 'comments' => $comments]);
 		} else {
 			Session::flash('failure', 'Post "' . $id . '" was NOT found.');
             return Redirect::back();

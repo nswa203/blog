@@ -27,7 +27,7 @@
 					<dl class="row">
 						<dt class="col-sm-5">URL:</dt>
 						<dd class="col-sm-7"><a href="{{ url($album->slug) }}">{{ url($album->slug) }}</a></dd>
-						<dt class="col-sm-5">Album ID:</dt>
+						<dt class="col-sm-5">Post ID:</dt>
 						<dd class="col-sm-7"><a href="{{ route('albums.show', $album->id) }}">{{ $album->id }}</a></dd>
 						<dt class="col-sm-5">Category:</dt>						
 						<dd class="col-sm-7">
@@ -42,11 +42,7 @@
 							@endif	
 						</dd>							
 						<dt class="col-sm-5">Author:</dt>
-						<dd class="col-sm-7">
-							@if($album->user->id)
-								<a href="{{ route('users.show', $album->user->id) }}">{{ $album->user->name }}</a>
-							@endif
-						</dd>												
+						<dd class="col-sm-7">{{ $album->author_name }}</dd>													
 						<dt class="col-sm-5">Created At:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($album->created_at)) }}</dd>
 						<dt class="col-sm-5">Last Updated:</dt>
@@ -57,7 +53,7 @@
 						<div class="col-sm-12">
 							{!! Form::open(['route'=>['albums.destroy', $album->id], 'method'=>'DELETE']) !!}
 								{{ 	Form::button('<i class="fas fa-trash-alt mr-2"></i>YES DELETE NOW', ['type'=>'submit', 'class'=>'btn btn-danger btn-block']) }}
-								{!! Html::decode('<a href='.url()->previous().' class="btn btn-outline-danger btn-block mt-3"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
+								{!! Html::decode('<a href='.url()->previous().' class="btn btn-outline-danger btn-block"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
 							{!! Form::close() !!}
 						</div>
 					</div>

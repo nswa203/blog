@@ -56,7 +56,8 @@
 									@else	
 										<span class="text-danger">{{ $posts->status_names[$post->status] }}</span>
 									@endif	
-								<th>
+								</th>
+								<td>
 									<a href="{{ route('posts.show', $post->id)}}" class="btn btn-sm btn-outline-dark">View</a>
 									<a href="{{ route('posts.edit', $post->id)}}" class="btn btn-sm btn-outline-dark">Edit</a>
 								</td>

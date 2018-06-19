@@ -62,28 +62,32 @@
 		<div class="col-md-4">
 			<div class="card card-body bg-light">
 				<dl class="row">
-						<dt class="col-sm-5">URL:</dt>
-						<dd class="col-sm-7"><a href="{{ url($album->slug) }}">{{ url($album->slug) }}</a></dd>
-						<dt class="col-sm-5">Album ID:</dt>
-						<dd class="col-sm-7"><a href="{{ route('albums.show', $album->id) }}">{{ $album->id }}</a></dd>
-						<dt class="col-sm-5">Category:</dt>						
-						<dd class="col-sm-7">
-							<a href="{{ route('categories.show', [$album->category_id, session('zone')]) }}"><span class="badge badge-info">{{ $album->category->name }}</span></a>
-						</dd>
-						<dt class="col-sm-5">Published:</dt>						
-						<dd class="col-sm-7">
-							@if($album->published_at)
-								{{ date('j M Y, h:i a', strtotime($album->published_at)) }}
-							@else	
-								<span class="text-danger">{{ $album->status_name }}</span>
-							@endif	
-						</dd>							
-						<dt class="col-sm-5">Author:</dt>
-						<dd class="col-sm-7">{{ $album->user->name }}</dd>													
-						<dt class="col-sm-5">Created At:</dt>
-						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($album->created_at)) }}</dd>
-						<dt class="col-sm-5">Last Updated:</dt>
-						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($album->updated_at)) }}</dd>
+					<dt class="col-sm-5">URL:</dt>
+					<dd class="col-sm-7"><a href="{{ url($album->slug) }}">{{ url($album->slug) }}</a></dd>
+					<dt class="col-sm-5">Album ID:</dt>
+					<dd class="col-sm-7"><a href="{{ route('albums.show', $album->id) }}">{{ $album->id }}</a></dd>
+					<dt class="col-sm-5">Category:</dt>						
+					<dd class="col-sm-7">
+						<a href="{{ route('categories.show', [$album->category_id, session('zone')]) }}"><span class="badge badge-info">{{ $album->category->name }}</span></a>
+					</dd>
+					<dt class="col-sm-5">Published:</dt>						
+					<dd class="col-sm-7">
+						@if($album->published_at)
+							{{ date('j M Y, h:i a', strtotime($album->published_at)) }}
+						@else	
+							<span class="text-danger">{{ $album->status_name }}</span>
+						@endif	
+					</dd>							
+					<dt class="col-sm-5">Author:</dt>
+					<dd class="col-sm-7">
+						@if($album->user->id)
+							<a href="{{ route('users.show', $album->user->id) }}">{{ $album->user->name }}</a>
+						@endif
+					</dd>	
+					<dt class="col-sm-5">Created At:</dt>
+					<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($album->created_at)) }}</dd>
+					<dt class="col-sm-5">Last Updated:</dt>
+					<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($album->updated_at)) }}</dd>
 				</dl>
 
 				<hr class="hr-spacing-top">

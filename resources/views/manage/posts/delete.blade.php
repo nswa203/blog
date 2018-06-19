@@ -47,7 +47,11 @@
 							@endif	
 						</dd>							
 						<dt class="col-sm-5">Author:</dt>
-						<dd class="col-sm-7">{{ $post->author_name }}</dd>													
+						<dd class="col-sm-7">
+							@if($post->user->id)
+								<a href="{{ route('users.show', $post->user->id) }}">{{ $post->user->name }}</a>
+							@endif
+						</dd>													
 						<dt class="col-sm-5">Created At:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($post->created_at)) }}</dd>
 						<dt class="col-sm-5">Last Updated:</dt>
@@ -58,13 +62,13 @@
 						<div class="col-sm-12">
 							{!! Form::open(['route'=>['posts.destroy', $post->id], 'method'=>'DELETE']) !!}
 								{{ 	Form::button('<i class="fas fa-trash-alt mr-2"></i>YES DELETE NOW', ['type'=>'submit', 'class'=>'btn btn-danger btn-block']) }}
-								{!! Html::decode('<a href='.url()->previous().' class="btn btn-outline-danger btn-block"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
+								{!! Html::decode('<a href='.url()->previous().' class="btn btn-outline-danger btn-block mt-3"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
 							{!! Form::close() !!}
 						</div>
 					</div>
 				</div>
 				@if($post->image)
-					<img class="mt-4" src="{{ asset('images/'.$post->image) }}" width="100%" />
+					<img class="mt-3" src="{{ asset('images/'.$post->image) }}" width="100%" />
 				@endif
 			</div>
 		</div>	
