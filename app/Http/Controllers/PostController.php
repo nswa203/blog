@@ -23,26 +23,34 @@ class PostController extends Controller
         });
 	}
 
+    // This Query Builder searches each table and each associated table for each word/phrase
+    // It requires that SearchController pre loads Session('search_list')
 	public function searchQuery($search = '') {
 		$searchable1 = ['title', 'slug', 'image', 'body', 'excerpt'];
 		$searchable2 = ['user' => ['name'], 'category' => ['name'], 'tags' => ['name']];
 		$query = Post::select('*')->with('user')->with('category');
 
-	    if ($search !== '') {
-	        foreach ($searchable1 as $column) {
-	            $query->orWhere($column, 'LIKE', '%' . $search . '%');
-	        }
-	        foreach ($searchable2 as $table => $columns) {
-	            foreach ($columns as $column) {
-	                $query->orWhereHas($table, function($q) use ($column, $search){
-	                    $q->where($column, 'LIKE', '%' . $search . '%');
-	                }); 
-	            }
-	        }
-	    }  
-	    return $query;
+        if ($search !== '') {
+            $search_list=session('search_list', []);
+            foreach ($searchable1 as $column) {
+                foreach ($search_list as $word) {
+                    $query->orWhere($column, 'LIKE', '%' . $word . '%');
+                }    
+            }
+            foreach ($searchable2 as $table => $columns) {
+                foreach ($columns as $column) {
+                    foreach ($search_list as $word) {
+                        $query->orWhereHas($table, function($q) use ($column, $search, $word){
+                            $q->where($column, 'LIKE', '%' . $word . '%');
+                        }); 
+                    }
+                }
+            }
+        }  
+        return $query;
 	}
 
+    // $status_list
 	public function status($default = -1) {
 		$status = [
 			'4' => 'Published',
@@ -67,14 +75,12 @@ class PostController extends Controller
 			$posts = Post::orderBy('id', 'desc')->with('user')->paginate(10);
         }
         	
-        $posts->status_names = $this->status();	
-
 		if ($posts) {
 
 		} else {
 			Session::flash('failure', 'No blog Posts were found.');
 		}
-		return view('manage.posts.index', ['posts' => $posts, 'search' => $request->search]);
+		return view('manage.posts.index', ['posts' => $posts, 'search' => $request->search, 'status_list' => $this->status()]);
 	}
 
 	/**
@@ -172,10 +178,9 @@ class PostController extends Controller
 		$post = Post::findOrFail($id);
 
         $comments = $post->comments()->orderBy('id', 'desc')->paginate(10);
-        $post->status_name = $this->status()[$post->status]; 	
 
 		if ($post) {
-            return view('manage.posts.show', ['post' => $post, 'comments' => $comments]);
+            return view('manage.posts.show', ['post' => $post, 'comments' => $comments, 'status_list' => $this->status()]);
 		} else {
 			Session::flash('failure', 'Post "' . $id . '" was NOT found.');
             return Redirect::back();
@@ -194,7 +199,6 @@ class PostController extends Controller
 		$categories = Category::orderBy('name', 'asc')->pluck('name', 'id');
 		$tags = Tag::orderBy('name', 'asc')->pluck('name', 'id');
 		$users = User::orderBy('name', 'asc')->pluck('name', 'id');
-        $post->status_name = $this->status()[$post->status]; 	
 
 	    if ($post) {
             return view('manage.posts.edit', ['post' => $post,
@@ -300,14 +304,13 @@ class PostController extends Controller
      */
     public function delete($id) {
         $post = Post::findOrFail($id);
-        $post->status_name = $this->status()[$post->status]; 	
 
         if ($post) {
             
         } else {
             Session::flash('failure', 'Post ' . $id . ' was NOT found.');
         }
-        return view('manage.posts.delete', ['post'=>$post]);
+        return view('manage.posts.delete', ['post'=>$post, 'status_list' => $this->status()]);
     }
 
 	/**

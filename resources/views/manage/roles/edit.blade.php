@@ -29,12 +29,12 @@
 
 		<div class="col-md-4">
 			<div class="card card-body bg-light">
-				<dl class="row">
+				<dl class="row dd-nowrap">
 					<dt class="col-sm-5">URL:</dt>
 					<dd class="col-sm-7"><a href="{{ route('roles.show', $role->id) }}">{{ route('roles.show', $role->id) }}</a></dd>
 					<dt class="col-sm-5">Role ID:</dt>
 					<dd class="col-sm-7"><a href="{{ route('roles.show', $role->id) }}">{{ $role->id }}</a></dd>							
-					<dt class="col-sm-5">Created At:</dt>
+					<dt class="col-sm-5">Created:</dt>
 					<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($role->created_at)) }}</dd>
 					<dt class="col-sm-5">Last Updated:</dt>
 					<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($role->updated_at)) }}</dd>
@@ -61,7 +61,7 @@
 		<div class="col-md-12">
 			<div class="card card-body bg-light" id="app"> <!-- Vue 2 -->
 				<h1>Permissions<span class="h1-suffix">({{ $role->permissions->count() }} Permissions from {{ $permissions->total() }} have been assigned to this Role.)</span></h1>
-				<table class="table table-hover">
+				<table class="table table-hover table-responsive-lg">
 					<thead class="thead-dark">
 						<th><span class="fas fa-hashtag mb-2 ml-1"></span></th>
 						<th width="10px">
@@ -73,7 +73,7 @@
 						<th>Name</th>
 						<th>Slug</th>
 						<th>Description</th>
-						<th width="120px">Updated At</th>
+						<th width="120px">Updated</th>
 						<th width="130px">Page {{$permissions->currentPage()}} of {{$permissions->lastPage()}}</th>
 					</thead>
 					<tbody>						
@@ -88,9 +88,9 @@
 								</td>
 								<td>{{ $permission->display_name }}</td>
 								<td>{{ $permission->name }}</td>
-								<td>{{ $permission->description }}</td>
+								<td>{{ substr($permission->description, 0, 156) }}{{ strlen($permission->description)>156 ? '...' : '' }}</td>
 								<td>{{ date('j M Y', strtotime($permission->updated_at)) }}</td>
-								<td class="text-right">
+								<td class="text-right" nowrap>
 									<a href="{{ route('permissions.show', $permission->id)}}" class="btn btn-sm btn-outline-dark">View Permission</a>
 								</td>
 							</tr>

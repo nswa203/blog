@@ -26,7 +26,7 @@
 
 		<div class="row mt-3">
 			<div class="col-md-12">
-				<table class="table table-hover">
+				<table class="table table-hover table-responsive-lg">
 					<thead class="thead-dark">
 						<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 						<th>Title</th>
@@ -56,10 +56,10 @@
 									@if($album->published_at)
 										<span class="text-success">{{ date('j M Y', strtotime($album->published_at)) }}</span>
 									@else	
-										<span class="text-danger">{{ $albums->status_names[$album->status] }}</span>
+										<span class="text-danger">{{ $status_list[$album->status] }}</span>
 									@endif	
 								</th>
-								<td>
+								<td class="text-right" nowrap>
 									<a href="{{ route('albums.show', $album->id)}}" class="btn btn-sm btn-outline-dark">View</a>
 									<a href="{{ route('albums.edit', $album->id)}}" class="btn btn-sm btn-outline-dark">Edit</a>
 								</td>

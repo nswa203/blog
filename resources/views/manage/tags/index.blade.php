@@ -15,12 +15,12 @@
 					@endif 				 Manage Tags
 				</a></h1>				<hr>
 				
-				<table class="table table-hover">
+				<table class="table table-hover table-responsive-lg">
 					<thead class="thead-dark">
 						<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 						<th>Name</th>
-						<th width="120px">Created At</th>
-						<th width="120px">Updated At</th>
+						<th width="120px">Created</th>
+						<th width="120px">Updated</th>
 						<th width="140px">Page {{$tags->currentPage()}} of {{$tags->lastPage()}}</th>
 					</thead>
 
@@ -60,7 +60,7 @@
 										<td><a href="{{ route('tags.show', $tag->id) }}">{{ $tag->name }}</a></td>
 										<td>{{ date('j M Y', strtotime($tag->created_at)) }}</td>
 										<td>{{ date('j M Y', strtotime($tag->updated_at)) }}</td>
-										<td>
+										<td class="text-right" nowrap>
 											<a href="{{ url("manage/tags?edit=$tag->id&page=".$tags->currentPage()) }}" class="btn btn-sm btn-outline-dark">Edit</a>
 											{!! Form::submit('Delete', ['class'=>'btn btn-sm btn-danger']) !!}
 											{{ Form::hidden('page', $tags->currentPage()) }}

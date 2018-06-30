@@ -28,7 +28,7 @@
 
 			<div class="col-md-4">
 				<div class="card card-body bg-light">
-					<dl class="row">
+					<dl class="row dd-nowrap">
 						<dt class="col-sm-5">URL:</dt>
 						<dd class="col-sm-7"><a href="{{ url($post->slug) }}">{{ url($post->slug) }}</a></dd>
 						<dt class="col-sm-5">Post ID:</dt>
@@ -42,7 +42,7 @@
 							@if($post->published_at)
 								{{ date('j M Y, h:i a', strtotime($post->published_at)) }}
 							@else	
-								<span class="text-danger">{{ $post->status_name }}</span>
+								<span class="text-danger">{{ $status_list[$post->status] }}</span>
 							@endif	
 						</dd>							
 						<dt class="col-sm-5">Author:</dt>
@@ -51,7 +51,7 @@
 								<a href="{{ route('users.show', $post->user->id) }}">{{ $post->user->name }}</a>
 							@endif
 						</dd>		
-						<dt class="col-sm-5">Created At:</dt>
+						<dt class="col-sm-5">Created:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($post->created_at)) }}</dd>
 						<dt class="col-sm-5">Last Updated:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($post->updated_at)) }}</dd>
@@ -88,15 +88,15 @@
 						Comments
 						<span class="h1-suffix">(This Post has {{ $post->comments->count()==1 ? '1 Comment' : $post->comments->count().' Comments' }} assigned.)</span>
 					</h1>
-						<table class="table table-hover">
+						<table class="table table-hover table-responsive-lg">
 							<thead class="thead-dark">
 								<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 								<th>OK</th>
 								<th>Name</th>
 								<th>eMail</th>
 								<th>Comment</th>
-								<th width="120px">Created At</th>
-								<th width="96px"></th>
+								<th width="120px">Created</th>
+								<th width="130px"></th>
 							</thead>
 							<tbody>						
 								@foreach($post->comments as $comment)
@@ -107,9 +107,11 @@
 										</td>
 										<td>{{ $comment->name }}</td>
 										<td>{{ $comment->email }}</td>
-										<td>{{ substr(strip_tags($comment->comment), 0, 256)}}{{ strlen(strip_tags($comment->comment))>256 ? '...' : '' }}</td>
-										<td>{{ date('j M Y', strtotime($comment->created_at)) }}</td>
 										<td>
+											{{ substr(strip_tags($comment->comment), 0, 256)}}{{ strlen(strip_tags($comment->comment)) >256 ? '...' : '' }}
+										</td>
+										<td>{{ date('j M Y', strtotime($comment->created_at)) }}</td>
+										<td class="text-right" nowrap>
 											<a href="{{ route('comments.edit', $comment->id) }}" class="btn btn-sm btn-primary">
 												<span class="far fa-edit"></span>
 											</a>

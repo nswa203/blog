@@ -21,7 +21,7 @@
 			</div>
 
 			{{ Form::label('album_ids', 'Albums:', ['class'=>'font-bold form-spacing-top']) }}
-			{{ Form::select('album_ids[]', $albums, null, ['class'=>'form-control custom-select', 'placeholder'=>'Select one or more Albums...', 'data-parsley-required'=>'', 'multiple'=>'']) }}
+			{{ Form::select('album_ids[]', $albums, null, ['class'=>'form-control select2-multi', 'data-parsley-required'=>'', 'multiple'=>'']) }}
 
 			{{ Form::label('tags', 'Tags:', ['class'=>'font-bold form-spacing-top']) }}
 			{{ Form::select('tags[]', $tags, null, ['class'=>'form-control select2-multi', 'multiple'=>'']) }}
@@ -31,7 +31,7 @@
 				{{ Form::label('', 'Image:', ['class'=>'font-bold form-spacing-top']) }}
 				<div class="row ml-auto myFile-img" data-imgNew="myImgNew-1" data-imgOld="myImgOld-1" data-img="{{ $photo->image }}">
 					<div class="col-md-9 custom-file" onChange="myFile(this)">
-						{{ Form::file('image', ['class'=>'form-control custom-file-input', 'accept'=>'image/*', 'data-parsley-required'=>'' ]) }} 
+						{{ Form::file('image', ['class'=>'form-control custom-file-input', 'accept'=>'image/*', 'data-parsley-required'=>'']) }} 
 						{{ Form::label('image', 'Select a file...', ['class'=>'custom-file-label']) }}
 					</div>
 					<div class="col-md-3 myFile-img-delete" style="display:none">
@@ -56,8 +56,8 @@
 
 		<div class="col-md-4">
 			<div class="card card-body bg-light">
-				<dl class="row">
-					<dt class="col-sm-5">Created At:</dt>
+				<dl class="row dd-nowrap">
+					<dt class="col-sm-5">Created:</dt>
 					<dd class="col-sm-7">{{ date('j M Y, h:i a') }}</dd>
 				</dl>
 
@@ -108,13 +108,14 @@
 	{!! Html::script('js/parsley.min.js')	!!}
 	{!! Html::script('js/select2.min.js')	!!}
 	{!! Html::script('js/tinymce.min.js')	!!}
-	{!! Html::script('js/app.js') 			!!}
 
 	<script type="text/javascript">
 		$.fn.select2.defaults.set( "width", "100%" );
 		// Above line must be first to ensure Select2 works
 		// nicely alongside Bootrap 4   
-		$('.select2-multi').select2();
+		$('.select2-multi').select2({
+			placeholder: "Select one or more..."
+		});
 	</script>
 
 	<script>

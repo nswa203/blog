@@ -26,7 +26,7 @@
 
 		<div class="row mt-3">
 			<div class="col-md-12">
-				<table class="table table-hover">
+				<table class="table table-hover table-responsive-lg">
 					<thead class="thead-dark">
 						<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 						<th>Title</th>
@@ -41,7 +41,9 @@
 							<tr>
 								<th>{{ $post->id }}</th>
 								<td>{{ $post->title }}</td>
-								<td>{{ substr(strip_tags($post->excerpt),0,156) }}{{ strlen(strip_tags($post->excerpt))>156 ? '...' : '' }}</td>
+								<td>
+									{{ substr(strip_tags($post->excerpt),0,156) }}{{ strlen(strip_tags($post->excerpt))>156 ? '...' : '' }}
+								</td>
 								<td>
 									<a href="{{ route('categories.show', [$post->category_id, session('zone')]) }}"><span class="badge badge-info">{{ $post->category->name }}</span></a>
 								</td>
@@ -54,10 +56,10 @@
 									@if($post->published_at)
 										<span class="text-success">{{ date('j M Y', strtotime($post->published_at)) }}</span>
 									@else	
-										<span class="text-danger">{{ $posts->status_names[$post->status] }}</span>
+										<span class="text-danger">{{ $status_list[$post->status] }}</span>
 									@endif	
 								</th>
-								<td>
+								<td class="text-right" nowrap>
 									<a href="{{ route('posts.show', $post->id)}}" class="btn btn-sm btn-outline-dark">View</a>
 									<a href="{{ route('posts.edit', $post->id)}}" class="btn btn-sm btn-outline-dark">Edit</a>
 								</td>

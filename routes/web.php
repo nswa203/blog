@@ -25,8 +25,17 @@ Route::prefix('manage')->middleware('role:superadministrator|administrator|edito
 	// Photos
 	Route::resource('/photos', 'PhotoController');
 	Route::get('/photos/{id}/delete', 'PhotoController@delete')->name('photos.delete');
+	Route::get('/photos/{id}/image', 'PhotoController@showImage')->name('photos.showImage');
+	Route::get('/photos/{id}/createMultiple', 'PhotoController@createMultiple')->name('photos.createMultiple');
+	Route::post('/photos/storeMultiple', 'PhotoController@storeMultiple')->name('photos.storeMultiple');
 	// Search
-	Route::post('search', 'SearchController@index')->name('search.index');	
+	Route::post('search', 'SearchController@index')->name('search.index');
+	// Comments
+	Route::get('/comments/{id}/edit',	'CommentsController@edit'	)->name('comments.edit');
+	Route::put('/comments/{id}',		'CommentsController@update'	)->name('comments.update');
+	Route::delete('/comments/{id}',		'CommentsController@destroy')->name('comments.destroy');
+	Route::get('/comments/{id}/delete',	'CommentsController@delete'	)->name('comments.delete');
+	Route::get('/comments',				'CommentsController@index'	)->name('comments.index');
 });
 Route::prefix('manage')->middleware('role:superadministrator|administrator')->group(function () {
 	// Users
@@ -63,11 +72,11 @@ Route::get('/',			'PagesController@getIndex');
 
 // Comments
 Route::post('comments/{post_id}',	'CommentsController@store'	)->name('comments.store');
-Route::get('comments/{id}/edit',	'CommentsController@edit'	)->name('comments.edit');
-Route::put('comments/{id}',			'CommentsController@update'	)->name('comments.update');
-Route::delete('comments/{id}',		'CommentsController@destroy')->name('comments.destroy');
-Route::get('comments/{id}/delete',	'CommentsController@delete'	)->name('comments.delete');
-Route::get('comments',				'CommentsController@index'	)->name('comments.index');
+//Route::get('comments/{id}/edit',	'CommentsController@edit'	)->name('comments.edit');
+//Route::put('comments/{id}',			'CommentsController@update'	)->name('comments.update');
+//Route::delete('comments/{id}',		'CommentsController@destroy')->name('comments.destroy');
+//Route::get('comments/{id}/delete',	'CommentsController@delete'	)->name('comments.delete');
+//Route::get('comments',				'CommentsController@index'	)->name('comments.index');
 
 // Auth
 Auth::routes();

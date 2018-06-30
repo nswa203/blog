@@ -20,7 +20,7 @@
 	@if($comments)
 		<div class="row mt-3">
 			<div class="col-md-12">
-				<table class="table table-hover">
+				<table class="table table-hover table-responsive-lg">
 					<thead class="thead-dark">
 						<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 						<th>Post</th>						
@@ -28,7 +28,7 @@
 						<th>Name</th>
 						<th>eMail</th>
 						<th>Comment</th>
-						<th width="120px">Created At</th>
+						<th width="120px">Created</th>
 						<th width="130px">Page {{$comments->currentPage()}} of {{$comments->lastPage()}}</th>
 					</thead>
 					<tbody>
@@ -43,10 +43,11 @@
 								</td>
 								<td>{{ $comment->name }}</td>
 								<td>{{ $comment->email }}</td>
-								<td>{{ substr(strip_tags($comment->comment),0,256)}}{{ strlen(strip_tags($comment->comment))>256?'...':'' }}</td>
+								<td>
+									{{ substr(strip_tags($comment->comment),0,256)}}{{ strlen(strip_tags($comment->comment))>256?'...':'' }}
+								</td>
 								<td>{{ date('j M Y',strtotime($comment->created_at)) }}</td>
-
-								<td class="text-center">
+								<td class="text-center" nowrap>
 									<a href="{{ route('comments.edit', $comment->id) }}" class="btn btn-sm btn-primary">
 										<span class="far fa-edit"></span>
 									</a>

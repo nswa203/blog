@@ -26,14 +26,14 @@
 	@if($roles)
 		<div class="row mt-3">
 			<div class="col-md-12">
-				<table class="table table-hover">
+				<table class="table table-hover table-responsive-lg">
 					<thead class="thead-dark">
 						<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 						<th>Name</th>
 						<th>Slug</th>
 						<th>Description</th>
-						<th width="120px">Created At</th>
-						<th width="120px">Updated At</th>
+						<th width="120px">Created</th>
+						<th width="120px">Updated</th>
 						<th width="130px" class="text-right">Page {{$roles->currentPage()}} of {{$roles->lastPage()}}</th>
 					</thead>
 					<tbody>						
@@ -42,10 +42,10 @@
 								<th>{{ $role->id }}</th>
 								<td>{{ $role->display_name }}</td>
 								<td>{{ $role->name }}</td>
-								<td>{{ $role->description }}</td>
+								<td>{{ substr($role->description, 0, 156) }}{{ strlen($role->description)>156 ? '...' : '' }}</td>
 								<td>{{ date('j M Y', strtotime($role->created_at)) }}</td>
 								<td>{{ date('j M Y', strtotime($role->updated_at)) }}</td>
-								<td class="text-right">
+								<td class="text-right" nowrap>
 									<a href="{{ route('roles.show', $role->id)}}" class="btn btn-sm btn-outline-dark">View</a>
 									<a href="{{ route('roles.edit', $role->id)}}" class="btn btn-sm btn-outline-dark">Edit</a>
 								</td>

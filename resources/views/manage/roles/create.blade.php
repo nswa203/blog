@@ -29,8 +29,8 @@
 
 		<div class="col-md-4">
 			<div class="card card-body bg-light">
-				<dl class="row">
-					<dt class="col-sm-5">Created At:</dt>
+				<dl class="row dd-nowrap">
+					<dt class="col-sm-5">Created:</dt>
 					<dd class="col-sm-7">{{ date('j M Y, h:i a') }}</dd>
 				</dl>
 				<hr class="hr-spacing-top">
@@ -55,7 +55,7 @@
 		<div class="col-md-12">
 			<div class="card card-body bg-light" id="app"> <!-- Vue 2 -->
 				<h1>Permissions<span class="h1-suffix">({{ $permissions->total() }} Permissions may be assigned to this Role.)</span></h1>
-				<table class="table table-hover">
+				<table class="table table-hover table-responsive-lg">
 					<thead class="thead-dark">
 						<th><span class="fas fa-hashtag mb-2 ml-1"></span></th>
 						<th width="10px">
@@ -67,7 +67,7 @@
 						<th>Name</th>
 						<th>Slug</th>
 						<th>Description</th>
-						<th width="120px">Updated At</th>
+						<th width="120px">Updated</th>
 						<th width="130px" class="text-right">Page {{$permissions->currentPage()}} of {{$permissions->lastPage()}}</th>
 					</thead>
 					<tbody>	
@@ -84,7 +84,7 @@
 								<td>{{ $permission->name }}</td>
 								<td>{{ $permission->description }}</td>
 								<td>{{ date('j M Y', strtotime($permission->updated_at)) }}</td>
-								<td class="text-right">
+								<td class="text-right" nowrap>
 									<a href="{{ route('permissions.show', $permission->id)}}" class="btn btn-sm btn-outline-dark">View Permission</a>
 								</td>
 							</tr>

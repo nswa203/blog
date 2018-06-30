@@ -17,7 +17,7 @@
 
 			<div id="app" width="100%">
 				{{ Form::label('title', 'Title:', ['class'=>'font-bold form-spacing-top']) }}
-				{{ Form::text('title', null, ['class'=>'form-control form-control-lg', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'5', 'data-parsley-maxlength'=>'191', 'v-model'=>'title']) }}
+				{{ Form::text('title', null, ['class'=>'form-control form-control-lg', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'3', 'data-parsley-maxlength'=>'191', 'v-model'=>'title']) }}
 				
 				<slugwidget3 url="{{ url('/') }}" subdirectory="/" :title="title" @slug-changed="updateSlug"></slugwidget3>
 			</div>
@@ -61,7 +61,7 @@
 
 		<div class="col-md-4">
 			<div class="card card-body bg-light">
-				<dl class="row">
+				<dl class="row dd-nowrap">
 					<dt class="col-sm-5">URL:</dt>
 					<dd class="col-sm-7"><a href="{{ url($album->slug) }}">{{ url($album->slug) }}</a></dd>
 					<dt class="col-sm-5">Album ID:</dt>
@@ -84,7 +84,7 @@
 							<a href="{{ route('users.show', $album->user->id) }}">{{ $album->user->name }}</a>
 						@endif
 					</dd>	
-					<dt class="col-sm-5">Created At:</dt>
+					<dt class="col-sm-5">Created:</dt>
 					<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($album->created_at)) }}</dd>
 					<dt class="col-sm-5">Last Updated:</dt>
 					<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($album->updated_at)) }}</dd>
@@ -143,8 +143,9 @@
 		$.fn.select2.defaults.set( "width", "100%" );
 		// Above line must be first to ensure Select2 works
 		// nicely alongside Bootrap 4   
-		$('.select2-multi').select2();
-	</script>
+		$('.select2-multi').select2({
+			placeholder: "Select one or more..."
+		});	</script>
 
 	<script>
 		tinymce.init ({

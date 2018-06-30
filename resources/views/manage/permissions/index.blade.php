@@ -25,14 +25,14 @@
 	@if($permissions)
 		<div class="row mt-3">
 			<div class="col-md-12">
-				<table class="table table-hover">
+				<table class="table table-hover table-responsive-lg">
 					<thead class="thead-dark">
 						<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 						<th>Name</th>
 						<th>Slug</th>
 						<th>Description</th>
-						<th width="120px">Created At</th>
-						<th width="120px">Updated At</th>
+						<th width="120px">Created</th>
+						<th width="120px">Updated</th>
 						<th width="130px" class="text-right">Page {{$permissions->currentPage()}} of {{$permissions->lastPage()}}</th>
 					</thead>
 					<tbody>						
@@ -41,10 +41,10 @@
 								<th>{{ $permission->id }}</th>
 								<td>{{ $permission->display_name }}</td>
 								<td>{{ $permission->name }}</td>
-								<td>{{ $permission->description }}</td>
+								<td>{{ substr($permission->description, 0, 156) }}{{ strlen($permission->description)>156 ? '...' : '' }}</td>
 								<td>{{ date('j M Y', strtotime($permission->created_at)) }}</td>
 								<td>{{ date('j M Y', strtotime($permission->updated_at)) }}</td>
-								<td class="text-right">
+								<td class="text-right" nowrap>
 									<a href="{{ route('permissions.show', $permission->id)}}" class="btn btn-sm btn-outline-dark">View</a>
 									<a href="{{ route('permissions.edit', $permission->id)}}" class="btn btn-sm btn-outline-dark">Edit</a>
 								</td>

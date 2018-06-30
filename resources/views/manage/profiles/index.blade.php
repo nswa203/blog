@@ -26,14 +26,14 @@
 	@if($profiles)
 		<div class="row mt-3">
 			<div class="col-md-12">
-				<table class="table table-hover">
+				<table class="table table-hover table-responsive-lg">
 					<thead class="thead-dark">
 						<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 						<th>Name</th>
 						<th>eMail</th>
 						<th>Username</th>
-						<th width="120">Created At</th>
-						<th width="120">Updated At</th>
+						<th width="120">Created</th>
+						<th width="120">Updated</th>
 						<th width="130" class="text-right">Page {{$profiles->currentPage()}} of {{$profiles->lastPage()}}</th>
 					</thead>
 					<tbody>						
@@ -45,7 +45,7 @@
 								<td>{{ $profile->username }}</td>
 								<td>{{ date('j M Y', strtotime($profile->created_at)) }}</td>
 								<td>{{ date('j M Y', strtotime($profile->updated_at)) }}</td>
-								<td class="text-right">
+								<td class="text-right" nowrap>
 									<a href="{{ route('profiles.show', $profile->id)}}" class="btn btn-sm btn-outline-dark">View</a>
 									<a href="{{ route('profiles.edit', $profile->id)}}" class="btn btn-sm btn-outline-dark">Edit</a>
 								</td>

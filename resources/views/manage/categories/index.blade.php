@@ -15,12 +15,12 @@
 					@endif 				 Manage Categories
 				</a></h1>				
 				<hr>
-				<table class="table table-hover">
+				<table class="table table-hover table-responsive-lg">
 					<thead class="thead-dark">
 						<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 						<th>Name</th>
-						<th width="120px">Created At</th>
-						<th width="120px">Updated At</th>
+						<th width="120px">Created</th>
+						<th width="120px">Updated</th>
 						<th width="140px">Page {{$categories->currentPage()}} of {{$categories->lastPage()}}</th>
 					</thead>
 
@@ -60,7 +60,7 @@
 										<td><a href="{{ route('categories.show', $category->id) }}">{{ $category->name }}</a></td>
 										<td>{{ date('j M Y', strtotime($category->created_at)) }}</td>
 										<td>{{ date('j M Y', strtotime($category->updated_at)) }}</td>
-										<td>
+										<td class="text-right" nowrap>
 											<a href="{{ url("manage/categories?edit=$category->id&page=".$categories->currentPage()) }}" class="btn btn-sm btn-outline-dark">Edit</a>
 											{!! Form::submit('Delete', ['class'=>'btn btn-sm btn-danger']) !!}
 											{{ Form::hidden('page', $categories->currentPage()) }}

@@ -23,26 +23,34 @@ class AlbumController extends Controller
         });
     }
 
+    // This Query Builder searches each table and each associated table for each word/phrase
+    // It requires that SearchController pre loads Session('search_list')
     public function searchQuery($search = '') {
         $searchable1 = ['title', 'slug', 'description', 'image'];
         $searchable2 = ['user' => ['name'], 'category' => ['name'], 'tags' => ['name']];
         $query = Album::select('*')->with('user')->with('category');
 
         if ($search !== '') {
+            $search_list=session('search_list', []);
             foreach ($searchable1 as $column) {
-                $query->orWhere($column, 'LIKE', '%' . $search . '%');
+                foreach ($search_list as $word) {
+                    $query->orWhere($column, 'LIKE', '%' . $word . '%');
+                }    
             }
             foreach ($searchable2 as $table => $columns) {
                 foreach ($columns as $column) {
-                    $query->orWhereHas($table, function($q) use ($column, $search){
-                        $q->where($column, 'LIKE', '%' . $search . '%');
-                    }); 
+                    foreach ($search_list as $word) {
+                        $query->orWhereHas($table, function($q) use ($column, $search, $word){
+                            $q->where($column, 'LIKE', '%' . $word . '%');
+                        }); 
+                    }
                 }
             }
         }  
         return $query;
     }
 
+    // $status_list
     public function status($default = -1) {
         $status = [
             '4' => 'Published',
@@ -67,14 +75,12 @@ class AlbumController extends Controller
             $albums = Album::orderBy('id', 'desc')->with('user')->paginate(10);
         }
             
-        $albums->status_names = $this->status();    
-
         if ($albums) {
 
         } else {
             Session::flash('failure', 'No Albums were found.');
         }
-        return view('manage.albums.index', ['albums' => $albums, 'search' => $request->search]);
+        return view('manage.albums.index', ['albums' => $albums, 'search' => $request->search, 'status_list' => $this->status()]);
     }
 
     /**
@@ -100,8 +106,8 @@ class AlbumController extends Controller
      */
     public function store(Request $request) {
         $this->validate($request, [
-            'title'             => 'required|min:5|max:191',
-            'slug'              => 'required|alpha_dash|min:5|max:191|unique:albums,slug',
+            'title'             => 'required|min:3|max:191',
+            'slug'              => 'required|alpha_dash|min:3|max:191|unique:albums,slug',
             'category_id'       => 'required|integer|exists:categories,id',
             'image'             => 'required|image|mimes:jpeg,jpg,jpe,png,gif|max:10000|min:1',
             'description'       => 'required|min:3|max:2048',
@@ -156,10 +162,9 @@ class AlbumController extends Controller
         $album = Album::findOrFail($id);
 
         $photos = $album->photos()->orderBy('title', 'asc')->paginate(5);
-        $album->status_name = $this->status()[$album->status];    
 
         if ($album) {
-            return view('manage.albums.show', ['album' => $album, 'photos' => $photos]);
+            return view('manage.albums.show', ['album' => $album, 'photos' => $photos, 'status_list' => $this->status()]);
         } else {
             Session::flash('failure', 'Album "' . $id . '" was NOT found.');
             return Redirect::back();
@@ -178,7 +183,6 @@ class AlbumController extends Controller
         $categories = Category::orderBy('name', 'asc')->pluck('name', 'id');
         $tags = Tag::orderBy('name', 'asc')->pluck('name', 'id');
         $users = User::orderBy('name', 'asc')->pluck('name', 'id');
-        $album->status_name = $this->status()[$album->status];    
 
         if ($album) {
             return view('manage.albums.edit', ['album' => $album,
@@ -200,8 +204,8 @@ class AlbumController extends Controller
         $album = Album::findOrFail($id);
 
         $this->validate($request, [
-            'title'             => 'required|min:5|max:191',
-            'slug'              => 'required|alpha_dash|min:5|max:191|unique:albums,slug,' . $id,
+            'title'             => 'required|min:3|max:191',
+            'slug'              => 'required|alpha_dash|min:3|max:191|unique:albums,slug,' . $id,
             'category_id'       => 'required|integer|exists:categories,id',
             'image'             => 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:10000|min:1',
             'description'       => 'required|min:3|max:2048',
@@ -253,17 +257,15 @@ class AlbumController extends Controller
         }
     }
 
-
     public function delete($id) {
         $album = Album::findOrFail($id);
-        $album->status_name = $this->status()[$album->status];    
 
         if ($album) {
             
         } else {
-            Session::flash('failure', 'Album ' . $id . ' was NOT found.');
+            Session::flash('failure', 'Album "' . $id . '" was NOT found.');
         }
-        return view('manage.albums.delete', ['album'=>$album]);
+        return view('manage.albums.delete', ['album'=>$album, 'status_list' => $this->status()]);
     }
 
     /**
@@ -283,11 +285,11 @@ class AlbumController extends Controller
                 Storage::delete($album->image);
                 $msgs[] = 'Image "' . $album->image . '" was successfully deleted.';
             }
-            Session::flash('success', 'Album ' . $album->slug . ' was successfully deleted.');
+            Session::flash('success', 'Album "' . $album->slug . '" was successfully deleted.');
             if (isset($msgs)) { session()->flash('msgs', $msgs); }
             return redirect()->route('albums.index');
         } else {
-            Session::flash('failure', 'Album ' . $id . ' was NOT found.');
+            Session::flash('failure', 'Album "' . $id . '" was NOT found.');
             return Redirect::back();
         }
     }

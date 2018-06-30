@@ -1,6 +1,6 @@
 @extends('manage')
 
-@section('title','| Manage Delete Post')
+@section('title','| Manage Delete Album')
 
 @section('stylesheets')
 @endsection
@@ -18,13 +18,13 @@
 				<h3>Slug:</h3>
 				<p class="lead">{!! $album->slug !!}</p>
 
-				<h3>Excerpt:</h3>
+				<h3>Description:</h3>
 				<p class="lead">{!! $album->description !!}</p>
 			</div>	
 
 			<div class="col-md-4">
 				<div class="card card-body bg-light">
-					<dl class="row">
+					<dl class="row dd-nowrap">
 						<dt class="col-sm-5">URL:</dt>
 						<dd class="col-sm-7"><a href="{{ url($album->slug) }}">{{ url($album->slug) }}</a></dd>
 						<dt class="col-sm-5">Album ID:</dt>
@@ -38,7 +38,7 @@
 							@if($album->published_at)
 								{{ date('j M Y, h:i a', strtotime($album->published_at)) }}
 							@else	
-								<span class="text-danger">{{ $album->status_name }}</span>
+								<span class="text-danger">{{ $status_list[$album->status] }}</span>
 							@endif	
 						</dd>							
 						<dt class="col-sm-5">Author:</dt>
@@ -47,7 +47,7 @@
 								<a href="{{ route('users.show', $album->user->id) }}">{{ $album->user->name }}</a>
 							@endif
 						</dd>												
-						<dt class="col-sm-5">Created At:</dt>
+						<dt class="col-sm-5">Created:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($album->created_at)) }}</dd>
 						<dt class="col-sm-5">Last Updated:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($album->updated_at)) }}</dd>

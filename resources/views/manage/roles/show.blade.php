@@ -23,12 +23,12 @@
 
 			<div class="col-md-4">
 				<div class="card card-body bg-light">
-					<dl class="row">
+					<dl class="row dd-nowrap">
 						<dt class="col-sm-5">URL:</dt>
 						<dd class="col-sm-7"><a href="{{ route('roles.show', $role->id) }}">{{ route('roles.show', $role->id) }}</a></dd>
 						<dt class="col-sm-5">Role ID:</dt>
 						<dd class="col-sm-7"><a href="{{ route('roles.show', $role->id) }}">{{ $role->id }}</a></dd>							
-						<dt class="col-sm-5">Created At:</dt>
+						<dt class="col-sm-5">Created:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($role->created_at)) }}</dd>
 						<dt class="col-sm-5">Last Updated:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($role->updated_at)) }}</dd>
@@ -61,14 +61,14 @@
 						Permissions
 						<span class="h1-suffix">(This Role has {{ $role->permissions->count()==1 ? '1 Permission' : $role->permissions->count().' Permissions' }} assigned.)</span>
 					</h1>
-						<table class="table table-hover">
+						<table class="table table-hover table-responsive-lg">
 							<thead class="thead-dark">
 								<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 								<th>Name</th>
 								<th>Slug</th>
 								<th>Description</th>
-								<th width="120px">Created At</th>
-								<th width="120px">Updated At</th>
+								<th width="120px">Created</th>
+								<th width="120px">Updated</th>
 								<th width="130px" class="text-right">Page {{$permissions->currentPage()}} of {{$permissions->lastPage()}}</th>
 							</thead>
 							<tbody>						
@@ -77,10 +77,12 @@
 										<th>{{ $permission->id }}</th>
 										<td>{{ $permission->display_name }}</td>
 										<td>{{ $permission->name }}</td>
-										<td>{{ $permission->description }}</td>
+										<td>
+											{{ substr($permission->description, 0, 156) }}{{ strlen($permission->description)>156 ? '...' : '' }}
+										</td>
 										<td>{{ date('j M Y', strtotime($permission->created_at)) }}</td>
 										<td>{{ date('j M Y', strtotime($permission->updated_at)) }}</td>
-										<td class="text-right">
+										<td class="text-right" nowrap>
 											<a href="{{ route('permissions.show', $permission->id)}}" class="btn btn-sm btn-outline-dark">View Permission</a>
 										</td>
 									</tr>
@@ -103,14 +105,14 @@
 							Users
 							<span class="h1-suffix">(This Role is associated with {{ $users->count()==1 ? '1 User.' : $users->count().' Users.' }})</span>
 						</h1>
-						<table class="table table-hover">
+						<table class="table table-hover table-responsive-lg">
 							<thead class="thead-dark">
 								<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 								<th>Name</th>
 								<th>eMail</th>
 								<th>Username</th>
-								<th width="120px">Created At</th>
-								<th width="120px">Updated At</th>
+								<th width="120px">Created</th>
+								<th width="120px">Updated</th>
 								<th width="130px" class="text-right">Page {{$users->currentPage()}} of {{$users->lastPage()}}</th>
 							</thead>
 							<tbody>	
@@ -128,7 +130,7 @@
 										</td>
 										<td>{{ date('j M Y', strtotime($user->created_at)) }}</td>
 										<td>{{ date('j M Y', strtotime($user->updated_at)) }}</td>
-										<td class="text-right">
+										<td class="text-right" nowrap>
 											<a href="{{ route('users.show', $user->id)}}" class="btn btn-sm btn-outline-dark">View User</a>
 										</td>
 									</tr>

@@ -1,6 +1,6 @@
 @extends('manage')
 
-@section('title','| Manage Edit Album')
+@section('title','| Manage Edit Photo')
 
 @section('stylesheets')
 	{!! Html::style('css/parsley.css') 		!!}
@@ -10,20 +10,18 @@
 @section('content')
 	<div class="row">
 		<div class="col-md-8">
-			<h1><a id="menu-toggle2"><span class="fas fa-images mr-4"></span>Edit Album</a></h1>
+			<h1><a id="menu-toggle2"><span class="fas fa-image mr-4"></span>Edit Photo</a></h1>
 			<hr>
 
-			{!! Form::model($album,['route'=>['albums.update', $album->id], 'method'=>'PUT', 'data-parsley-validate'=>'', 'files'=>true]) !!}
+			{!! Form::model($photo, ['route'=>['photos.update', $photo->id], 'method'=>'PUT', 'data-parsley-validate'=>'', 'files'=>true, 'autofocus'=>'']) !!}
 
-			<div id="app" width="100%">
+			<div width="100%">
 				{{ Form::label('title', 'Title:', ['class'=>'font-bold form-spacing-top']) }}
-				{{ Form::text('title', null, ['class'=>'form-control form-control-lg', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'5', 'data-parsley-maxlength'=>'191', 'v-model'=>'title']) }}
-				
-				<slugwidget3 url="{{ url('/') }}" subdirectory="/" :title="title" @slug-changed="updateSlug"></slugwidget3>
+				{{ Form::text('title', null, ['class'=>'form-control form-control-lg', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'5', 'data-parsley-maxlength'=>'191', 'autofocus'=>'']) }}
 			</div>
 
-			{{ Form::label('category_id', 'Category:', ['class'=>'font-bold form-spacing-top']) }}
-			{{ Form::select('category_id', $categories,null, ['class'=>'form-control custom-select', 'placeholder'=>'Select a Category...', 'data-parsley-required'=>'']) }}
+			{{ Form::label('album_ids', 'Albums:', ['class'=>'font-bold form-spacing-top']) }}
+			{{ Form::select('album_ids[]', $albums, $photo->albums, ['class'=>'form-control select2-multi', 'placeholder'=>'Select one or more Albums...', 'data-parsley-required'=>'', 'multiple'=>'']) }}
 
 			{{ Form::label('tags', 'Tags:', ['class'=>'font-bold form-spacing-top']) }}
 			{{ Form::select('tags[]', $tags, null, ['class'=>'form-control select2-multi', 'multiple'=>'']) }}
@@ -31,9 +29,9 @@
 				{{-- Select and preview an image file ---------------------------------------------------------------------- --}}
 				{{-- Just change the data- values on the row div                                                             --}}
 				{{ Form::label('', 'Image:', ['class'=>'font-bold form-spacing-top']) }}
-				<div class="row ml-auto myFile-img" data-imgNew="myImgNew-1" data-imgOld="myImgOld-1" data-img="{{ $album->image }}">
+				<div class="row ml-auto myFile-img" data-imgNew="myImgNew-1" data-imgOld="myImgOld-1" data-img="{{ $photo->image }}">
 					<div class="col-md-9 custom-file" onChange="myFile(this)">
-						{{ Form::file('image', ['class'=>'form-control custom-file-input', 'accept'=>'image/*' ]) }} 
+						{{ Form::file('image', ['class'=>'form-control custom-file-input', 'accept'=>'image/*']) }} 
 						{{ Form::label('image', 'Select a file...', ['class'=>'custom-file-label']) }}
 					</div>
 					<div class="col-md-3 myFile-img-delete" style="display:none">
@@ -52,38 +50,39 @@
 					</div>
 				</div>	
 
-			{{ Form::label('author_id','Author:', ['class'=>'font-bold form-spacing-top']) }}
-			{{ Form::select('author_id', $users, null, ['class'=>'form-control custom-select', 'placeholder'=>'Select an Author...', 'data-parsley-required'=>'']) }}
-
 			{{ Form::label('description', 'Description:', ['class'=>'font-bold form-spacing-top']) }}
-			{{ Form::textarea('description', null, ['class'=>'form-control', 'id'=>'textarea-description', 'data-parsley-required'=>'', 'rows'=>'3']) }}
+			{{ Form::textarea('description', null, ['class'=>'form-control', 'id'=>'textarea-description', 'rows'=>'3']) }}
 		</div>
 
 		<div class="col-md-4">
 			<div class="card card-body bg-light">
-				<dl class="row">
-						<dt class="col-sm-5">URL:</dt>
-						<dd class="col-sm-7"><a href="{{ url($album->slug) }}">{{ url($album->slug) }}</a></dd>
-						<dt class="col-sm-5">Album ID:</dt>
-						<dd class="col-sm-7"><a href="{{ route('albums.show', $album->id) }}">{{ $album->id }}</a></dd>
-						<dt class="col-sm-5">Category:</dt>						
-						<dd class="col-sm-7">
-							<a href="{{ route('categories.show', [$album->category_id, session('zone')]) }}"><span class="badge badge-info">{{ $album->category->name }}</span></a>
-						</dd>
-						<dt class="col-sm-5">Published:</dt>						
-						<dd class="col-sm-7">
-							@if($album->published_at)
-								{{ date('j M Y, h:i a', strtotime($album->published_at)) }}
-							@else	
-								<span class="text-danger">{{ $album->status_name }}</span>
-							@endif	
-						</dd>							
-						<dt class="col-sm-5">Author:</dt>
-						<dd class="col-sm-7">{{ $album->user->name }}</dd>													
-						<dt class="col-sm-5">Created At:</dt>
-						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($album->created_at)) }}</dd>
-						<dt class="col-sm-5">Last Updated:</dt>
-						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($album->updated_at)) }}</dd>
+				<dl class="row dd-nowrap">
+					<dt class="col-sm-5">Albums:</dt>
+					<dd class="col-sm-7">
+						@foreach ($photo->albums as $album)
+							<a href="{{ route('albums.show', $album->id) }}"><span class="badge badge-info">{{ $album->slug }}</span></a>
+						@endforeach	
+					</dd>
+					<dt class="col-sm-5">Photo ID:</dt>
+					<dd class="col-sm-7"><a href="{{ route('photos.show', $photo->id) }}">{{ $photo->id }}</a></dd>
+					<dt class="col-sm-5">Snapped:</dt>						
+					<dd class="col-sm-7">
+						@if($photo->taken_at)
+							{{ date('j M Y, h:i a', strtotime($photo->taken_at)) }}
+						@endif
+					</dd>
+					<dt class="col-sm-5">Published:</dt>
+					<dd class="col-sm-7">
+						@if($photo->published_at)
+							{{ date('j M Y, h:i a', strtotime($photo->published_at)) }}
+						@else	
+							<span class="text-danger">{{ $status_list[$photo->status] }}</span>
+						@endif	
+					</dd>
+					<dt class="col-sm-5">Created:</dt>
+					<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($photo->created_at)) }}</dd>
+					<dt class="col-sm-5">Last Updated:</dt>
+					<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($photo->updated_at)) }}</dd>
 				</dl>
 
 				<hr class="hr-spacing-top">
@@ -109,7 +108,7 @@
 				</div>
 				<div class="row mt-3">
 					<div class="col-sm-12">
-						{!! Html::decode(link_to_route('albums.index', '<i class="fas fa-images mr-2"></i>See All Albums', [], ['class'=>'btn btn-outline-dark btn-block'])) !!}
+						{!! Html::decode(link_to_route('photos.index', '<i class="fas fa-images mr-2"></i>See All Photos', [], ['class'=>'btn btn-outline-dark btn-block'])) !!}
 					</div>
 				</div>
 			</div>
@@ -117,7 +116,7 @@
 			<div class="mt-3">
 				<div id="myImgOld-1" style="display:none">
 					{{-- Used in Edit only 												--}}
-					<img src="{{ asset('images/'.$album->image) }}" width="100%" />
+					<img src="{{ asset('images/'.$photo->image) }}" width="100%" />
 				</div>
 				<div id="myImgNew-1" style="display:none">
 					{{-- Uploading image will be rendered here --}}
@@ -133,14 +132,14 @@
 	{!! Html::script('js/parsley.min.js')	!!}
 	{!! Html::script('js/select2.min.js')	!!}
 	{!! Html::script('js/tinymce.min.js')	!!}
-	{!! Html::script('js/app.js') 			!!}
 
 	<script type="text/javascript">
 		$.fn.select2.defaults.set( "width", "100%" );
 		// Above line must be first to ensure Select2 works
 		// nicely alongside Bootrap 4   
-		$('.select2-multi').select2();
-	</script>
+		$('.select2-multi').select2({
+			placeholder: "Select one or more..."
+		});	</script>
 
 	<script>
 		tinymce.init ({
@@ -253,22 +252,5 @@
 				}	
 			}	
 		}
-	</script>	
-
-	<script>
-		var app=new Vue({
-			el: '#app',
-			data: {
-				title: this.title.value,
-				slug: this.title.slug,
-				api_token: '{{ Auth::user()->api_token }}',
-				post_id: '{{ $album->id }}'
-			},
-			methods: {
-				updateSlug: function(val){
-					this.slug=val
-				},
-			}
-		});
 	</script>	
 @endsection

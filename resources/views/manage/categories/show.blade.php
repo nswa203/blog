@@ -17,12 +17,12 @@
 
 			<div class="col-md-4">
 				<div class="card card-body bg-light">
-					<dl class="row">
+					<dl class="row dd-nowrap">
 						<dt class="col-sm-5">URL:</dt>
 						<dd class="col-sm-7"><a href="{{ route('categories.show', $category->id) }}">{{ route('categories.show', $category->id) }}</a></dd>
 						<dt class="col-sm-5">Category ID:</dt>
-						<dd class="col-sm-7"><a href="{{ route('categories.show', $category->id) }}">{{ $category->id }}</a></dd>							
-						<dt class="col-sm-5">Created At:</dt>
+						<dd class="col-sm-7"><a href="{{ route('categories.show', $category->id) }}">{{ $category->id }}</a></dd>
+						<dt class="col-sm-5">Created:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($category->created_at)) }}</dd>
 						<dt class="col-sm-5">Last Updated:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($category->updated_at)) }}</dd>
@@ -55,12 +55,12 @@
 						Albums
 						<span class="h1-suffix">(This Category has {{ $category->albums->count()==1 ? '1 Album' : $category->albums->count().' Albums' }} assigned.)</span>
 					</h1>
-						<table class="table table-hover">
+						<table class="table table-hover table-responsive-lg">
 							<thead class="thead-dark">
 								<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 								<th>Title</th>
 								<th>Description</th>
-								<th width="120">Updated At</th>
+								<th width="120">Updated</th>
 								<th width="130" class="text-right">Page {{$albums->currentPage()}} of {{$albums->lastPage()}}</th>
 							</thead>
 							<tbody>						
@@ -68,9 +68,11 @@
 									<tr>
 										<th>{{ $album->id }}</th>
 										<td>{{ $album->title }}</td>
-										<td>{{ substr(strip_tags($album->description),0,156) }}{{ strlen(strip_tags($album->description))>156 ? '...' : '' }}</td>
+										<td>
+											{{ substr(strip_tags($album->description), 0, 156) }}{{ strlen(strip_tags($album->description)) >156 ? '...' : '' }}
+										</td>
 										<td>{{ date('j M Y', strtotime($album->updated_at)) }}</td>
-										<td class="text-right">
+										<td class="text-right" nowrap>
 											<a href="{{ route('albums.show', $album->id)}}" class="btn btn-sm btn-outline-dark">View Album</a>
 										</td>
 									</tr>
@@ -93,12 +95,12 @@
 						Posts
 						<span class="h1-suffix">(This Category has {{ $category->posts->count()==1 ? '1 Post' : $category->posts->count().' Posts' }} assigned.)</span>
 					</h1>
-						<table class="table table-hover">
+						<table class="table table-hover table-responsive-lg">
 							<thead class="thead-dark">
 								<th>#</th>
 								<th>Title</th>
 								<th>Excerpt</th>
-								<th width="120">Updated At</th>
+								<th width="120">Updated</th>
 								<th width="130" class="text-right">Page {{$posts->currentPage()}} of {{$posts->lastPage()}}</th>
 							</thead>
 							<tbody>						
@@ -106,9 +108,11 @@
 									<tr>
 										<th>{{ $post->id }}</th>
 										<td>{{ $post->title }}</td>
-										<td>{{ substr(strip_tags($post->excerpt),0,156) }}{{ strlen(strip_tags($post->excerpt))>156 ? '...' : '' }}</td>
+										<td>
+											{{ substr(strip_tags($post->excerpt), 0, 156) }}{{ strlen(strip_tags($post->excerpt)) >156 ? '...' : '' }}
+										</td>
 										<td>{{ date('j M Y', strtotime($post->updated_at)) }}</td>
-										<td class="text-right">
+										<td class="text-right" nowrap>
 											<a href="{{ route('posts.show', $post->id)}}" class="btn btn-sm btn-outline-dark">View Post</a>
 										</td>
 									</tr>

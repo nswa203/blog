@@ -26,11 +26,10 @@
 
 		<div class="row mt-3">
 			<div class="col-md-12">
-				<table class="table table-hover">
+				<table class="table table-hover table-responsive-lg">
 					<thead class="thead-dark">
 						<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 						<th>Title</th>
-						<th>Description</th>
 						<th>Albums</th>
 						<th>Tags</th>
 						<th width="120px">Published</th>
@@ -40,11 +39,10 @@
 						@foreach($photos as $photo)
 							<tr>
 								<th>{{ $photo->id }}</th>
-								<td>{{ $photo->title }}</td>
-								<td>{{ substr(strip_tags($photo->description),0,156) }}{{ strlen(strip_tags($photo->description))>156 ? '...' : '' }}</td>
+								<td>{{ strip_tags($photo->title) }}</td>
 								<td>
 									@foreach ($photo->albums as $album)
-										<a href="{{ route('albums.show', $album->id) }}"><span class="badge badge-info">{{ $album->slug }}</span></a>
+										<a href="{{ route('albums.show', $album->id) }}"><span class="badge badge-info">{{ substr($album->slug, 0, 16) }}</span></a>
 									@endforeach	
 								</td>
 								<td>
@@ -56,10 +54,10 @@
 									@if($photo->published_at)
 										<span class="text-success">{{ date('j M Y', strtotime($photo->published_at)) }}</span>
 									@else	
-										<span class="text-danger">{{ $photos->status_names[$photo->status] }}</span>
+										<span class="text-danger">{{ $status_list[$photo->status] }}</span>
 									@endif	
 								</th>
-								<td>
+								<td class="text-right" nowrap>
 									<a href="{{ route('photos.show', $photo->id)}}" class="btn btn-sm btn-outline-dark">View</a>
 									<a href="{{ route('photos.edit', $photo->id)}}" class="btn btn-sm btn-outline-dark">Edit</a>
 								</td>

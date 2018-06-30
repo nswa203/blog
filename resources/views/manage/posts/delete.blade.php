@@ -29,7 +29,7 @@
 
 			<div class="col-md-4">
 				<div class="card card-body bg-light">
-					<dl class="row">
+					<dl class="row dd-nowrap">
 						<dt class="col-sm-5">URL:</dt>
 						<dd class="col-sm-7"><a href="{{ url($post->slug) }}">{{ url($post->slug) }}</a></dd>
 						<dt class="col-sm-5">Post ID:</dt>
@@ -43,7 +43,7 @@
 							@if($post->published_at)
 								{{ date('j M Y, h:i a', strtotime($post->published_at)) }}
 							@else	
-								<span class="text-danger">{{ $post->status_name }}</span>
+								<span class="text-danger">{{ $status_list[$post->status] }}</span>
 							@endif	
 						</dd>							
 						<dt class="col-sm-5">Author:</dt>
@@ -52,7 +52,7 @@
 								<a href="{{ route('users.show', $post->user->id) }}">{{ $post->user->name }}</a>
 							@endif
 						</dd>													
-						<dt class="col-sm-5">Created At:</dt>
+						<dt class="col-sm-5">Created:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($post->created_at)) }}</dd>
 						<dt class="col-sm-5">Last Updated:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($post->updated_at)) }}</dd>

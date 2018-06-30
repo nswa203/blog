@@ -20,7 +20,7 @@
 
 			<div class="col-md-4">
 				<div class="card card-body bg-light">
-					<dl class="row">
+					<dl class="row dd-nowrap">
 						<dt class="col-sm-5">URL:</dt>
 						<dd class="col-sm-7"><a href="{{ route('users.show', $user->id) }}">{{ route('users.show', $user->id) }}</a></dd>
 						<dt class="col-sm-5">Profile:</dt>
@@ -29,7 +29,7 @@
 								<a href="{{ route('profiles.show', $user->profile['id']) }}">{{ $user->profile['username'] }}</a>
 							@endif
 						</dd>							
-						<dt class="col-sm-5">Created At:</dt>
+						<dt class="col-sm-5">Created:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($user->created_at)) }}</dd>
 						<dt class="col-sm-5">Last Updated:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($user->updated_at)) }}</dd>
@@ -62,7 +62,7 @@
 						Albums
 						<span class="h1-suffix">(This User has {{ $user->albums->count()==1 ? '1 Album' : $user->albums->count().' Albums' }} assigned.)</span>
 					</h1>
-						<table class="table table-hover">
+						<table class="table table-hover table-responsive-lg">
 							<thead class="thead-dark">
 								<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 								<th>Title</th>
@@ -95,7 +95,7 @@
 												<span class="text-danger">{{ $status_list[$album->status] }}</span>
 											@endif	
 										</th>
-										<td class="text-right">
+										<td class="text-right" nowrap>
 											<a href="{{ route('albums.show', $album->id)}}" class="btn btn-sm btn-outline-dark">View Album</a>
 										</td>
 									</tr>
@@ -118,7 +118,7 @@
 						Posts
 						<span class="h1-suffix">(This User has {{ $user->posts->count()==1 ? '1 Post' : $user->posts->count().' Posts' }} assigned.)</span>
 					</h1>
-						<table class="table table-hover">
+						<table class="table table-hover table-responsive-lg">
 							<thead class="thead-dark">
 								<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 								<th>Title</th>
@@ -133,7 +133,9 @@
 									<tr>
 										<th>{{ $post->id }}</th>
 										<td>{{ $post->title }}</td>
-										<td>{{ substr(strip_tags($post->excerpt),0,156) }}{{ strlen(strip_tags($post->excerpt))>156 ? '...' : '' }}</td>
+										<td>
+											{{ substr(strip_tags($post->excerpt), 0, 156) }}{{ strlen(strip_tags($post->excerpt)) >156 ? '...' : '' }}
+										</td>
 										<td>
 											<a href="{{ route('categories.show', [$post->category_id, 'Posts']) }}"><span class="badge badge-info">{{ $post->category->name }}</span></a>
 										</td>
@@ -149,7 +151,7 @@
 												<span class="text-danger">{{ $status_list[$post->status] }}</span>
 											@endif	
 										</th>
-										<td class="text-right">
+										<td class="text-right" nowrap>
 											<a href="{{ route('posts.show', $post->id)}}" class="btn btn-sm btn-outline-dark">View Post</a>
 										</td>
 									</tr>
@@ -172,14 +174,14 @@
 						Roles
 						<span class="h1-suffix">(This User has {{ $user->roles->count()==1 ? '1 Role' : $user->roles->count().' Roles' }} assigned.)</span>
 					</h1>
-						<table class="table table-hover">
+						<table class="table table-hover table-responsive-lg">
 							<thead class="thead-dark">
 								<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 								<th>Name</th>
 								<th>Slug</th>
 								<th>Description</th>
-								<th width="120px">Created At</th>
-								<th width="120px">Updated At</th>
+								<th width="120px">Created</th>
+								<th width="120px">Updated</th>
 								<th width="130px" class="text-right">Page {{$roles->currentPage()}} of {{$roles->lastPage()}}</th>
 							</thead>
 							<tbody>						
@@ -188,10 +190,10 @@
 										<th>{{ $role->id }}</th>
 										<td>{{ $role->display_name }}</td>
 										<td>{{ $role->name }}</td>
-										<td>{{ $role->description }}</td>
+										<td>{{ substr($role->description, 0, 156) }}{{ strlen($role->description)>156 ? '...' : '' }}
 										<td>{{ date('j M Y', strtotime($role->created_at)) }}</td>
 										<td>{{ date('j M Y', strtotime($role->updated_at)) }}</td>
-										<td class="text-right">
+										<td class="text-right" nowrap>
 											<a href="{{ route('roles.show', $role->id)}}" class="btn btn-sm btn-outline-dark">View Role</a>
 										</td>
 									</tr>

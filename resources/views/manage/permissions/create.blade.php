@@ -55,8 +55,8 @@
 
 		<div class="col-md-4">
 			<div class="card card-body bg-light">
-				<dl class="row">
-					<dt class="col-sm-5">Created At:</dt>
+				<dl class="row dd-nowrap">
+					<dt class="col-sm-5">Created:</dt>
 					<dd class="col-sm-7">{{ date('j M Y, h:i a') }}</dd>
 				</dl>
 				<hr class="hr-spacing-top">

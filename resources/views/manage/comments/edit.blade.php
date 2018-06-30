@@ -26,12 +26,12 @@
 
 			<div class="col-md-4">
 				<div class="card card-body bg-light">
-					<dl class="row">
+					<dl class="row dd-nowrap">
 						<dt class="col-sm-5">Post URL:</dt>
 						<dd class="col-sm-7"><a href="{{ route('blog.single', $post->slug) }}">{{ route('blog.single', $post->slug) }}</a></dd>
 						<dt class="col-sm-5">Comment ID</dt>
-						<dd class="col-sm-7"><a href="{{ route('blog.single', $post->slug) }}">{{ $comment->id }}</a></dd>						
-						<dt class="col-sm-5">Created At:</dt>
+						<dd class="col-sm-7"><a href="{{ route('blog.single', $post->slug) }}">{{ $comment->id }}</a></dd>
+						<dt class="col-sm-5">Created:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($comment->created_at)) }}</dd>
 						<dt class="col-sm-5">Last Updated:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($comment->updated_at)) }}</dd>

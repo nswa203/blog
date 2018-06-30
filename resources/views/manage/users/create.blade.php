@@ -33,8 +33,8 @@
 		</div>
 		<div class="col-md-4">
 			<div class="card card-body bg-light">
-				<dl class="row">
-					<dt class="col-sm-5">Created At:</dt>
+				<dl class="row dd-nowrap">
+					<dt class="col-sm-5">Created:</dt>
 					<dd class="col-sm-7">{{ date('j M Y, h:i a') }}</dd>
 				</dl>
 
@@ -60,7 +60,7 @@
 		<div class="col-md-12">
 			<div class="card card-body bg-light" id="app2"> <!-- Vue 2 -->
 				<h1>Roles<span class="h1-suffix">({{ $roles->total() }} Roles may be assigned to this User.)</span></h1>
-				<table class="table table-hover">
+				<table class="table table-hover table-responsive-lg">
 					<thead class="thead-dark">
 						<th><span class="fas fa-hashtag mb-2 ml-1"></th>
 						<th width="10px">
@@ -72,7 +72,7 @@
 						<th>Name</th>
 						<th>Slug</th>
 						<th>Description</th>
-						<th width="120">Updated At</th>
+						<th width="120">Updated</th>
 						<th width="130" class="text-right">Page {{$roles->currentPage()}} of {{$roles->lastPage()}}</th>
 					</thead>
 					<tbody>	
@@ -87,9 +87,9 @@
 								</td>
 								<td>{{ $role->display_name }}</td>
 								<td>{{ $role->name }}</td>
-								<td>{{ $role->description }}</td>
-								<td>{{ date('j M Y', strtotime($role->updated_at)) }}</td>
-								<td class="text-right">
+								<td>{{ substr($role->description, 0, 156) }}{{ strlen($role->description)>156 ? '...' : '' }}</td>
+								<td>{{ date('jM ', strtotime($role->updated_at)) }}</td>
+								<td class="text-right" nowrap>
 									<a href="{{ route('roles.show', $role->id)}}" class="btn btn-sm btn-outline-dark">View Role</a>
 								</td>
 							</tr>

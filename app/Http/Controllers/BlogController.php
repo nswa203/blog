@@ -17,24 +17,31 @@ class BlogController extends Controller
         });
 	}
 
+    // This Query Builder searches each table and each associated table for each word/phrase
+    // It requires that SearchController pre loads Session('search_list')
 	public function searchQuery($search = '') {
 		$searchable1 = ['title', 'slug', 'image', 'body', 'excerpt'];
-		$searchable2 = ['user' => ['name'], 'category' => ['name'], 'tags' => ['name']];
-		$query = Post::select('*')->with('user')->with('category');
+		$searchable2 = ['user' => ['name'], 'category' => ['name'], 'tags' => ['name'], 'comments' => ['email', 'name', 'comment' ]];
+		$query = Post::select('*');
 
-	    if ($search !== '') {
-	        foreach ($searchable1 as $column) {
-	            $query->orWhere($column, 'LIKE', '%' . $search . '%')->where('status', '>=', '4');
-	        }
-	        foreach ($searchable2 as $table => $columns) {
-	            foreach ($columns as $column) {
-	                $query->orWhereHas($table, function($q) use ($column, $search){
-	                    $q->where($column, 'LIKE', '%' . $search . '%');
-	                }); 
-	            }
-	        }
-	    }  
-	    return $query;
+        if ($search !== '') {
+            $search_list=session('search_list', []);
+            foreach ($searchable1 as $column) {
+                foreach ($search_list as $word) {
+                    $query->orWhere($column, 'LIKE', '%' . $word . '%')->where('status', '>=', '4');
+                }    
+            }
+            foreach ($searchable2 as $table => $columns) {
+                foreach ($columns as $column) {
+                    foreach ($search_list as $word) {
+                        $query->orWhereHas($table, function($q) use ($column, $search, $word){
+                            $q->where($column, 'LIKE', '%' . $word . '%')->where('status', '>=', '4');
+                        }); 
+                    }
+                }
+            }
+        } 
+        return $query;
 	}
 
 	public function getIndex(Request $request) {

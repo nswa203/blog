@@ -21,20 +21,27 @@ class ProfileController extends Controller
         });
     }
 
+    // This Query Builder searches each table and each associated table for each word/phrase
+    // It requires that SearchController pre loads Session('search_list')
     public function searchQuery($search = '') {
         $searchable1 = ['username', 'about_me', 'phone', 'address'];
         $searchable2 = ['user' => ['name', 'email']];
         $query = Profile::select('*')->with('user');
 
         if ($search !== '') {
+            $search_list=session('search_list', []);
             foreach ($searchable1 as $column) {
-                $query->orWhere($column, 'LIKE', '%' . $search . '%');
+                foreach ($search_list as $word) {
+                    $query->orWhere($column, 'LIKE', '%' . $word . '%');
+                }    
             }
             foreach ($searchable2 as $table => $columns) {
                 foreach ($columns as $column) {
-                    $query->orWhereHas($table, function($q) use ($column, $search){
-                        $q->where($column, 'LIKE', '%' . $search . '%');
-                    }); 
+                    foreach ($search_list as $word) {
+                        $query->orWhereHas($table, function($q) use ($column, $search, $word){
+                            $q->where($column, 'LIKE', '%' . $word . '%');
+                        }); 
+                    }
                 }
             }
         }  

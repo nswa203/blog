@@ -23,12 +23,14 @@
 
 			<div class="col-md-4">
 				<div class="card card-body bg-light">
-					<dl class="row">
+					<dl class="row dd-nowrap">
 						<dt class="col-sm-5">URL:</dt>
-						<dd class="col-sm-7"><a href="{{ route('permissions.show', $permission->id) }}">{{ route('permissions.show', $permission->id) }}</a></dd>
+						<dd class="col-sm-7">
+							<a href="{{ route('permissions.show', $permission->id) }}">{{ route('permissions.show', $permission->id) }}</a>
+						</dd>
 						<dt class="col-sm-5">Permission ID:</dt>
-						<dd class="col-sm-7"><a href="{{ route('permissions.show', $permission->id) }}">{{ $permission->id }}</a></dd>							
-						<dt class="col-sm-5">Created At:</dt>
+						<dd class="col-sm-7"><a href="{{ route('permissions.show', $permission->id) }}">{{ $permission->id }}</a></dd>
+						<dt class="col-sm-5">Created:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($permission->created_at)) }}</dd>
 						<dt class="col-sm-5">Last Updated:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($permission->updated_at)) }}</dd>
@@ -61,13 +63,13 @@
 							Roles
 							<span class="h1-suffix">(This Permission is associated with {{ $roles->count()==1 ? '1 Role.' : $roles->count().' Roles.' }})</span>
 						</h1>
-						<table class="table table-hover">
+						<table class="table table-hover table-responsive-lg">
 							<thead class="thead-dark">
 								<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 								<th>Name</th>
 								<th>Slug</th>
 								<th>Description</th>
-								<th width="120px">Updated At</th>
+								<th width="120px">Updated</th>
 								<th width="130px" class="text-right">Page {{$roles->currentPage()}} of {{$roles->lastPage()}}</th>
 							</thead>
 							<tbody>	
@@ -76,9 +78,9 @@
 										<th>{{ $role->id }}</th>
 										<td>{{ $role->display_name }}</td>
 										<td>{{ $role->name }}</td>
-										<td>{{ $role->description }}</td>
+										<td>{{ substr($role->description, 0, 156) }}{{ strlen($role->description)>156 ? '...' : '' }}</td>
 										<td>{{ date('j M Y', strtotime($role->updated_at)) }}</td>
-										<td class="text-right">
+										<td class="text-right" nowrap>
 											<a href="{{ route('roles.show', $role->id)}}" class="btn btn-sm btn-outline-dark">View Role</a>
 										</td>
 									</tr>
