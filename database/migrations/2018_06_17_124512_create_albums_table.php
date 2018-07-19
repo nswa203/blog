@@ -19,19 +19,14 @@ class CreateAlbumsTable extends Migration
             $table->string('slug')->unique();
             $table->text('description');
             $table->string('image');
-            $table->integer('category_id')->unsigned();
-            $table->integer('author_id')->unsigned();
+            $table->integer('category_id')->unsigned(); //OK
+            $table->integer('author_id')->unsigned(); //OK
             $table->integer('status')->default(1);
             $table->dateTime('published_at')->nullable()->default(null);
             $table->timestamps();
 
-            $table->foreign('author_id')
-                ->references('id')->on('users')
-                ->onDelete('cascade');
-
-            $table->foreign('category_id')
-                ->references('id')->on('categories')
-                ->onDelete('cascade');                    
+            $table->foreign('author_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');                    
         });
     }
 

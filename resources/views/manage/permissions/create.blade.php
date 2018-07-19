@@ -9,7 +9,7 @@
 @section('content')
 	<div class="row">
 		<div class="col-md-8">
-			<h1><a id="menu-toggle2"><span class="fas fa-user-plus mr-4"></span>Create New Permission</a></h1>
+			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-user-plus mr-4"></span>Create New Permission</a></h1>
 			<hr>
 			{!! Form::open(['route'=>'permissions.store', 'data-parsley-validate'=>'', 'files'=>true]) !!}
 

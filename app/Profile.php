@@ -10,6 +10,10 @@ class Profile extends Model
     //    return $this->hasOne('App\User', 'profile_id');
     //}
 
+    public function folders() {
+        return $this->belongsToMany('App\Folder');
+    }
+
     public function user() {
         return $this->belongsTo('App\User');
     }

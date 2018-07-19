@@ -9,7 +9,7 @@
 @section('content')
 	<div class="row">
 		<div class="col-md-8">
-			<h1><a id="menu-toggle2"><span class="fas fa-user-circle mr-4"></span>Create User Profile</a></h1>
+			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-user-circle mr-4"></span>Create User Profile</a></h1>
 			<hr>
 			<div class="image-crop-height mt-3 mb-0" id="myImgOld-2" style="--croph:232px; display:none">
 				<img src="{{ asset('images/'.$profile->banner) }}" width="100%" />
@@ -21,7 +21,7 @@
 			{!! Form::open(['route'=>'profiles.store', 'data-parsley-validate'=>'', 'files'=>true]) !!}
 			
 				{{ Form::label('user_id','Registered User:', ['class'=>'font-bold form-spacing-top']) }}
-				{{ Form::select('user_id', $users, auth()->user()->id, ['class'=>'form-control custom-select', 'placeholder'=>'Select a User that does not yet have a profile...', 'data-parsley-required'=>'']) }}
+				{{ Form::select('user_id', $users, $id?$id:auth()->user()->id, ['class'=>'form-control custom-select', 'placeholder'=>'Select a User that does not yet have a profile...', 'data-parsley-required'=>'']) }}
 
 				{{ 	Form::label('username', 'Username:', ['class'=>'font-bold form-spacing-top']) }}
 				{{ 	Form::text('username', null, ['class'=>'form-control form-control-lg', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'3', 'data-parsley-maxlength'=>'191', 'autofocus'=>'']) }}
@@ -133,6 +133,7 @@
 			menubar: false,
 			toolbar: "",
 			forced_root_block : 'div',
+            branding: false,
  		});
 
  		tinymce.init ({
@@ -141,6 +142,7 @@
 			menubar: false,
 			toolbar: "",
 			forced_root_block : 'div',
+            branding: false,
  		});
 	</script>
 

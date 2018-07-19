@@ -9,7 +9,7 @@
 	@if($category)
 		<div class="row">
 			<div class="col-md-8">
-				<h1><a id="menu-toggle2"><span class="fas fa-list-alt mr-4"></span>View {{ $category->name }} Category</a></h1>
+				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-list-alt mr-4"></span>View {{ $category->name }} Category</a></h1>
 				<hr>
 				<h3>Name:</h3>
 				<p class="lead">{!! $category->name !!}</p>
@@ -126,6 +126,46 @@
 				</div>
 			</div>
 		@endif
+
+		@if($category->posts->count() && $posts)
+			<div class="row mt-3">
+				<div class="col-md-12">
+					<div class="card card-body bg-light">
+					<h1>
+						Posts
+						<span class="h1-suffix">(This Category has {{ $category->posts->count()==1 ? '1 Post' : $category->posts->count().' Posts' }} assigned.)</span>
+					</h1>
+						<table class="table table-hover table-responsive-lg">
+							<thead class="thead-dark">
+								<th>#</th>
+								<th>Title</th>
+								<th>Excerpt</th>
+								<th width="120">Updated</th>
+								<th width="130" class="text-right">Page {{$posts->currentPage()}} of {{$posts->lastPage()}}</th>
+							</thead>
+							<tbody>						
+								@foreach($posts as $post)
+									<tr>
+										<th>{{ $post->id }}</th>
+										<td>{{ $post->title }}</td>
+										<td>
+											{{ substr(strip_tags($post->excerpt), 0, 156) }}{{ strlen(strip_tags($post->excerpt)) >156 ? '...' : '' }}
+										</td>
+										<td>{{ date('j M Y', strtotime($post->updated_at)) }}</td>
+										<td class="text-right" nowrap>
+											<a href="{{ route('posts.show', $post->id)}}" class="btn btn-sm btn-outline-dark">View Post</a>
+										</td>
+									</tr>
+								@endforeach
+							</tbody>
+						</table>
+						<div class="d-flex justify-content-center">
+							{{ $posts->appends(Request::all())->render() }} 
+						</div>
+					</div>
+				</div>
+			</div>
+		@endif		
 	@endif
 @endsection
 

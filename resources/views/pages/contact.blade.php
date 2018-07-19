@@ -10,7 +10,7 @@
 	<div class="row">
 		<div class="col-md-12">
 			<div class="jumbotron" style="padding-top:32px; padding-bottom:32px;">
-				<h1><span class="far fa-envelope mr-4"></span>Contact Me</h1>
+				<h1><span class="fas fa-envelope mr-4"></span>Contact {{ $data['name'] }}</h1>
 				<hr>
 				{{ Form::open([url('contact'), 'method'=>'POST', 'data-parsley-validate'=>'']) }}
 					<div class="row">
@@ -52,6 +52,7 @@
 			menubar: false,
 			toolbar: "",
 			forced_root_block : 'div',
+            branding: false,
 		});
 	</script>
 @endsection

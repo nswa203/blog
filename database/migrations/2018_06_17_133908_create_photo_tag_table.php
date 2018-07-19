@@ -15,12 +15,11 @@ class CreatePhotoTagTable extends Migration
     public function up() {
         Schema::create('photo_tag', function (Blueprint $table) {
             $table->increments('id');
-
             $table->integer('photo_id')->unsigned();
-            $table->foreign('photo_id')->references('id')->on('photos');
-            
             $table->integer('tag_id')->unsigned();
-            $table->foreign('tag_id')->references('id')->on('tags');
+
+            $table->foreign('photo_id')->references('id')->on('photos')->onDelete('cascade');
+            $table->foreign('tag_id')->references('id')->on('tags')->onDelete('cascade');
         });
     }
 

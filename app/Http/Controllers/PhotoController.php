@@ -23,31 +23,18 @@ class PhotoController extends Controller
         });
     }
 
-    // This Query Builder searches each table and each associated table for each word/phrase
-    // It requires that SearchController pre loads Session('search_list')
+    // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
+    // It requires the custom search_helper() function in Helpers.php.
+    // If you change Helpers.php you should do "dump-autoload". 
     public function searchQuery($search = '') {
-        $searchable1 = ['title', 'description', 'exif', 'iptc'];
-        $searchable2 = ['tags' => ['name'], 'albums' => ['title', 'slug', 'description']];
-        $query = Photo::select('*')->with('albums');
-
-        if ($search !== '') {
-            $search_list=session('search_list', []);
-            foreach ($searchable1 as $column) {
-                foreach ($search_list as $word) {
-                    $query->orWhere($column, 'LIKE', '%' . $word . '%');
-                }    
-            }
-            foreach ($searchable2 as $table => $columns) {
-                foreach ($columns as $column) {
-                    foreach ($search_list as $word) {
-                        $query->orWhereHas($table, function($q) use ($column, $search, $word){
-                            $q->where($column, 'LIKE', '%' . $word . '%');
-                        }); 
-                    }
-                }
-            }
-        }  
-        return $query;
+        $query = [
+            'model'         => 'Photo',
+            'searchModel'   => ['title', 'description', 'image', 'file', 'exif', 'iptc'],
+            'searchRelated' => [
+                'albums' => ['title', 'slug', 'description'], 'tags' => ['name']
+            ]
+        ];
+        return search_helper($search, $query);
     }
 
     // $status_list
@@ -87,13 +74,7 @@ class PhotoController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-
-        if ($request->search) {
-            $photos = $this->searchQuery($request->search)->orderBy('id', 'desc')->paginate(10);
-        } else {
-            $photos = Photo::orderBy('id', 'desc')->with('albums')->paginate(10);
-        }
-
+        $photos = $this->searchQuery($request->search)->orderBy('id', 'desc')->paginate(10);
         if ($photos) {
 
         } else {
@@ -162,7 +143,7 @@ class PhotoController extends Controller
                 if (!$exif) { throw new Exception('EXIF Error 2.'); }
             }    
             catch (Exception $e) {
-                $exif = '{"EXIF":"ERROR", "JSON":"' . json_last_error_msg() . '"}';
+                $exif = '{"EXIF":"NONE", "JSON":"' . json_last_error_msg() . '"}';
             } 
             $photo->exif = $exif;
 
@@ -319,7 +300,7 @@ class PhotoController extends Controller
                 if (!$exif) { throw new Exception('EXIF Error 2.'); }
             }    
             catch (Exception $e) {
-                $exif = '{"EXIF":"ERROR", "JSON":"' . json_last_error_msg() . '"}';
+                $exif = '{"EXIF":"NONE", "JSON":"' . json_last_error_msg() . '"}';
             } 
             $photo->exif = $exif;
 
@@ -426,6 +407,8 @@ class PhotoController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function storeMultiple(Request $request) {
+$ajax = true;
+
         $this->validate($request, [
             'title'             => 'sometimes|max:191',
             'image'             => 'required|array|between:1,64',
@@ -449,7 +432,7 @@ class PhotoController extends Controller
             $photo->description     = Purifier::clean($request->description);
             $photo->status          = $request->status;
             $photo->size            = 0;
-           
+
             if ($photo->status == '4') { $photo->published_at = date('Y-m-d H:i:s'); }
             $newFile  = microtime() . '.' . $image->getClientOriginalExtension();
             $location = public_path('images\\' . $newFile);
@@ -468,7 +451,7 @@ class PhotoController extends Controller
                 if (!$exif) { throw new Exception('EXIF Error 2.'); }
             }    
             catch (Exception $e) {
-                $exif = '{"EXIF":"ERROR", "JSON":"' . json_last_error_msg() . '"}';
+                $exif = '{"EXIF":"NONE", "JSON":"' . json_last_error_msg() . '"}';
             } 
             $photo->exif = $exif;
 
@@ -486,9 +469,11 @@ class PhotoController extends Controller
             $photo->iptc = $iptc;
 
             // Replacements -----------------------------------------------------------
-            $needles = ['%title%',    '%filename%', '%size',     '$date%',         '%album%'];
+            $needles = ['%title%',    '%filename%', '%size',     '%date%',         '%album%' ];
             $replace = [$photo->title, $rootFile,   $photo->size, $photo->taken_at, $album_id];
+            $default = ['',            '',          '0',          '',               ''       ];
             $photo->title       = str_replace($needles, $replace, $photo->title);
+            $photo->title       = wordwrap($photo->title, 32, PHP_EOL, true);
             $photo->description = str_replace($needles, $replace, $photo->description);
 
             $myrc = Storage::putFileAs('original', $image, $newFile);
@@ -508,6 +493,9 @@ class PhotoController extends Controller
                 $countOK++;
                 $msgs[] = 'Image "' . $rootFile . '" was successfully saved as "' . $newFile .'"';
             } else { $countBad++; }
+        //echo $countOK.' '.$countBad;
+        //ob_flush();
+        //flush();    
 
         }
 
@@ -515,6 +503,7 @@ class PhotoController extends Controller
         if ($countOK  > 0) { Session::flash('success', $countOK  . ' Photos successfully saved.'); }
         if ($countBad > 0) { Session::flash('failure', $countBad . ' Photos were NOT saved.'); }
         if ($countOK  > 0) { 
+            if ($ajax) {return json_encode(Session::get('msgs'));}
             return redirect()->route('albums.show', $album_id);
         } else {
             Session::flash('failure', 'Photos were NOT saved.');

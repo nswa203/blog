@@ -10,7 +10,7 @@
 	@if($comment)
 		<div class="row">
 			<div class="col-md-8">
-				<h1><span class="far fa-comment-alt mr-4"></span>Edit Comment</h1>
+				<h1><a class="pointer" id="menu-toggle2"><span class="far fa-comment-alt mr-4"></span>Edit Comment</a></h1>
 				<hr>
 				{!! Form::model($comment, ['route'=>['comments.update',$comment->id], 'method'=>'PUT', 'data-parsley-validate'=>'']) !!}
 
@@ -78,6 +78,7 @@
 			toolbar: "",
 			forced_root_block : 'div',
 			auto_focus : 'textarea-body',
+            branding: false,
  		});
 	</script>
 @endsection

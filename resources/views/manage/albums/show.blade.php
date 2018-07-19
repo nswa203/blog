@@ -9,10 +9,10 @@
 	@if($album)
 		<div class="row">
 			<div class="col-md-8">
-				<h1><a id="menu-toggle2"><span class="fas fa-images mr-4"></span>Album {{ $album->title }}</a></h1>
+				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-images mr-4"></span>Album {{ $album->title }}</a></h1>
 				<hr>
 				<a href="{{ asset('images/'.$album->image) }}">
-					<img src="{{ asset('images/'.$album->image) }}" width="150px" class="img-frame float-left mr-4" style="margin-top:0px; margin-bottom:10px;"
+					<img src="{{ asset('images/'.$album->image) }}" xwidth="150px" class="img-frame float-left mr-4" style="margin-top:0px; margin-bottom:10px;"
 						onerror="this.onerror=null; this.src='{{ asset('favicon.ico') }}';"
 					/>
 				</a>
@@ -101,7 +101,7 @@
 								<th width="130px" class="text-right">Page {{$photos->currentPage()}} of {{$photos->lastPage()}}</th>
 							</thead>
 							<tbody>						
-								@foreach($album->photos as $photo)
+								@foreach($photos as $photo)
 									<tr>
 										<th>{{ $photo->id }}</th>
 										<td>

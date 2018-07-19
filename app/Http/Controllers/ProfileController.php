@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use App\Profile;
+use App\Folder;
 use App\User;
 use Purifier;
 use Session;
@@ -21,31 +22,19 @@ class ProfileController extends Controller
         });
     }
 
-    // This Query Builder searches each table and each associated table for each word/phrase
-    // It requires that SearchController pre loads Session('search_list')
+    // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
+    // It requires the custom search_helper() function in Helpers.php.
+    // If you change Helpers.php you should do "dump-autoload". 
     public function searchQuery($search = '') {
-        $searchable1 = ['username', 'about_me', 'phone', 'address'];
-        $searchable2 = ['user' => ['name', 'email']];
-        $query = Profile::select('*')->with('user');
-
-        if ($search !== '') {
-            $search_list=session('search_list', []);
-            foreach ($searchable1 as $column) {
-                foreach ($search_list as $word) {
-                    $query->orWhere($column, 'LIKE', '%' . $word . '%');
-                }    
-            }
-            foreach ($searchable2 as $table => $columns) {
-                foreach ($columns as $column) {
-                    foreach ($search_list as $word) {
-                        $query->orWhereHas($table, function($q) use ($column, $search, $word){
-                            $q->where($column, 'LIKE', '%' . $word . '%');
-                        }); 
-                    }
-                }
-            }
-        }  
-        return $query;
+        $query = [
+            'model'         => 'Profile',
+            'searchModel'   => ['username', 'about_me', 'phone', 'address'],
+            'searchRelated' => [
+                'folders' => ['name', 'slug', 'directory', 'description'],
+                'user'    => ['name', 'email']
+            ]
+        ];
+        return search_helper($search, $query);
     }
     
     /**
@@ -54,12 +43,7 @@ class ProfileController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        if ($request->search) {
-            $profiles = $this->searchQuery($request->search)->orderBy('username', 'asc')->paginate(10);
-        } else {
-            $profiles = Profile::orderBy('username', 'asc')->with('user')->paginate(10);
-        }   
-
+        $profiles = $this->searchQuery($request->search)->orderBy('username', 'asc')->paginate(10);
         if ($profiles) {
 
         } else {
@@ -73,11 +57,11 @@ class ProfileController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create() {
+    public function create($id) {
         $users = User::doesntHave('profile')->orderBy('name', 'asc')->pluck('name', 'id');
         $profile = new Profile;
 
-        return view('manage.profiles.create', ['profile' => $profile, 'users' => $users]);
+        return view('manage.profiles.create', ['profile' => $profile, 'users' => $users, 'id' => $id]);
     }
 
     /**

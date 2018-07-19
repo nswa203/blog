@@ -15,20 +15,19 @@ class CreatePostsTable extends Migration {
 			$table->increments('id');
 			$table->string('title');
 			$table->string('slug')->unique();
-            $table->integer('category_id')->nullable()->unsigned();
+            $table->integer('category_id')->unsigned(); //OK
             $table->string('image')->nullable();
             $table->string('banner')->nullable();
 			$table->longText('body');
 			$table->text('excerpt');
-			$table->integer('author_id')->unsigned();
+			$table->integer('author_id')->unsigned(); //OK
 			$table->integer('status')->default(1);
 			$table->bigInteger('comment_count')->unsigned()->default(0);
 			$table->dateTime('published_at')->nullable()->default(null);
 			$table->timestamps();
 
-			$table->foreign('author_id')
-				->references('id')->on('users')
-				->onDelete('cascade');	
+			$table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');	
+			$table->foreign('author_id')->references('id')->on('users')->onDelete('cascade');	
 		});
 	}
 

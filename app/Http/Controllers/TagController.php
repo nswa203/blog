@@ -17,31 +17,16 @@ class TagController extends Controller
         });
     }
 
-    // This Query Builder searches each table and each associated table for each word/phrase
-    // It requires that SearchController pre loads Session('search_list')
+    // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
+    // It requires the custom search_helper() function in Helpers.php.
+    // If you change Helpers.php you should do "dump-autoload". 
     public function searchQuery($search = '') {
-        $searchable1 = ['name'];
-        $searchable2 = [];
-        $query = Tag::select('*');
-
-        if ($search !== '') {
-            $search_list=session('search_list', []);
-            foreach ($searchable1 as $column) {
-                foreach ($search_list as $word) {
-                    $query->orWhere($column, 'LIKE', '%' . $word . '%');
-                }    
-            }
-            foreach ($searchable2 as $table => $columns) {
-                foreach ($columns as $column) {
-                    foreach ($search_list as $word) {
-                        $query->orWhereHas($table, function($q) use ($column, $search, $word){
-                            $q->where($column, 'LIKE', '%' . $word . '%');
-                        }); 
-                    }
-                }
-            }
-        }  
-        return $query;
+        $query = [
+            'model'         => 'Tag',
+            'searchModel'   => ['name'],
+            'searchRelated' => []
+        ];
+        return search_helper($search, $query);
     }
 
     /**
@@ -50,12 +35,7 @@ class TagController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        if ($request->search) {
-            $tags = $this->searchQuery($request->search)->orderBy('name', 'asc')->paginate(10);
-        } else {
-           $tags = Tag::orderBy('name', 'asc')->paginate(10);
-        }   
-
+        $tags = $this->searchQuery($request->search)->orderBy('name', 'asc')->paginate(10);
         if ($tags) {
 
         } else {
@@ -100,9 +80,9 @@ class TagController extends Controller
         $albums = false;
         $photos = false;
         $posts  = false;
-        if ($zone == 'Albums' or $zone == '*' ) { $albums = $tag->albums()->orderBy('id', 'desc')->paginate(5);  }
-        if ($zone == 'Photos' or $zone == '*' ) { $photos = $tag->photos()->orderBy('id', 'desc')->paginate(5);  }
-        if ($zone == 'Posts'  or $zone == '*' ) { $posts  = $tag->posts()->orderBy('id', 'desc')->paginate(5);  }
+        if ($zone == 'Albums' or $zone == 'Photos' or $zone == '*' ) { $albums = $tag->albums()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageA');  }
+        if ($zone == 'Photos' or $zone == '*' ) { $photos = $tag->photos()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageI');  }
+        if ($zone == 'Posts'  or $zone == '*' ) { $posts  = $tag->posts() ->orderBy('id', 'desc')->paginate(5, ['*'], 'pageP');  }
 
         if ($tag) {
             return view('manage.tags.show', ['tag' => $tag, 'albums' => $albums, 'photos' => $photos, 'posts' => $posts]);

@@ -21,31 +21,18 @@ class CommentsController extends Controller
         });
     }
 
-    // This Query Builder searches each table and each associated table for each word/phrase
-    // It requires that SearchController pre loads Session('search_list')
+    // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
+    // It requires the custom search_helper() function in Helpers.php.
+    // If you change Helpers.php you should do "dump-autoload". 
     public function searchQuery($search = '') {
-        $searchable1 = ['name', 'email', 'comment'];
-        $searchable2 = [];
-        $query = Comment::select('*');
-
-        if ($search !== '') {
-            $search_list=session('search_list', []);
-            foreach ($searchable1 as $column) {
-                foreach ($search_list as $word) {
-                    $query->orWhere($column, 'LIKE', '%' . $word . '%');
-                }    
-            }
-            foreach ($searchable2 as $table => $columns) {
-                foreach ($columns as $column) {
-                    foreach ($search_list as $word) {
-                        $query->orWhereHas($table, function($q) use ($column, $search, $word){
-                            $q->where($column, 'LIKE', '%' . $word . '%');
-                        }); 
-                    }
-                }
-            }
-        }  
-        return $query;
+        $query = [
+            'model'         => 'Comment',
+            'searchModel'   => ['name', 'email', 'comment'],
+            'searchRelated' => [
+                'post' => ['title', 'slug', 'body', 'excerpt']
+            ]
+        ];
+        return search_helper($search, $query);
     }
 
     /**
@@ -54,12 +41,7 @@ class CommentsController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        if ($request->search) {
-            $comments = $this->searchQuery($request->search)->orderBy('post_id', 'desc')->paginate(10);
-        } else {
-            $comments = Comment::orderBy('post_id', 'desc')->paginate(5);
-        }   
-
+        $comments = $this->searchQuery($request->search)->orderBy('id', 'desc')->paginate(10);
         if ($comments) {
 
         } else {

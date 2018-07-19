@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Pagination\Paginator;
 use App\User;
+use App\Folder;
+use App\Permission;
+use App\Profile;
 use App\Role;
 use Session;
 
@@ -21,31 +24,21 @@ class UserController extends Controller
         });
     }
 
-    // This Query Builder searches each table and each associated table for each word/phrase
-    // It requires that SearchController pre loads Session('search_list')
+    // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
+    // It requires the custom search_helper() function in Helpers.php.
+    // If you change Helpers.php you should do "dump-autoload". 
     public function searchQuery($search = '') {
-        $searchable1 = ['name', 'email'];
-        $searchable2 = ['roles' => ['name', 'display_name', 'description'], 'profile' => ['username', 'about_me', 'phone', 'address']];
-        $query = User::select('*')->with('roles')->with('profile');
-
-        if ($search !== '') {
-            $search_list=session('search_list', []);
-            foreach ($searchable1 as $column) {
-                foreach ($search_list as $word) {
-                    $query->orWhere($column, 'LIKE', '%' . $word . '%');
-                }    
-            }
-            foreach ($searchable2 as $table => $columns) {
-                foreach ($columns as $column) {
-                    foreach ($search_list as $word) {
-                        $query->orWhereHas($table, function($q) use ($column, $search, $word){
-                            $q->where($column, 'LIKE', '%' . $word . '%');
-                        }); 
-                    }
-                }
-            }
-        }  
-        return $query;
+        $query = [
+            'model'         => 'User',
+            'searchModel'   => ['name', 'email'],
+            'searchRelated' => [
+                'folders'     => ['name', 'slug', 'directory', 'description'],
+                'permissions' => ['name', 'display_name', 'description'],
+                'profile'     => ['username', 'about_me', 'phone', 'address'],
+                'roles'       => ['name', 'display_name', 'description']
+            ]
+        ];
+        return search_helper($search, $query);
     }
 
     public function status($default = -1) {
@@ -66,12 +59,7 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        if ($request->search) {
-            $users = $this->searchQuery($request->search)->orderBy('name', 'asc')->paginate(10);
-        } else {
-            $users = User::orderBy('name', 'asc')->with('profile')->paginate(10);
-        }   
-
+        $users = $this->searchQuery($request->search)->orderBy('name', 'asc')->paginate(10);
         if ($users) {
 
         } else {
@@ -132,7 +120,7 @@ class UserController extends Controller
 
         if ($myrc) {
             $myrc = $user->syncRoles($roles);
-      
+
             // php artisan make:notification CustomResetPassword
             // edit CustomResetPassword.php
             // edit CanRestPassword.php
@@ -165,12 +153,14 @@ class UserController extends Controller
     public function show($id) {
         $user   = User::findOrFail($id);
 
-        $albums = $user->albums()->orderBy('slug',         'asc')->paginate(5, ['*'], 'pageA');
-        $posts  = $user->posts( )->orderBy('slug',         'asc')->paginate(5, ['*'], 'pageP');
-        $roles  = $user->roles( )->orderBy('display_name', 'asc')->paginate(5, ['*'], 'pageR');
-
+        $albums  = $user->albums()->orderBy('slug',         'asc')->paginate(5, ['*'], 'pageA');
+        $folders = $user->folders()->orderBy('slug',        'asc')->paginate(5, ['*'], 'pageF');
+        $posts   = $user->posts( )->orderBy('slug',         'asc')->paginate(5, ['*'], 'pageP');
+        $roles   = $user->roles( )->orderBy('display_name', 'asc')->paginate(5, ['*'], 'pageR');
+        $permissions = $user->allPermissions();
+        
         if ($user) {
-            return view('manage.users.show', ['user' => $user, 'albums' => $albums, 'posts' => $posts, 'roles' => $roles, 'status_list' => $this->status()]);
+            return view('manage.users.show', ['user' => $user, 'albums' => $albums, 'folders' => $folders, 'posts' => $posts, 'roles' => $roles, 'permissions' => $permissions, 'status_list' => $this->status()]);
         } else {
             Session::flash('failure', 'User "' . $id . '" was NOT found.');
             return Redirect::back();

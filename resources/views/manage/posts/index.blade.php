@@ -9,7 +9,7 @@
 	@if($posts)
 		<div class="row">
 			<div class="col-md-9">
-				<h1><a id="menu-toggle2" data-toggle="tooltip" data-placement="top" title="Toggle NavBar">
+				<h1><a class="pointer" id="menu-toggle2" data-toggle="tooltip" data-placement="top" title="Toggle NavBar">
 					@if (isset($search)) <span class="fas fa-search mr-4"></span>
 					@else 				 <span class="fas fa-file-alt mr-4"></span>
 					@endif 				 Manage Posts

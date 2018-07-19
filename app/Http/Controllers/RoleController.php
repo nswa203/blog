@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use App\Role;
 use App\Permission;
+use App\User;
 use Session;
 
 class RoleController extends Controller
@@ -18,31 +19,18 @@ class RoleController extends Controller
         });
     }
 
-    // This Query Builder searches each table and each associated table for each word/phrase
-    // It requires that SearchController pre loads Session('search_list')
+    // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
+    // It requires the custom search_helper() function in Helpers.php.
+    // If you change Helpers.php you should do "dump-autoload". 
     public function searchQuery($search = '') {
-        $searchable1 = ['name', 'display_name', 'description'];
-        $searchable2 = ['permissions' => ['name', 'display_name', 'description']];
-        $query = Role::select('*')->with('permissions');
-
-        if ($search !== '') {
-            $search_list=session('search_list', []);
-            foreach ($searchable1 as $column) {
-                foreach ($search_list as $word) {
-                    $query->orWhere($column, 'LIKE', '%' . $word . '%');
-                }    
-            }
-            foreach ($searchable2 as $table => $columns) {
-                foreach ($columns as $column) {
-                    foreach ($search_list as $word) {
-                        $query->orWhereHas($table, function($q) use ($column, $search, $word){
-                            $q->where($column, 'LIKE', '%' . $word . '%');
-                        }); 
-                    }
-                }
-            }
-        }  
-        return $query;
+        $query = [
+            'model'         => 'Role',
+            'searchModel'   => ['name', 'display_name', 'description'],
+            'searchRelated' => [
+                'users'       => ['name', 'email']
+            ]
+        ];
+        return search_helper($search, $query);
     }
 
     /**
@@ -51,12 +39,7 @@ class RoleController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        if ($request->search) {
-            $roles = $this->searchQuery($request->search)->orderBy('display_name', 'asc')->paginate(10);
-        } else {
-            $roles = Role::orderBy('display_name', 'asc')->paginate(10);
-        }
-
+        $roles = $this->searchQuery($request->search)->orderBy('display_name', 'asc')->paginate(10);
         if ($roles) {
 
         } else {
@@ -124,7 +107,7 @@ class RoleController extends Controller
         //$role = Role::where('id', $id)->with('permissions')->with('users')->first();
         $role = Role::findOrFail($id);
 
-        $permissions = $role->permissions()->orderBy('display_name','asc')->paginate(5, ['*'], 'pageP');;
+        $permissions = $role->permissions()->orderBy('display_name','asc')->paginate(5, ['*'], 'pageP');
         $users = $role->users()->orderBy('name','asc')->paginate(5, ['*'], 'pageU');
 
         if ($role) {

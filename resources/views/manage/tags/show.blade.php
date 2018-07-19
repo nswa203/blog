@@ -9,7 +9,7 @@
 	@if($tag)
 		<div class="row">
 			<div class="col-md-8">
-				<h1><a id="menu-toggle2"><span class="fas fa-tag mr-4"></span>View {{ $tag->name }} Tag</a></h1>
+				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-tag mr-4"></span>View {{ $tag->name }} Tag</a></h1>
 				<hr>
 				<h3>Name:</h3>
 				<p class="lead">{!! $tag->name !!}</p>

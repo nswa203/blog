@@ -19,6 +19,9 @@ Route::prefix('manage')->middleware('role:superadministrator|administrator|edito
 	// Posts
 	Route::resource('/posts', 'PostController');
 	Route::get('/posts/{id}/delete', 'PostController@delete')->name('posts.delete');
+	// Folders
+	Route::resource('/folders', 'FolderController');
+	Route::get('/folders/{id}/delete', 'FolderController@delete')->name('folders.delete');	
 	// Albums
 	Route::resource('/albums', 'AlbumController');
 	Route::get('/albums/{id}/delete', 'AlbumController@delete')->name('albums.delete');
@@ -36,13 +39,16 @@ Route::prefix('manage')->middleware('role:superadministrator|administrator|edito
 	Route::delete('/comments/{id}',		'CommentsController@destroy')->name('comments.destroy');
 	Route::get('/comments/{id}/delete',	'CommentsController@delete'	)->name('comments.delete');
 	Route::get('/comments',				'CommentsController@index'	)->name('comments.index');
+	// Private folders & files
+	Route::get('private/{id}/{filename}', 'FolderController@getFile')->name('private.getfile');
 });
 Route::prefix('manage')->middleware('role:superadministrator|administrator')->group(function () {
 	// Users
 	Route::resource('/users', 'UserController');
 	Route::get('users/{id}/delete',	'UserController@delete')->name('users.delete');
 	// Profiles
-	Route::resource('/profiles', 'ProfileController');
+	Route::resource('/profiles', 'ProfileController')->except('create');
+	Route::get('profiles/{id}/create',	'ProfileController@create'	)->name('profiles.create');
 	Route::get('profiles/{id}/delete',	'ProfileController@delete')->name('profiles.delete');	
 	// Roles
 	Route::resource('/roles', 'RoleController');

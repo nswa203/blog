@@ -9,7 +9,7 @@
 @section('content')
 	<div class="row">
 		<div class="col-md-8">
-			<h1><a id="menu-toggle2"><span class="fas fa-user-edit mr-4"></span>Edit Permission</a></h1>
+			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-user-edit mr-4"></span>Edit Permission</a></h1>
 			<hr>
 			{!! Form::model($permission, ['route'=>['permissions.update', $permission->id], 'method'=>'PUT', 'data-parsley-validate'=>'']) !!}
 			

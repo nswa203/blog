@@ -10,7 +10,7 @@
 @section('content')
 	<div class="row">
 		<div class="col-md-8">
-			<h1><a id="menu-toggle2"><span class="fas fa-image mr-4"></span>Add Photos</a></h1>
+			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-image mr-4"></span>Add Photos</a></h1>
 			<hr>
 
 			{!! Form::open(['route'=>'photos.store', 'data-parsley-validate'=>'', 'files'=>true]) !!}
@@ -125,6 +125,7 @@
 			menubar: false,
 			toolbar: "",
 			forced_root_block : 'div',
+            branding: false,
  		});
 	</script>
 

@@ -9,7 +9,7 @@
 @section('content')
 	<div class="row">
 		<div class="col-md-8">
-			<h1><a id="menu-toggle2"><span class="fas fa-user-plus mr-4"></span>Create New User</a></h1>
+			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-user-plus mr-4"></span>Create New User</a></h1>
 			<hr>
 			{!! Form::open(['route'=>'users.store', 'data-parsley-validate'=>'']) !!}
 			{{ 	Form::label('name', 'Name:', ['class'=>'font-bold form-spacing-top']) }}

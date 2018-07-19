@@ -64,8 +64,9 @@
                 customSlug: '',
                 wasEdited: false,
                 api_token: this.$root.api_token,
-                post_id: this.$root.post_id,
+                resource_id: this.$root.resource_id,
                 button: 'Cancel',
+                route: this.$root.route
             }
         },
         methods: {
@@ -90,11 +91,11 @@
                 let slug = Slug(val);
                 let vm = this;
                 if (this.api_token && slug) {    
-                    axios.get('/api/posts/unique', {
+                    axios.get(this.route, {
                         params: {
                             api_token: vm.api_token,
                             slug: slug,
-                            id: e.post_id
+                            id: e.resource_id
                         }
                     }).then(function (response) {
                         if (response.data) {

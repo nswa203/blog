@@ -8,7 +8,7 @@
 @section('content')
 	<div class="row">
 		<div class="col-md-9">
-				<h1><a id="menu-toggle2" data-toggle="tooltip", data-placement="top", title="Toggle NavBar">
+				<h1><a class="pointer" id="menu-toggle2" data-toggle="tooltip", data-placement="top", title="Toggle NavBar">
 				@if (isset($search)) <span class="fas fa-search mr-4"></span>
 				@else 				 <span class="fas fa-user-circle mr-4"></span>
 				@endif 				 Manage Profiles
@@ -16,7 +16,7 @@
 		</div>
 
 		<div class="col-md-3">
-			<a href="{{ route('profiles.create') }}" class="btn btn-lg btn-block btn-primary btn-h1-spacing"><span class="fas fa-plus-circle mr-2"></span>Create New Profile</a>
+			<a href="{{ route('profiles.create', '0') }}" class="btn btn-lg btn-block btn-primary btn-h1-spacing"><span class="fas fa-plus-circle mr-2"></span>Create New Profile</a>
 		</div>
 		<div class="col-md-12">
 			<hr>

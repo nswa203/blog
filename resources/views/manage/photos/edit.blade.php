@@ -10,7 +10,7 @@
 @section('content')
 	<div class="row">
 		<div class="col-md-8">
-			<h1><a id="menu-toggle2"><span class="fas fa-image mr-4"></span>Edit Photo</a></h1>
+			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-image mr-4"></span>Edit Photo</a></h1>
 			<hr>
 
 			{!! Form::model($photo, ['route'=>['photos.update', $photo->id], 'method'=>'PUT', 'data-parsley-validate'=>'', 'files'=>true, 'autofocus'=>'']) !!}
@@ -148,6 +148,7 @@
 			menubar: false,
 			toolbar: "",
 			forced_root_block : 'div',
+            branding: false,
  		});
 	</script>
 

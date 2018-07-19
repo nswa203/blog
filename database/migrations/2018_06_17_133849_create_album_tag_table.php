@@ -15,12 +15,11 @@ class CreateAlbumTagTable extends Migration
     public function up() {
         Schema::create('album_tag', function (Blueprint $table) {
             $table->increments('id');
-
             $table->integer('album_id')->unsigned();
-            $table->foreign('album_id')->references('id')->on('albums');
-            
             $table->integer('tag_id')->unsigned();
-            $table->foreign('tag_id')->references('id')->on('tags');
+
+            $table->foreign('album_id')->references('id')->on('albums')->onDelete('cascade');
+            $table->foreign('tag_id')->references('id')->on('tags')->onDelete('cascade');
         });
     }
 

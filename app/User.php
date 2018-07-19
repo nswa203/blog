@@ -29,6 +29,14 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
+    public function albums() {
+        return $this->hasMany('App\Album', 'author_id');
+    }
+
+    public function folders() {
+        return $this->hasMany('App\Folder');
+    }  
+
     public function posts() {
         return $this->hasMany('App\Post', 'author_id');
     }
@@ -36,9 +44,5 @@ class User extends Authenticatable
     public function profile() {
         return $this->hasOne('App\Profile');
     }
-
-    public function albums() {
-        return $this->hasMany('App\Album', 'author_id');
-    }    
     
 }

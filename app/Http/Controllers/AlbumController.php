@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use App\Album;
-use App\Tag;
 use App\Category;
+use App\Photo;
+use App\Post;
+use App\Tag;
 use App\User;
 use Session;
 use Purifier;
@@ -23,31 +25,22 @@ class AlbumController extends Controller
         });
     }
 
-    // This Query Builder searches each table and each associated table for each word/phrase
-    // It requires that SearchController pre loads Session('search_list')
+    // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
+    // It requires the custom search_helper() function in Helpers.php.
+    // If you change Helpers.php you should do "dump-autoload". 
     public function searchQuery($search = '') {
-        $searchable1 = ['title', 'slug', 'description', 'image'];
-        $searchable2 = ['user' => ['name'], 'category' => ['name'], 'tags' => ['name']];
-        $query = Album::select('*')->with('user')->with('category');
-
-        if ($search !== '') {
-            $search_list=session('search_list', []);
-            foreach ($searchable1 as $column) {
-                foreach ($search_list as $word) {
-                    $query->orWhere($column, 'LIKE', '%' . $word . '%');
-                }    
-            }
-            foreach ($searchable2 as $table => $columns) {
-                foreach ($columns as $column) {
-                    foreach ($search_list as $word) {
-                        $query->orWhereHas($table, function($q) use ($column, $search, $word){
-                            $q->where($column, 'LIKE', '%' . $word . '%');
-                        }); 
-                    }
-                }
-            }
-        }  
-        return $query;
+        $query = [
+            'model'         => 'Album',
+            'searchModel'   => ['title', 'slug', 'description', 'image'],
+            'searchRelated' => [
+                'category' => ['name'],
+                'photos'   => ['title', 'description', 'image', 'file', 'exif', 'iptc'],
+                'posts'    => ['title', 'body', 'excerpt'],
+                'tags'     => ['name'],
+                'user'     => ['name', 'email']
+            ]
+        ];
+        return search_helper($search, $query);
     }
 
     // $status_list
@@ -69,12 +62,7 @@ class AlbumController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        if ($request->search) {
-            $albums = $this->searchQuery($request->search)->orderBy('id', 'desc')->paginate(10);
-        } else {
-            $albums = Album::orderBy('id', 'desc')->with('user')->paginate(10);
-        }
-            
+        $albums = $this->searchQuery($request->search)->orderBy('title', 'asc')->paginate(10);
         if ($albums) {
 
         } else {
@@ -274,23 +262,56 @@ class AlbumController extends Controller
      * @param  \App\Album  $album
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id) {
+    public function destroy(Request $request, $id) {
         $album = Album::findOrFail($id);
 
+        // If delete_photos was checked, delete all UNSHARED photos in this album...
+        // ...and issue warnings for all shared photos.  
+        // If delete_photos was NOT checked and one or more photos would be left hanging...
+        // without a parent album, then return an error. 
+        foreach ($album->photos as $photo) {
+            if ($request->delete_photos) {
+                if ($photo->albums->count() == 1) { 
+                    $photo->tags()->detach();
+                    $photo->albums()->detach();
+                    $myrc = $photo->delete();
+                    if ($myrc) {
+                        if ($photo->image) {
+                            Storage::delete($photo->image);
+                            Storage::delete($photo->file);
+                            $msgx['info'][] = 'Image "' . $photo->image . '" was successfully deleted.';
+                            $msgx['info'][] = 'Image "' . $photo->file  . '" was successfully deleted.';
+                        }
+                        $msgx['info'][] = 'Photo "' . $photo->title . '" was successfully deleted.';
+                    } else {
+                        $msgx['warning'][] = 'Photo "' . $id . '" was NOT found.';
+                    }
+                } else {
+                    $msgx['warning'][] = 'Photo "' . $photo->title . '" is shared with another album and will NOT be deleted!';
+                }
+            } elseif ($photo->albums->count() == 1) {
+                $msgx['failure'][] = 'Album "' . $album->title .
+                    '" cannot be deleted as it contains UNSHARED photos. You must choose to delete the photos along with the abum!';
+                if (isset($msgx)) { session()->flash('msgx', $msgx); }
+                return Redirect::back()->withInput();
+            }          
+        }    
+
+        // Now Delete the Album
         $album->tags()->detach();
         $myrc = $album->delete();
-
         if ($myrc) {
             if ($album->image) {
                 Storage::delete($album->image);
-                $msgs[] = 'Image "' . $album->image . '" was successfully deleted.';
+                $msgx['info'   ][] = 'Image "' . $album->image . '" was successfully deleted.';
+                $msgx['success'][] = 'Album "' . $album->slug .  '" was successfully deleted.';
             }
-            Session::flash('success', 'Album "' . $album->slug . '" was successfully deleted.');
-            if (isset($msgs)) { session()->flash('msgs', $msgs); }
+            if (isset($msgx)) { session()->flash('msgx', $msgx); }
             return redirect()->route('albums.index');
         } else {
-            Session::flash('failure', 'Album "' . $id . '" was NOT found.');
-            return Redirect::back();
+            $msgx['failure'][] = 'Album "' . $id . '" was NOT found.';
+            if (isset($msgx)) { session()->flash('msgx', $msgx); }
+            return Redirect::back()->withInput();
         }
     }
 

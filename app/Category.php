@@ -13,8 +13,8 @@ class Category extends Model
     	return $this->hasMany('App\Album');
     }
 
-    public function photos() {
-    	return $this->hasMany('App\Photo');
+    public function folders() {
+        return $this->hasMany('App\Folder');
     }
 
     public function posts() {

@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use App\Post;
-use App\Tag;
+use App\Album;
 use App\Category;
+use App\Folder;
+use App\Tag;
 use App\User;
 use Session;
 use Purifier;
@@ -23,32 +25,23 @@ class PostController extends Controller
         });
 	}
 
-    // This Query Builder searches each table and each associated table for each word/phrase
-    // It requires that SearchController pre loads Session('search_list')
-	public function searchQuery($search = '') {
-		$searchable1 = ['title', 'slug', 'image', 'body', 'excerpt'];
-		$searchable2 = ['user' => ['name'], 'category' => ['name'], 'tags' => ['name']];
-		$query = Post::select('*')->with('user')->with('category');
-
-        if ($search !== '') {
-            $search_list=session('search_list', []);
-            foreach ($searchable1 as $column) {
-                foreach ($search_list as $word) {
-                    $query->orWhere($column, 'LIKE', '%' . $word . '%');
-                }    
-            }
-            foreach ($searchable2 as $table => $columns) {
-                foreach ($columns as $column) {
-                    foreach ($search_list as $word) {
-                        $query->orWhereHas($table, function($q) use ($column, $search, $word){
-                            $q->where($column, 'LIKE', '%' . $word . '%');
-                        }); 
-                    }
-                }
-            }
-        }  
-        return $query;
-	}
+    // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
+    // It requires the custom search_helper() function in Helpers.php.
+    // If you change Helpers.php you should do "dump-autoload". 
+    public function searchQuery($search = '') {
+        $query = [
+            'model'         => 'Post',
+            'searchModel'   => ['title', 'slug', 'image', 'body', 'excerpt'],
+            'searchRelated' => [
+				'albums'	=> ['title', 'slug', 'description'],
+				'category' 	=> ['name'],
+				'folders' 	=> ['name', 'slug', 'description'],
+				'tags' 		=> ['name'],
+				'user' 		=> ['name', 'email']
+	        ]
+        ];
+        return search_helper($search, $query);
+    }
 
     // $status_list
 	public function status($default = -1) {
@@ -69,12 +62,7 @@ class PostController extends Controller
 	 * @return \Illuminate\Http\Response
 	 */
 	public function index(Request $request) {
-		if ($request->search) {
-			$posts = $this->searchQuery($request->search)->orderBy('id', 'desc')->paginate(10);
-		} else {
-			$posts = Post::orderBy('id', 'desc')->with('user')->paginate(10);
-        }
-        	
+        $posts = $this->searchQuery($request->search)->orderBy('id', 'desc')->paginate(10);
 		if ($posts) {
 
 		} else {
@@ -267,13 +255,13 @@ class PostController extends Controller
 
         if ($request->hasFile('banner')) {
             $oldFiles[] = $post->banner;
-            $banner = $request->file('banner');
-            $filename = microtime() . '.' . $banner->getClientOriginalExtension();
+            $image = $request->file('banner');
+            $filename = microtime() . '.' . $image->getClientOriginalExtension();
             $location = public_path('images\\' . $filename);
             //Image::make($banner)->resize(800, null, function ($constraint) { $constraint->aspectRatio(); })->save($location);
             $myrc = Image::make($image)->widen(800, function ($constraint) { $constraint->upsize(); })->save($location);
             $post->banner = $filename;
-            $msgs[] = 'Image "' . $banner->getClientOriginalName() . '" was successfully saved as ' . $filename;
+            $msgs[] = 'Image "' . $image->getClientOriginalName() . '" was successfully saved as ' . $filename;
         } elseif ($request->delete_banner) {
             $oldFiles[] = $post->banner;
             $msgs[] = 'Image "' . $post->banner . '" deleted.';

@@ -10,7 +10,7 @@
 @section('content')
 	<div class="row">
 		<div class="col-md-8">
-			<h1><a id="menu-toggle2"><span class="fas fa-file-alt mr-4"></span>Create A New Post</a></h1>
+			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-file-alt mr-4"></span>Create A New Post</a></h1>
 			<hr>
 			<div class="image-crop-height mt-3 mb-0" id="myImgOld-2" style="--croph:232px; display:none">
 				<img src="{{ asset('images/'.$post->banner) }}" width="100%" />
@@ -25,7 +25,7 @@
 				{{ Form::label('title', 'Title:', ['class'=>'font-bold form-spacing-top']) }}
 				{{ Form::text('title', null, ['class'=>'form-control form-control-lg', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'8', 'data-parsley-maxlength'=>'191', 'v-model'=>'title']) }}
 				
-				<slugwidget2 url="{{ url('/') }}" subdirectory="/" :title="title" @slug-changed="updateSlug"></slugwidget2>
+				<slugwidget url="{{ url('/') }}" subdirectory="/" :title="title" @slug-changed="updateSlug"></slugwidget>
 			</div>
 
 			{{ Form::label('category_id', 'Category:', ['class'=>'font-bold form-spacing-top']) }}
@@ -162,6 +162,7 @@
 			menubar: false,
 			toolbar: "",
 			forced_root_block : 'div',
+            branding: false,
  		});
 	</script>
 
@@ -276,7 +277,8 @@
 				title: this.title.value,
 				slug: this.title.slug,
 				api_token: '{{ Auth::user()->api_token }}',
-				post_id: '{{ $post->id }}'
+				resource_id: '{{ $post->id }}',
+				route: '/api/posts/unique'
 			},
 			methods: {
 				updateSlug: function(val){
@@ -284,5 +286,5 @@
 				}
 			}
 		});
-	</script>	
+	</script>
 @endsection

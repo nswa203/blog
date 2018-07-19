@@ -9,7 +9,7 @@
 	@if($permission)
 		<div class="row">
 			<div class="col-md-8">
-				<h1><a id="menu-toggle2"><span class="fas fa-user mr-4"></span>View Permission</a></h1>
+				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-user mr-4"></span>View Permission</a></h1>
 				<hr>
 				<h3>Name:</h3>
 				<p class="lead">{!! $permission->display_name !!}</p>

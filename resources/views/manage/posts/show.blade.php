@@ -9,7 +9,7 @@
 	@if($post)
 		<div class="row">
 			<div class="col-md-8">
-				<h1><a id="menu-toggle2"><span class="fas fa-file-alt mr-4"></span>{{ $post->title }}</a></h1>
+				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-file-alt mr-4"></span>{{ $post->title }}</a></h1>
 				<hr>
 				@if($post->banner)
 					<div class="image-crop-height mt-3 mb-5" style="--croph:232px">

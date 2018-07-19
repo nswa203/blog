@@ -9,7 +9,7 @@
 @section('content')
 	<div class="row">
 		<div class="col-md-8">
-			<h1><a id="menu-toggle2"><span class="fas fa-user-circle mr-4"></span>Edit Profile</a></h1>
+			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-user-circle mr-4"></span>Edit Profile</a></h1>
 			<hr>
 			<div class="image-crop-height mt-3 mb-0" id="myImgOld-2" style="--croph:232px; display:none">
 				<img src="{{ asset('images/'.$profile->banner) }}" width="100%" />
@@ -140,6 +140,7 @@
 			menubar: false,
 			toolbar: "",
 			forced_root_block : 'div',
+            branding: false,
  		});
 
  		tinymce.init ({
@@ -148,6 +149,7 @@
 			menubar: false,
 			toolbar: "",
 			forced_root_block : 'div',
+            branding: false,
  		});
 	</script>
 

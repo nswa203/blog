@@ -9,7 +9,7 @@
 	@if($photo)
 		<div class="row">
 			<div class="col-md-12">
-				<h1><a id="menu-toggle2"><span class="fas fa-image mr-4"></span>{{ $photo->title }}</a></h1>
+				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-image mr-4"></span>{{ $photo->title }}</a></h1>
 				<hr>
 				<div class="text-center">
 					<a href="{{ asset('images/'.$photo->file) }}">

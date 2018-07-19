@@ -23,7 +23,6 @@ class PagesController extends Controller
 
 	public function getIndex() {
 		$posts = Post::orderBy('created_at', 'desc')->where('status', '>=', '4')->paginate(4);
-
 		if ($posts) {
 
 		} else {
@@ -33,26 +32,26 @@ class PagesController extends Controller
 	}
 
 	public function getAbout() {
-		$first 	= 'Nick';
-		$last 	= 'Svonja';
-		$email 	= 'nswa203@btinternet.com';
-		$data 	= [];
-		$data['fullname'] = $first . ' ' . $last;
-		$data['email'] = $email;
+		$data = [];
+		$data['name']  = env('APP_OWNER');
+		$data['email'] = env('APP_EMAIL');
 
 		return view('pages.about')->with('data', $data);
 	}
 
 	public function getContact() {
-		return view('pages.contact');
+		$data = [];
+		$data['name']  = env('APP_OWNER');
+		$data['email'] = env('APP_EMAIL');		
+		return view('pages.contact')->with('data', $data);
 	}
 
 	public function postContact(Request $request) {
 		$this->validate($request, [
-			'name' 			=> 'required|min:3|max:191',
-			'email' 		=> 'required|email|min:5|max:191',
-			'subject'		=> 'required|min:3|max:191',
-			'message' 		=> 'required|min:8|max:2048',
+			'name' 		=> 'required|min:3|max:191',
+			'email' 	=> 'required|email|min:5|max:191',
+			'subject'	=> 'required|min:3|max:191',
+			'message' 	=> 'required|min:8|max:2048',
 		]);
 
         // We protect this public Form with a Captcha which protects us from Bots etc.
@@ -68,13 +67,13 @@ class PagesController extends Controller
             ]);
             $results = json_decode($response->getBody()->getContents());
             $myrc = $results->success;
-        } else { $myrc=false; }
+        } else { $myrc = false; }
         if (!$myrc) {
             Session::flash('failure', "You're probably not human!");
             return Redirect::back()->withInput();
         }
 
-		$data=[
+		$data = [
 			'name' 			=> $request->name,
 			'email' 		=> $request->email,
 			'subject'		=> $request->subject,

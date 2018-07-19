@@ -9,7 +9,7 @@
 	@if($user)
 		<div class="row">
 			<div class="col-md-8">
-				<h1><a id="menu-toggle2"><span class="fas fa-user mr-4"></span>View User Details</a></h1>
+				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-user mr-4"></span>View User Details</a></h1>
 				<hr>
 				<h3>Name:</h3>
 				<p class="lead">{!! $user->name !!}</p>
@@ -35,6 +35,14 @@
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($user->updated_at)) }}</dd>
 					</dl>
 					<hr class="hr-spacing-top">
+					@if(!$user->profile)					
+						<div class="row">
+							<div class="col-sm-12">
+								{!! Html::decode(link_to_route('profiles.create', '<i class="fas fa-user-circle mr-2"></i>Add A User Profile', [$user->id], ['class'=>'btn btn-outline-dark btn-block'])) !!}
+							</div>
+						</div>
+						<hr class="hr">
+					@endif	
 					<div class="row">
 						<div class="col-sm-6">
 							{!! Html::decode(link_to_route('users.edit', '<i class="fas fa-user-edit mr-2"></i>Edit', [$user->id], ['class'=>'btn btn-primary btn-block'])) !!}
@@ -54,159 +62,279 @@
 			</div>
 		</div>
 
+		@if($user->folders->count() && $folders)
+			<div class="row mt-3" id="accordionf">
+				<div class="col-md-12">
+					<div class="card card-body bg-light">
+					<h1>
+						Folders
+						<span class="h1-suffix">(This User has {{ $user->folders->count()==1 ? '1 Folder' : $user->folders->count().' Folders' }} assigned.)</span>
+						<a><span class="fas fa-chevron-circle-down float-right mr-1"
+						 		 data-toggle="collapse" data-target="#collapsef">
+					 	</span></a>
+					</h1>
+						<div id="collapsef" class="collapse {{ request()->has('pageF') ? 'show' : 'hide' }}" data-parent="#accordionf">				
+							<table class="table table-hover table-responsive-lg">
+								<thead class="thead-dark">
+									<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
+									<th>Name</th>
+									<th>Slug</th>
+									<th>Category</th>
+									<th>Owner</th>
+									<th>Used</th>
+									<th width="120px">Updated</th>
+									<th width="130px" class="text-right">Page {{$folders->currentPage()}} of {{$folders->lastPage()}}</th>
+								</thead>
+								<tbody>						
+									@foreach($folders as $folder)
+										<tr>
+											<th>{{ $folder->id }}</th>
+											<td>{{ $folder->name }}</td>
+											<td><a href="{{ url($folder->slug) }}">{{ $folder->slug }}</a></td>
+											<td>
+												<a href="{{ route('categories.show', [$folder->category_id, 'Albums']) }}"><span class="badge badge-info">{{ $folder->category->name }}</span></a>
+											</td>
+											<td>
+												@if($folder->user->id)
+													<a href="{{ route('users.show', $folder->user->id) }}">{{ $folder->user->name }}</a>
+												@endif	
+											</td>
+											<td class="{{ $folder->size / $folder->max_size > .85 ? 'text-danger' : 'text-success' }}">
+												{{ round(($folder->size / $folder->max_size) * 100, 2) }}%
+											</td>
+											<td>{{ date('j M Y', strtotime($folder->updated_at)) }}</td>
+											<td class="text-right" nowrap>
+												<a href="{{ route('folders.show', $folder->id)}}" class="btn btn-sm btn-outline-dark">View Folder</a>
+											</td>
+										</tr>
+									@endforeach
+								</tbody>
+							</table>
+							<div class="d-flex justify-content-center">
+								{{ $folders->appends(Request::all())->render() }} 
+							</div>
+						</div>			
+					</div>
+				</div>
+			</div>
+		@endif
+
 		@if($user->albums->count() && $albums)
-			<div class="row mt-3">
+			<div class="row mt-3" id="accordiona">
 				<div class="col-md-12">
 					<div class="card card-body bg-light">
 					<h1>
 						Albums
 						<span class="h1-suffix">(This User has {{ $user->albums->count()==1 ? '1 Album' : $user->albums->count().' Albums' }} assigned.)</span>
+						<a><span class="fas fa-chevron-circle-down float-right mr-1"
+						 		 data-toggle="collapse" data-target="#collapsea">
+					 	</span></a>						
 					</h1>
-						<table class="table table-hover table-responsive-lg">
-							<thead class="thead-dark">
-								<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
-								<th>Title</th>
-								<th>Slug</th>
-								<th>Category</th>
-								<th>Author</th>
-								<th>#P</th>
-								<th width="120px">Published</th>
-								<th width="130px" class="text-right">Page {{$albums->currentPage()}} of {{$albums->lastPage()}}</th>
-							</thead>
-							<tbody>						
-								@foreach($albums as $album)
-									<tr>
-										<th>{{ $album->id }}</th>
-										<td>{{ $album->title }}</td>
-										<td><a href="{{ url($album->slug) }}">{{ $album->slug }}</a></td>
-										<td>
-											<a href="{{ route('categories.show', [$album->category_id, 'Albums']) }}"><span class="badge badge-info">{{ $album->category->name }}</span></a>
-										</td>
-										<td>
-											@if($album->user->id)
-												<a href="{{ route('users.show', $album->user->id) }}">{{ $album->user->name }}</a>
-											@endif	
-										</td>
-										<td>{{ $album->photos->count() }}</td>
-										<th>
-											@if($album->published_at)
-												<span class="text-success">{{ date('j M Y', strtotime($album->published_at)) }}</span>
-											@else	
-												<span class="text-danger">{{ $status_list[$album->status] }}</span>
-											@endif	
-										</th>
-										<td class="text-right" nowrap>
-											<a href="{{ route('albums.show', $album->id)}}" class="btn btn-sm btn-outline-dark">View Album</a>
-										</td>
-									</tr>
-								@endforeach
-							</tbody>
-						</table>
-						<div class="d-flex justify-content-center">
-							{{ $albums->appends(Request::all())->render() }} 
-						</div>
+						<div id="collapsea" class="collapse {{ request()->has('pageA') ? 'show' : 'hide' }}" data-parent="#accordiona">				
+							<table class="table table-hover table-responsive-lg">
+								<thead class="thead-dark">
+									<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
+									<th>Title</th>
+									<th>Slug</th>
+									<th>Category</th>
+									<th>Author</th>
+									<th>#P</th>
+									<th width="120px">Published</th>
+									<th width="130px" class="text-right">Page {{$albums->currentPage()}} of {{$albums->lastPage()}}</th>
+								</thead>
+								<tbody>						
+									@foreach($albums as $album)
+										<tr>
+											<th>{{ $album->id }}</th>
+											<td>{{ $album->title }}</td>
+											<td><a href="{{ url($album->slug) }}">{{ $album->slug }}</a></td>
+											<td>
+												<a href="{{ route('categories.show', [$album->category_id, 'Albums']) }}"><span class="badge badge-info">{{ $album->category->name }}</span></a>
+											</td>
+											<td>
+												@if($album->user->id)
+													<a href="{{ route('users.show', $album->user->id) }}">{{ $album->user->name }}</a>
+												@endif	
+											</td>
+											<td>{{ $album->photos->count() }}</td>
+											<th>
+												@if($album->published_at)
+													<span class="text-success">{{ date('j M Y', strtotime($album->published_at)) }}</span>
+												@else	
+													<span class="text-danger">{{ $status_list[$album->status] }}</span>
+												@endif	
+											</th>
+											<td class="text-right" nowrap>
+												<a href="{{ route('albums.show', $album->id)}}" class="btn btn-sm btn-outline-dark">View Album</a>
+											</td>
+										</tr>
+									@endforeach
+								</tbody>
+							</table>
+							<div class="d-flex justify-content-center">
+								{{ $albums->appends(Request::all())->render() }} 
+							</div>
+						</div>	
 					</div>
 				</div>
 			</div>
 		@endif
 
 		@if($user->posts->count() && $posts)
-			<div class="row mt-3">
+			<div class="row mt-3" id="accordionp">
 				<div class="col-md-12">
 					<div class="card card-body bg-light">
 					<h1>
 						Posts
 						<span class="h1-suffix">(This User has {{ $user->posts->count()==1 ? '1 Post' : $user->posts->count().' Posts' }} assigned.)</span>
+						<a><span class="fas fa-chevron-circle-down float-right mr-1"
+						 		 data-toggle="collapse" data-target="#collapsep">
+					 	</span></a>							
 					</h1>
-						<table class="table table-hover table-responsive-lg">
-							<thead class="thead-dark">
-								<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
-								<th>Title</th>
-								<th>Excerpt</th>
-								<th>Category</th>
-								<th>Author</th>
-								<th width="120px">Published</th>
-								<th class="text-right" width="130px">Page {{$posts->currentPage()}} of {{$posts->lastPage()}}</th>
-							</thead>
-							<tbody>
-								@foreach($posts as $post)
-									<tr>
-										<th>{{ $post->id }}</th>
-										<td>{{ $post->title }}</td>
-										<td>
-											{{ substr(strip_tags($post->excerpt), 0, 156) }}{{ strlen(strip_tags($post->excerpt)) >156 ? '...' : '' }}
-										</td>
-										<td>
-											<a href="{{ route('categories.show', [$post->category_id, 'Posts']) }}"><span class="badge badge-info">{{ $post->category->name }}</span></a>
-										</td>
-										<td>
-											@if($post->user->id)
-												<a href="{{ route('users.show', $post->user->id) }}">{{ $post->user->name }}</a>
-											@endif	
-										</td>
-										<th>
-											@if($post->published_at)
-												<span class="text-success">{{ date('j M Y', strtotime($post->published_at)) }}</span>
-											@else	
-												<span class="text-danger">{{ $status_list[$post->status] }}</span>
-											@endif	
-										</th>
-										<td class="text-right" nowrap>
-											<a href="{{ route('posts.show', $post->id)}}" class="btn btn-sm btn-outline-dark">View Post</a>
-										</td>
-									</tr>
-								@endforeach
-							</tbody>
-						</table>
-						<div class="d-flex justify-content-center">
-							{{ $posts->appends(Request::all())->render() }} 
-						</div>
+						<div id="collapsep" class="collapse {{ request()->has('pageP') ? 'show' : 'hide' }}" data-parent="#accordionp">				
+							<table class="table table-hover table-responsive-lg">
+								<thead class="thead-dark">
+									<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
+									<th>Title</th>
+									<th>Excerpt</th>
+									<th>Category</th>
+									<th>Author</th>
+									<th width="120px">Published</th>
+									<th class="text-right" width="130px">Page {{$posts->currentPage()}} of {{$posts->lastPage()}}</th>
+								</thead>
+								<tbody>
+									@foreach($posts as $post)
+										<tr>
+											<th>{{ $post->id }}</th>
+											<td>{{ $post->title }}</td>
+											<td>
+												{{ substr(strip_tags($post->excerpt), 0, 156) }}{{ strlen(strip_tags($post->excerpt)) >156 ? '...' : '' }}
+											</td>
+											<td>
+												<a href="{{ route('categories.show', [$post->category_id, 'Posts']) }}"><span class="badge badge-info">{{ $post->category->name }}</span></a>
+											</td>
+											<td>
+												@if($post->user->id)
+													<a href="{{ route('users.show', $post->user->id) }}">{{ $post->user->name }}</a>
+												@endif	
+											</td>
+											<th>
+												@if($post->published_at)
+													<span class="text-success">{{ date('j M Y', strtotime($post->published_at)) }}</span>
+												@else	
+													<span class="text-danger">{{ $status_list[$post->status] }}</span>
+												@endif	
+											</th>
+											<td class="text-right" nowrap>
+												<a href="{{ route('posts.show', $post->id)}}" class="btn btn-sm btn-outline-dark">View Post</a>
+											</td>
+										</tr>
+									@endforeach
+								</tbody>
+							</table>
+							<div class="d-flex justify-content-center">
+								{{ $posts->appends(Request::all())->render() }} 
+							</div>
+						</div>	
 					</div>
 				</div>
 			</div>
 		@endif
 
 		@if($user->roles->count() && $roles)
-			<div class="row mt-3">
+			<div class="row mt-3" id="accordionr">
 				<div class="col-md-12">
 					<div class="card card-body bg-light">
 					<h1>
 						Roles
 						<span class="h1-suffix">(This User has {{ $user->roles->count()==1 ? '1 Role' : $user->roles->count().' Roles' }} assigned.)</span>
+						<a><span class="fas fa-chevron-circle-down float-right mr-1"
+						 		 data-toggle="collapse" data-target="#collapser">
+					 	</span></a>							
 					</h1>
-						<table class="table table-hover table-responsive-lg">
-							<thead class="thead-dark">
-								<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
-								<th>Name</th>
-								<th>Slug</th>
-								<th>Description</th>
-								<th width="120px">Created</th>
-								<th width="120px">Updated</th>
-								<th width="130px" class="text-right">Page {{$roles->currentPage()}} of {{$roles->lastPage()}}</th>
-							</thead>
-							<tbody>						
-								@foreach($roles as $role)
-									<tr>
-										<th>{{ $role->id }}</th>
-										<td>{{ $role->display_name }}</td>
-										<td>{{ $role->name }}</td>
-										<td>{{ substr($role->description, 0, 156) }}{{ strlen($role->description)>156 ? '...' : '' }}
-										<td>{{ date('j M Y', strtotime($role->created_at)) }}</td>
-										<td>{{ date('j M Y', strtotime($role->updated_at)) }}</td>
-										<td class="text-right" nowrap>
-											<a href="{{ route('roles.show', $role->id)}}" class="btn btn-sm btn-outline-dark">View Role</a>
-										</td>
-									</tr>
-								@endforeach
-							</tbody>
-						</table>
-						<div class="d-flex justify-content-center">
-							{{ $roles->appends(Request::all())->render() }} 
-						</div>
+						<div id="collapser" class="collapse {{ request()->has('pageR') ? 'show' : 'hide' }}" data-parent="#accordionr">				
+							<table class="table table-hover table-responsive-lg">
+								<thead class="thead-dark">
+									<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
+									<th>Name</th>
+									<th>Slug</th>
+									<th>Description</th>
+									<th width="120px">Created</th>
+									<th width="120px">Updated</th>
+									<th width="130px" class="text-right">Page {{$roles->currentPage()}} of {{$roles->lastPage()}}</th>
+								</thead>
+								<tbody>						
+									@foreach($roles as $role)
+										<tr>
+											<th>{{ $role->id }}</th>
+											<td>{{ $role->display_name }}</td>
+											<td>{{ $role->name }}</td>
+											<td>{{ substr($role->description, 0, 156) }}{{ strlen($role->description)>156 ? '...' : '' }}
+											<td>{{ date('j M Y', strtotime($role->created_at)) }}</td>
+											<td>{{ date('j M Y', strtotime($role->updated_at)) }}</td>
+											<td class="text-right" nowrap>
+												<a href="{{ route('roles.show', $role->id)}}" class="btn btn-sm btn-outline-dark">View Role</a>
+											</td>
+										</tr>
+									@endforeach
+								</tbody>
+							</table>
+							<div class="d-flex justify-content-center">
+								{{ $roles->appends(Request::all())->render() }} 
+							</div>
+						</div>	
+					</div>
+				</div>
+			</div>
+		@endif
+
+		@if($permissions->count())
+			<div class="row mt-3" id="accordionpm">
+				<div class="col-md-12">
+					<div class="card card-body bg-light">
+					<h1>
+						Permissions
+						<span class="h1-suffix">(This User has {{ $permissions->count()==1 ? '1 Permission' : $permissions->count().' Permissions' }} assigned.)</span>
+						<a><span class="fas fa-chevron-circle-down float-right mr-1"
+						 		 data-toggle="collapse" data-target="#collapsepm">
+					 	</span></a>								
+					</h1>
+						<div id="collapsepm" class="collapse hide" data-parent="#accordionpm">				
+							<table class="table table-hover table-responsive-lg">
+								<thead class="thead-dark">
+									<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
+									<th>Name</th>
+									<th>Slug</th>
+									<th>Description</th>
+									<th width="120px">Created</th>
+									<th width="120px">Updated</th>
+									<th width="130px" class="text-right"></th>
+								</thead>
+								<tbody>						
+									@foreach($permissions as $permission)
+										<tr>
+											<th>{{ $permission->id }}</th>
+											<td>{{ $permission->display_name }}</td>
+											<td>{{ $permission->name }}</td>
+											<td>{{ substr($permission->description, 0, 156) }}{{ strlen($permission->description)>156 ? '...' : '' }}
+											<td>{{ date('j M Y', strtotime($permission->created_at)) }}</td>
+											<td>{{ date('j M Y', strtotime($permission->updated_at)) }}</td>
+											<td class="text-right" nowrap>
+												<a href="{{ route('permissions.show', $permission->id)}}" class="btn btn-sm btn-outline-dark">View Permission</a>
+											</td>
+										</tr>
+									@endforeach
+								</tbody>
+							</table>
+							<div class="d-flex justify-content-center">
+								{{-- No pagination available {{ $permissions->appends(Request::all())->render() }} --}}
+							</div>
+						</div>	
 					</div>
 				</div>
 			</div>
 		@endif	
+
 	@endif
 @endsection
 

@@ -462,3 +462,8 @@ dd {
     white-space: nowrap;
     margin-right: 0px;
 }
+
+.pointer:hover { /* Show cursor pointer on hover - used on Toggle NavBar */ 
+  cursor:pointer;
+  color: #404040 !important;
+}

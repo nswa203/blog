@@ -17,40 +17,26 @@ class BlogController extends Controller
         });
 	}
 
-    // This Query Builder searches each table and each associated table for each word/phrase
-    // It requires that SearchController pre loads Session('search_list')
-	public function searchQuery($search = '') {
-		$searchable1 = ['title', 'slug', 'image', 'body', 'excerpt'];
-		$searchable2 = ['user' => ['name'], 'category' => ['name'], 'tags' => ['name'], 'comments' => ['email', 'name', 'comment' ]];
-		$query = Post::select('*');
-
-        if ($search !== '') {
-            $search_list=session('search_list', []);
-            foreach ($searchable1 as $column) {
-                foreach ($search_list as $word) {
-                    $query->orWhere($column, 'LIKE', '%' . $word . '%')->where('status', '>=', '4');
-                }    
-            }
-            foreach ($searchable2 as $table => $columns) {
-                foreach ($columns as $column) {
-                    foreach ($search_list as $word) {
-                        $query->orWhereHas($table, function($q) use ($column, $search, $word){
-                            $q->where($column, 'LIKE', '%' . $word . '%')->where('status', '>=', '4');
-                        }); 
-                    }
-                }
-            }
-        } 
-        return $query;
-	}
+    // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
+    // It requires the custom search_helper() function in Helpers.php.
+    // If you change Helpers.php you should do "dump-autoload". 
+    public function searchQuery($search = '') {
+        $query = [
+            'model'         => 'Post',
+            'searchModel'   => ['title', 'slug', 'image', 'body', 'excerpt'],
+            'searchRelated' => [
+				'user' 		=> ['name'],
+				'category'  => ['name'],
+				'tags' 		=> ['name'],
+				'comments' 	=> ['email', 'name', 'comment' ]
+            ],
+            'filter'		=>['status', '>=', '4']
+        ];
+        return search_helper($search, $query);
+    }
 
 	public function getIndex(Request $request) {
-		if ($request->search) {
-			$posts = $this->searchQuery($request->search)->orderBy('id', 'desc')->paginate(5);
-		} else {
-			$posts = Post::where('status', '>=', '4')->orderBy('id', 'desc')->paginate(5);
-        }
-
+        $posts = $this->searchQuery($request->search)->orderBy('id', 'desc')->paginate(5);
 		if ($posts) {
 
 		} else {

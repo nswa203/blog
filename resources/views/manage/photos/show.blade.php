@@ -9,7 +9,7 @@
 	@if($photo)
 		<div class="row">
 			<div class="col-md-8">
-				<h1><a id="menu-toggle2"><span class="fas fa-image mr-4"></span>{{ $photo->title }}</a></h1>
+				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-image mr-4"></span>{{ $photo->title }}</a></h1>
 				<hr>
 				<a href="{{ route('photos.showImage', $photo->id) }}">
 					<img src="{{ asset('images/'.$photo->image) }}"
@@ -19,23 +19,23 @@
 				</a>
 				<p class="lead">{!! $photo->description !!}</p>
 				<hr>
-
-				<div class="tags float-left mr-3">
-					@foreach ($photo->tags as $tag)
-						<a href="{{ route('tags.show', [$tag->id, session('zone')]) }}"><span class="badge badge-info">{{ $tag->name }}</span></a>
-					@endforeach
-				</div>
-
-				<p>
-				  <button class="btn btn-outline-info btn-sm float-right ml-3" type="button"
-				  	data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
-				    Details
-				  </button>
-				</p>
-				<div class="collapse" id="collapseExample">
-				  <div class="card card-body">
-					{!! $exif['meta'] !!}
-				  </div>
+				<div class="row">
+					<div class="col-md-3">
+						@foreach ($photo->tags as $tag)
+							<a href="{{ route('tags.show', [$tag->id, session('zone')]) }}"><span class="badge badge-info">{{ $tag->name }}</span></a>
+						@endforeach
+					</div>
+					<div class="col-md-9">
+						<button class="btn btn-outline-info float-right btn-sm ml-3" type="button"
+					  		data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+					    	Details
+						</button>
+						<div class="collapse" id="collapseExample">
+						  <div class="card card-body">
+							{!! $exif['meta'] !!}
+						  </div>
+						</div>
+					</div>
 				</div>
 
 			</div>	

@@ -9,7 +9,7 @@
 @section('content')
 	<div class="row">
 		<div class="col-md-8">
-			<h1><a id="menu-toggle2"><span class="fas fa-user-edit mr-4"></span>Edit User</a></h1>
+			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-user-edit mr-4"></span>Edit User</a></h1>
 			<hr>
 			{!! Form::model($user, ['route'=>['users.update', $user->id], 'method'=>'PUT', 'data-parsley-validate'=>'']) !!}
 			{{ 	Form::label('name', 'Name:', ['class'=>'font-bold form-spacing-top']) }}
@@ -46,7 +46,6 @@
 					<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($user->updated_at)) }}</dd>
 				</dl>
 				<hr class="hr-spacing-top">
-
 				<div id="app2" class="font-weight-bold"> <!-- Vue 2 -->
 					<div class="field">
 						<label for="password_options1" class="">
@@ -69,6 +68,14 @@
 				</div> <!-- Vue 2 -->
 
 				<hr class="hr-spacing-top">
+					@if(!$user->profile)					
+						<div class="row">
+							<div class="col-sm-12">
+								{!! Html::decode(link_to_route('profiles.create', '<i class="fas fa-user-circle mr-2"></i>Add A  User Profile', [$user->id], ['class'=>'btn btn-outline-dark btn-block'])) !!}
+							</div>
+						</div>
+						<hr class="hr">
+					@endif					
 				<div class="row">
 					<div class="col-sm-6">
 						{!! Html::decode('<a href='.url()->previous().' class="btn btn-danger btn-block"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
