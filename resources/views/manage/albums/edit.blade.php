@@ -19,7 +19,7 @@
 				{{ Form::label('title', 'Title:', ['class'=>'font-bold form-spacing-top']) }}
 				{{ Form::text('title', null, ['class'=>'form-control form-control-lg', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'3', 'data-parsley-maxlength'=>'191', 'v-model'=>'title']) }}
 				
-				<slugwidget3 url="{{ url('/') }}" subdirectory="/" :title="title" @slug-changed="updateSlug"></slugwidget3>
+				<slugwidget3 url="{{ url('/a') }}" subdirectory="/" :title="title" @slug-changed="updateSlug"></slugwidget3>
 			</div>
 
 			{{ Form::label('category_id', 'Category:', ['class'=>'font-bold form-spacing-top']) }}

@@ -96,7 +96,7 @@ class CommentsController extends Controller
 
         if ($myrc) {
             Session::flash('success', 'Your Comment for "' . $post->slug . '" was successfully saved.');
-            return redirect()->route('blog.single', $post->slug);
+            return redirect()->route('blog.singlePost', $post->slug);
         } else {
             Session::flash('failure', 'Your Comment for Post "' . $post_id . '" was NOT saved.');
             return Redirect::back()->withInput();

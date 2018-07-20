@@ -133,9 +133,11 @@ class FolderController extends Controller
             $image = $request->file('image');
             $filename = 'Folder.' . $image->getClientOriginalExtension();
             $location = $path . '\\' . $filename;
+        //dd($request, $image, $filename, $path, $location);    
+    
             $myrc = Image::make($image)->widen(800, function ($constraint) { $constraint->upsize(); })->save($location);
             $folder->image = $filename;
-         dd(Storage::setVisibility($location, 'public'));  
+         //dd(Storage::setVisibility($location, 'public'));  
             $msg = 'Image "' . $image->getClientOriginalName() . '" was successfully saved as ' . $filename;
             msgx(['info' => [$msg, $myrc!=null]]);
         }

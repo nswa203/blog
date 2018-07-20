@@ -44,7 +44,7 @@
 							<tr>
 								<th>{{ $folder->id }}</th>
 								<td>{{ $folder->name }}</td>
-								<td><a href="{{ url($folder->slug) }}">{{ $folder->slug }}</a></td>
+								<td><a href="{{ url('f/'.$folder->slug) }}">{{ $folder->slug }}</a></td>
 								<td>
 									<a href="{{ route('categories.show', [$folder->category_id, session('zone')]) }}"><span class="badge badge-info">{{ $folder->category->name }}</span></a>
 								</td>

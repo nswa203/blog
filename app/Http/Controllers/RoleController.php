@@ -108,7 +108,7 @@ class RoleController extends Controller
         $role = Role::findOrFail($id);
 
         $permissions = $role->permissions()->orderBy('display_name','asc')->paginate(5, ['*'], 'pageP');
-        $users = $role->users()->orderBy('name','asc')->paginate(5, ['*'], 'pageU');
+        $users       = $role->users()      ->orderBy('name',        'asc')->paginate(5, ['*'], 'pageU');
 
         if ($role) {
             return view('manage.roles.show', ['role' => $role, 'permissions' => $permissions, 'users' => $users]);

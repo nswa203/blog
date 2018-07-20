@@ -128,11 +128,13 @@ class PermissionController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id) {
-        $permission = Permission::where('id', $id)->with('roles')->first();
-        $roles = $permission->roles()->orderBy('display_name', 'asc')->paginate(10);
+        $permission = Permission::findOrFail($id);
+
+        $roles = $permission->roles()->orderBy('display_name', 'asc')->paginate(5, ['*'], 'pageR');
+        $users = $permission->users()->orderBy('name',         'asc')->paginate(5, ['*'], 'pageP');
 
         if ($permission) {
-            return view('manage.permissions.show', ['permission' => $permission, 'roles' => $roles]);
+            return view('manage.permissions.show', ['permission' => $permission, 'roles' => $roles, 'users' => $users]);
         } else {
             Session::flash('failure', 'Permission "' . $id . '" was NOT found.');
             return Redirect::back();

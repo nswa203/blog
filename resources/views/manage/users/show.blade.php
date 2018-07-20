@@ -69,7 +69,7 @@
 					<h1>
 						Folders
 						<span class="h1-suffix">(This User has {{ $user->folders->count()==1 ? '1 Folder' : $user->folders->count().' Folders' }} assigned.)</span>
-						<a><span class="fas fa-chevron-circle-down float-right mr-1"
+						<a><span class="pointer-expand fas fa-chevron-circle-down float-right mr-1"
 						 		 data-toggle="collapse" data-target="#collapsef">
 					 	</span></a>
 					</h1>
@@ -90,7 +90,7 @@
 										<tr>
 											<th>{{ $folder->id }}</th>
 											<td>{{ $folder->name }}</td>
-											<td><a href="{{ url($folder->slug) }}">{{ $folder->slug }}</a></td>
+											<td><a href="{{ url('f/'.$folder->slug) }}">{{ $folder->slug }}</a></td>
 											<td>
 												<a href="{{ route('categories.show', [$folder->category_id, 'Albums']) }}"><span class="badge badge-info">{{ $folder->category->name }}</span></a>
 											</td>
@@ -126,7 +126,7 @@
 					<h1>
 						Albums
 						<span class="h1-suffix">(This User has {{ $user->albums->count()==1 ? '1 Album' : $user->albums->count().' Albums' }} assigned.)</span>
-						<a><span class="fas fa-chevron-circle-down float-right mr-1"
+						<a><span class="pointer-expand fas fa-chevron-circle-down float-right mr-1"
 						 		 data-toggle="collapse" data-target="#collapsea">
 					 	</span></a>						
 					</h1>
@@ -187,7 +187,7 @@
 					<h1>
 						Posts
 						<span class="h1-suffix">(This User has {{ $user->posts->count()==1 ? '1 Post' : $user->posts->count().' Posts' }} assigned.)</span>
-						<a><span class="fas fa-chevron-circle-down float-right mr-1"
+						<a><span class="pointer-expand fas fa-chevron-circle-down float-right mr-1"
 						 		 data-toggle="collapse" data-target="#collapsep">
 					 	</span></a>							
 					</h1>
@@ -248,7 +248,7 @@
 					<h1>
 						Roles
 						<span class="h1-suffix">(This User has {{ $user->roles->count()==1 ? '1 Role' : $user->roles->count().' Roles' }} assigned.)</span>
-						<a><span class="fas fa-chevron-circle-down float-right mr-1"
+						<a><span class="pointer-expand fas fa-chevron-circle-down float-right mr-1"
 						 		 data-toggle="collapse" data-target="#collapser">
 					 	</span></a>							
 					</h1>
@@ -295,7 +295,7 @@
 					<h1>
 						Permissions
 						<span class="h1-suffix">(This User has {{ $permissions->count()==1 ? '1 Permission' : $permissions->count().' Permissions' }} assigned.)</span>
-						<a><span class="fas fa-chevron-circle-down float-right mr-1"
+						<a><span class="pointer-expand fas fa-chevron-circle-down float-right mr-1"
 						 		 data-toggle="collapse" data-target="#collapsepm">
 					 	</span></a>								
 					</h1>

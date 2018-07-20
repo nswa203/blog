@@ -126,8 +126,10 @@ class ProfileController extends Controller
     public function show($id) {
         $profile = Profile::with('user')->findOrFail($id);
 
+        $folders = $profile->folders()->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageF');
+
         if ($profile) {
-            return view('manage.profiles.show', ['profile' => $profile]);
+            return view('manage.profiles.show', ['profile' => $profile, 'folders' => $folders]);
         } else {
             Session::flash('failure', 'Profile "' . $id . '" was NOT found.');
             return Redirect::back();

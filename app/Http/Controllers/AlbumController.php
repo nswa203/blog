@@ -149,10 +149,12 @@ class AlbumController extends Controller
     public function show($id) {
         $album = Album::findOrFail($id);
 
-        $photos = $album->photos()->orderBy('title', 'asc')->paginate(5);
+        $photos = $album->photos()->orderBy('title', 'asc')->paginate(5, ['*'], 'pageI');
+        $posts  = $album->posts() ->orderBy('title', 'asc')->paginate(5, ['*'], 'pageP');
+        $tags   = $album->tags()  ->orderBy('name',  'asc')->paginate(5, ['*'], 'pageT');
 
         if ($album) {
-            return view('manage.albums.show', ['album' => $album, 'photos' => $photos, 'status_list' => $this->status()]);
+            return view('manage.albums.show', ['album' => $album, 'photos' => $photos, 'posts' => $posts, 'tags' => $tags, 'status_list' => $this->status()]);
         } else {
             Session::flash('failure', 'Album "' . $id . '" was NOT found.');
             return Redirect::back();

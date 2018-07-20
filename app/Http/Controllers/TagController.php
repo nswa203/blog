@@ -80,9 +80,15 @@ class TagController extends Controller
         $albums = false;
         $photos = false;
         $posts  = false;
-        if ($zone == 'Albums' or $zone == 'Photos' or $zone == '*' ) { $albums = $tag->albums()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageA');  }
-        if ($zone == 'Photos' or $zone == '*' ) { $photos = $tag->photos()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageI');  }
-        if ($zone == 'Posts'  or $zone == '*' ) { $posts  = $tag->posts() ->orderBy('id', 'desc')->paginate(5, ['*'], 'pageP');  }
+        if ($zone == 'Albums' or $zone == 'Photos' or $zone == '*' ) {
+            $albums = $tag->albums()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageA');
+        }
+        if ($zone == 'Photos' or $zone == '*' ) {
+            $photos = $tag->photos()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageI');
+        }
+        if ($zone == 'Posts'  or $zone == '*' ) {
+            $posts  = $tag->posts() ->orderBy('id', 'desc')->paginate(5, ['*'], 'pageP');
+        }
 
         if ($tag) {
             return view('manage.tags.show', ['tag' => $tag, 'albums' => $albums, 'photos' => $photos, 'posts' => $posts]);

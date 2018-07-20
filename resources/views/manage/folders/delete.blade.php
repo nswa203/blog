@@ -26,7 +26,7 @@
 				<div class="card card-body bg-light">
 					<dl class="row dd-nowrap">
 						<dt class="col-sm-5">URL:</dt>
-						<dd class="col-sm-7"><a href="{{ url($album->slug) }}">{{ url($album->slug) }}</a></dd>
+						<dd class="col-sm-7"><a href="{{ url('f/'.$folder->slug) }}">{{ url('f/'.$folder->slug) }}</a></dd>
 						<dt class="col-sm-5">Album ID:</dt>
 						<dd class="col-sm-7"><a href="{{ route('albums.show', $album->id) }}">{{ $album->id }}</a></dd>
 						<dt class="col-sm-5">Category:</dt>						

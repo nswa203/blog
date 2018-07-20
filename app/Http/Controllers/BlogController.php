@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use App\Post;
+use App\Folder;
+use App\Album;
 use Session;
 
 class BlogController extends Controller
@@ -45,7 +47,8 @@ class BlogController extends Controller
 		return view('blog.index', ['posts' => $posts, 'search' => $request->search]);
 	}
 
-	public function getSingle($slug) {
+	public function getSinglePost($slug) {
+		// We only include "Published" Posts in this public view.
 		$post = Post::where('slug', '=', $slug)->where('status', '>=', '4')->first();
 
 		if ($post) {
@@ -53,9 +56,21 @@ class BlogController extends Controller
 			// Comments are automatically set Approved on creation.
 			// Comment approval status may be editted by an authorised User.  
 			$post->comments=$post->comments->where('approved', '=', '1');
-			return view('blog.single', ['post' => $post]);
+			return view('blog.singlePost', ['post' => $post]);
 		} else {
-			Session::flash('failure', 'Blog Post "' . $slug . '" not found.');
+			Session::flash('failure', 'Blog Post "' . $slug . '" is not available.');
+			return redirect()->route('home');
+		}
+	}
+
+	public function getSingleFolder($slug) {
+		// We only include "Public" Folders in this public view.
+		$folder = Folder::where('slug', '=', $slug)->where('status', '>=', '1')->first();
+
+		if ($folder) {
+			return view('blog.singleFolder', ['folder' => $folder]);
+		} else {
+			Session::flash('failure', 'Blog Folder "' . $slug . '" is not available.');
 			return redirect()->route('home');
 		}
 	}

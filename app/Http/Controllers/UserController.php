@@ -153,10 +153,10 @@ class UserController extends Controller
     public function show($id) {
         $user   = User::findOrFail($id);
 
-        $albums  = $user->albums()->orderBy('slug',         'asc')->paginate(5, ['*'], 'pageA');
-        $folders = $user->folders()->orderBy('slug',        'asc')->paginate(5, ['*'], 'pageF');
-        $posts   = $user->posts( )->orderBy('slug',         'asc')->paginate(5, ['*'], 'pageP');
-        $roles   = $user->roles( )->orderBy('display_name', 'asc')->paginate(5, ['*'], 'pageR');
+        $albums  = $user->albums() ->orderBy('slug',         'asc')->paginate(5, ['*'], 'pageA');
+        $folders = $user->folders()->orderBy('slug',         'asc')->paginate(5, ['*'], 'pageF');
+        $posts   = $user->posts( ) ->orderBy('slug',         'asc')->paginate(5, ['*'], 'pageP');
+        $roles   = $user->roles( ) ->orderBy('display_name', 'asc')->paginate(5, ['*'], 'pageR');
         $permissions = $user->allPermissions();
         
         if ($user) {

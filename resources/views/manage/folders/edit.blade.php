@@ -19,7 +19,7 @@
 				{{ Form::label('title', 'Name:', ['class'=>'font-bold form-spacing-top']) }}
 				{{ Form::text('title', null, ['class'=>'form-control form-control-lg', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'3', 'data-parsley-maxlength'=>'191', 'v-model'=>'title']) }}
 				
-				<slugwidget url="{{ url('/') }}" subdirectory="/" :title="title" @slug-changed="updateSlug"></slugwidget>
+				<slugwidget url="{{ url('/f') }}" subdirectory="/" :title="title" @slug-changed="updateSlug"></slugwidget>
 			</div>
 
 			{{ Form::label('category_id', 'Category:', ['class'=>'font-bold form-spacing-top']) }}
@@ -60,7 +60,7 @@
 			<div class="card card-body bg-light">
 				<dl class="row dd-nowrap">
 					<dt class="col-sm-5">URL:</dt>
-					<dd class="col-sm-7"><a href="{{ url($folder->slug) }}">{{ url($folder->slug) }}</a></dd>
+					<dd class="col-sm-7"><a href="{{ url('f/'.$folder->slug) }}">{{ url('f/'.$folder->slug) }}</a></dd>
 					<dt class="col-sm-5">Folder ID:</dt>
 					<dd class="col-sm-7"><a href="{{ route('folders.show', $folder->id) }}">{{ $folder->id }}</a></dd>
 					<dt class="col-sm-5">Category:</dt>						
