@@ -58,10 +58,11 @@ class ProfileController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function create($id) {
-        $users = User::doesntHave('profile')->orderBy('name', 'asc')->pluck('name', 'id');
+        $folders = Folder::                     orderBy('name', 'asc')->pluck('name', 'id');
+        $users   = User::doesntHave('profile')->orderBy('name', 'asc')->pluck('name', 'id');
         $profile = new Profile;
 
-        return view('manage.profiles.create', ['profile' => $profile, 'users' => $users, 'id' => $id]);
+        return view('manage.profiles.create', ['profile' => $profile, 'folders' => $folders, 'users' => $users, 'id' => $id]);
     }
 
     /**
@@ -79,6 +80,8 @@ class ProfileController extends Controller
             'phone'             => 'sometimes|max:191',
             'address'           => 'sometimes|max:191',
             'user_id'           => 'sometimes|integer|exists:users,id|unique:profiles,user_id',
+            'folders'           => 'array',
+            'folders.*'         => 'integer|exists:folders,id',             
         ]);
 
         $profile = new Profile;
@@ -109,6 +112,7 @@ class ProfileController extends Controller
 
         if (isset($msgs)) { session()->flash('msgs', $msgs); }
         if ($myrc) {
+            $myrc = $profile->folders()->sync($request->folders, false);
             Session::flash('success', 'Profile "' . $profile->username . '" was successfully saved.');
             return redirect()->route('profiles.show', $profile->id);
         } else {
@@ -125,8 +129,9 @@ class ProfileController extends Controller
      */
     public function show($id) {
         $profile = Profile::with('user')->findOrFail($id);
-
-        $folders = $profile->folders()->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageF');
+        $user = User::find($profile->user->id);
+        $folder_list = $user->folders()->get()->pluck('id')->merge($profile->folders()->get()->pluck('id'))->unique();
+        $folders = Folder::whereIn('id', $folder_list)->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageF');
 
         if ($profile) {
             return view('manage.profiles.show', ['profile' => $profile, 'folders' => $folders]);
@@ -144,10 +149,11 @@ class ProfileController extends Controller
      */
     public function edit($id) {
         $profile = Profile::with('user')->findOrFail($id);
-        $users = [$profile->user->id => $profile->user->name];
+        $folders = Folder::orderBy('name', 'asc')->pluck('name', 'id');
+        $users   = [$profile->user->id => $profile->user->name];
 
         if ($profile) {
-            return view('manage.profiles.edit', ['profile' => $profile, 'users' => $users]);
+            return view('manage.profiles.edit', ['profile' => $profile, 'folders' => $folders, 'users' => $users]);
         } else {
             Session::flash('failure', 'Profile "' . $id . '" was NOT found.');
             return Redirect::back();
@@ -171,6 +177,8 @@ class ProfileController extends Controller
             'about_me'          => 'sometimes|max:2048',
             'phone'             => 'sometimes|max:191',
             'address'           => 'sometimes|max:191',
+            'folders'           => 'array',
+            'folders.*'         => 'integer|exists:folders,id',             
         ]);
 
         $profile->username         = $request->username;
@@ -214,6 +222,7 @@ class ProfileController extends Controller
 
         if (isset($msgs)) { session()->flash('msgs', $msgs); }
         if ($myrc) {
+            $myrc = $profile->folders()->sync($request->folders, true);
             if (isset($oldFiles)) { Storage::delete($oldFiles); }
             Session::flash('success', 'Profile "' . $profile->username . '" was successfully saved.');
             return redirect()->route('profiles.show', $id);
@@ -248,8 +257,8 @@ class ProfileController extends Controller
      */
     public function destroy($id) {
         $profile = Profile::findOrFail($id);
-        $myrc = $profile->delete();
 
+        $myrc = $profile->delete();
         if ($myrc) {
             if ($profile->image) {
                 Storage::delete($profile->image);

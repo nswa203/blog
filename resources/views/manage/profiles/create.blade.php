@@ -3,7 +3,8 @@
 @section('title','| Manage Create Profile')
 
 @section('stylesheets')
-	{!! Html::style('css/parsley.css') !!}
+	{!! Html::style('css/parsley.css')     !!}
+	{!! Html::style('css/select2.min.css') !!}
 @endsection
 
 @section('content')
@@ -82,6 +83,9 @@
 
 				{{ 	Form::label('about_me', 'About Me:', ['class'=>'font-bold form-spacing-top mr-3']) }}
 				{{ 	Form::textarea('about_me', null, ['class'=>'form-control', 'rows'=>'3', 'id'=>'textarea-about_me']) }} 
+
+				{{ Form::label('folders', 'Folders:', ['class'=>'font-bold form-spacing-top']) }}
+				{{ Form::select('folders[]', $folders, null, ['class'=>'form-control select2-multi', 'multiple'=>'']) }}
 		</div>
 
 		<div class="col-md-4">
@@ -124,7 +128,15 @@
 
 @section('scripts')
 	{!! Html::script('js/parsley.min.js') !!}
+	{!! Html::script('js/select2.min.js') !!}
 	{!! Html::script('js/tinymce.min.js') !!}
+
+	<script type="text/javascript">
+		$.fn.select2.defaults.set( "width", "100%" );
+		// Above line must be first to ensure Select2 works
+		// nicely alongside Bootrap 4   
+		$('.select2-multi').select2();
+	</script>
 
 	<script>
 		tinymce.init ({

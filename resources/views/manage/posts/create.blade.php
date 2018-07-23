@@ -3,8 +3,8 @@
 @section('title','| Manage Create Post')
 
 @section('stylesheets')
-	{!! Html::style('css/parsley.css') 		!!}
-	{!! Html::style('css/select2.min.css')	!!}
+	{!! Html::style('css/parsley.css') 	   !!}
+	{!! Html::style('css/select2.min.css') !!}
 @endsection
 
 @section('content')
@@ -29,7 +29,10 @@
 			</div>
 
 			{{ Form::label('category_id', 'Category:', ['class'=>'font-bold form-spacing-top']) }}
-			{{ Form::select('category_id', $categories,null, ['class'=>'form-control custom-select', 'placeholder'=>'Select a Category...', 'data-parsley-required'=>'']) }}
+			{{ Form::select('category_id', $categories, null, ['class'=>'form-control custom-select', 'placeholder'=>'Select a Category...', 'data-parsley-required'=>'']) }}
+
+			{{ Form::label('folders', 'Folders:', ['class'=>'font-bold form-spacing-top']) }}
+			{{ Form::select('folders[]', $folders, null, ['class'=>'form-control select2-multi', 'multiple'=>'']) }}
 
 			{{ Form::label('tags', 'Tags:', ['class'=>'font-bold form-spacing-top']) }}
 			{{ Form::select('tags[]', $tags, null, ['class'=>'form-control select2-multi', 'multiple'=>'']) }}
@@ -143,10 +146,10 @@
 @endsection
 
 @section('scripts')
-	{!! Html::script('js/parsley.min.js')	!!}
-	{!! Html::script('js/select2.min.js')	!!}
-	{!! Html::script('js/tinymce.min.js')	!!}
-	{!! Html::script('js/app.js') 			!!}
+	{!! Html::script('js/parsley.min.js') !!}
+	{!! Html::script('js/select2.min.js') !!}
+	{!! Html::script('js/tinymce.min.js') !!}
+	{!! Html::script('js/app.js') 	      !!}	
 
 	<script type="text/javascript">
 		$.fn.select2.defaults.set( "width", "100%" );

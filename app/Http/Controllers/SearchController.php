@@ -16,15 +16,17 @@ class SearchController extends Controller
      
         if      ($zone == 'Posts')      { $route = 'posts.index'; }
         elseif  ($zone == 'Comments')   { $route = 'comments.index'; }
+        elseif  ($zone == 'Albums')     { $route = 'albums.index'; }
+        elseif  ($zone == 'Photos')     { $route = 'photos.index'; }
+        elseif  ($zone == 'Folders')    { $route = 'folders.index'; }
+        elseif  ($zone == 'Files')      { $route = 'blog.index'; }
         elseif  ($zone == 'Categories') { $route = 'categories.index'; }
         elseif  ($zone == 'Tags')       { $route = 'tags.index'; }
         elseif  ($zone == 'Users')      { $route = 'users.index'; }
         elseif  ($zone == 'Roles')      { $route = 'roles.index'; }
         elseif  ($zone == 'Permissions'){ $route = 'permissions.index'; }
         elseif  ($zone == 'Profiles')   { $route = 'profiles.index'; }
-        elseif  ($zone == 'Albums')     { $route = 'albums.index'; }
-        elseif  ($zone == 'Photos')     { $route = 'photos.index'; }
-        elseif  ($zone == 'Folders')    { $route = 'folders.index'; }
+
         else                            { $route = 'blog.index'; }
 
         return redirect()->route($route, $search);

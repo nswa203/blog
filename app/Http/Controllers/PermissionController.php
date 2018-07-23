@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
 use App\Permission;
 use App\Role;
+use App\User;
 use Session;
 
 class PermissionController extends Controller
@@ -130,8 +131,17 @@ class PermissionController extends Controller
     public function show($id) {
         $permission = Permission::findOrFail($id);
 
-        $roles = $permission->roles()->orderBy('display_name', 'asc')->paginate(5, ['*'], 'pageR');
-        $users = $permission->users()->orderBy('name',         'asc')->paginate(5, ['*'], 'pageP');
+        $roles = $permission->roles()->with('users')->get();
+        $users = [];
+        foreach ($roles as $role) {
+            foreach ($role->users as $user) {
+                if (!in_array($user->id, $users)) {
+                    $users[] = $user->id;
+                }    
+            }    
+        }
+        $roles = $permission->roles()       ->orderBy('display_name', 'asc')->paginate(5, ['*'], 'pageR');
+        $users = User::whereIn('id', $users)->orderBy('name',         'asc')->paginate(5, ['*'], 'pageU');
 
         if ($permission) {
             return view('manage.permissions.show', ['permission' => $permission, 'roles' => $roles, 'users' => $users]);
@@ -213,7 +223,8 @@ class PermissionController extends Controller
         $permission = Permission::findOrFail($id);
 
         if ($permission) {
-            Session::flash('failure', 'Permission "' . $id . '" was NOT DELETED.<br>Delete Not yet supported!');
+            $myrc = $permission->delete();
+            Session::flash('success', 'Permission "' . $permission->name . '" deleted OK.');
             return redirect()->route('permissions.index');
         } else {
             Session::flash('failure', 'Permission "' . $id . '" was NOT deleted.');

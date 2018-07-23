@@ -4,6 +4,8 @@ namespace App\Observers;
 
 use App\User;
 
+// This Observer is stored in App\Observers and loaded from 
+// App\Providers\ObserverServiceProvider with "User::observe(UserObserver::class);"
 class UserObserver
 {
     /**

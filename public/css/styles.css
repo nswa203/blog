@@ -475,3 +475,9 @@ dd {
   height: 1em;
   width: 1em;
 }
+
+.xselect2-selection__choice, /* Remove prefix x to change mult-select pills */ 
+.xselect2-selection__choice__remove {
+  background-color: #80bdff !important;
+  color: black !important;
+}

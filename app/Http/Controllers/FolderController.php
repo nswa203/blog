@@ -165,10 +165,14 @@ class FolderController extends Controller
     public function show($id) {
         $folder = Folder::findOrFail($id);
 
+        //$files    = $folder->files()   ->orderBy('slug',     'asc')->paginate(5, ['*'], 'pageF');
+        $posts    = $folder->posts()->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageP');
+        $profiles = $folder->profiles()->with('user')->orderBy('username', 'asc')->paginate(5, ['*'], 'pagePr');
+
         if ($folder) {
             if ($folder->status == 0) { $folder->path = private_path($folder->directory); }
             else                      { $folder->path =  public_path($folder->directory); }    
-            return view('manage.folders.show', ['folder' => $folder, 'status_list' => $this->status()]);
+            return view('manage.folders.show', ['folder' => $folder, 'posts' => $posts, 'profiles' => $profiles, 'status_list' => $this->status()]);
         } else {
             Session::flash('failure', 'Folder "' . $id . '" was NOT found.');
             return Redirect::back();
@@ -233,15 +237,85 @@ class FolderController extends Controller
         //
     }
 
+    public function delete($id) {
+        $folder = Folder::findOrFail($id);
+
+        if ($folder) {
+            
+        } else {
+            Session::flash('failure', 'Folder "' . $id . '" was NOT found.');
+        }
+        return view('manage.folders.delete', ['folder'=>$folder, 'status_list' => $this->status()]);
+    }
+
     /**
      * Remove the specified resource from storage.
      *
      * @param  \App\Folder  $folder
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Folder $folder)
-    {
-        //
+    public function destroy(Request $request, $id) {
+        $folder = Folder::findOrFail($id);
+
+        if ($folder) {
+
+        /*
+        // If delete_photos was checked, delete all UNSHARED photos in this folder...
+        // ...and issue warnings for all shared photos.  
+        // If delete_photos was NOT checked and one or more photos would be left hanging...
+        // without a parent folder, then return an error. 
+        foreach ($folder->photos as $photo) {
+            if ($request->delete_photos) {
+                if ($photo->albums->count() == 1) { 
+                    $photo->tags()->detach();
+                    $photo->albums()->detach();
+                    $myrc = $photo->delete();
+                    if ($myrc) {
+                        if ($photo->image) {
+                            Storage::delete($photo->image);
+                            Storage::delete($photo->file);
+                            $msgx['info'][] = 'Image "' . $photo->image . '" was successfully deleted.';
+                            $msgx['info'][] = 'Image "' . $photo->file  . '" was successfully deleted.';
+                        }
+                        $msgx['info'][] = 'Photo "' . $photo->title . '" was successfully deleted.';
+                    } else {
+                        $msgx['warning'][] = 'Photo "' . $id . '" was NOT found.';
+                    }
+                } else {
+                    $msgx['warning'][] = 'Photo "' . $photo->title . '" is shared with another folder and will NOT be deleted!';
+                }
+            } elseif ($photo->albums->count() == 1) {
+                $msgx['failure'][] = 'Folder "' . $folder->title .
+                    '" cannot be deleted as it contains UNSHARED photos. You must choose to delete the photos along with the abum!';
+                if (isset($msgx)) { session()->flash('msgx', $msgx); }
+                return Redirect::back()->withInput();
+            }          
+        }    
+        */
+
+            // Now Delete the Folder
+            $myrc = $folder->delete();
+            if ($folder->status == 1) {
+                $msg = 'Public';
+                $path = public_path($folder->directory);
+            } else {
+                $msg = 'Private';
+                $path = private_path($folder->directory);
+            }
+            $myrc = File::deleteDirectory($path);
+            if ($myrc) {
+                $msg = $msg . ' Directory "' . $folder->directory . '" was successfully deleted.';
+                msgx(['Info:' => [$msg, true]]);
+            } else {
+                $msg = $msg . ' Directory "' . $folder->directory . '" could NOT be deleted.';
+                msgx(['failure' => [$msg, true]]);                    
+            }
+            Session::flash('success', 'Folder "' . $folder->name . '" deleted OK.');
+            return redirect()->route('albums.index');
+        } else {
+            Session::flash('failure', 'Folder "' . $id . '" was NOT found.');
+            return Redirect::back()->withInput();
+        }
     }
 
     /**

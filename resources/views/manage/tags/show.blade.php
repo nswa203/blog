@@ -47,50 +47,8 @@
 			</div>
 		</div>
 
-		@if($tag->albums->count() && $albums)
-			<div class="row mt-3">
-				<div class="col-md-12">
-					<div class="card card-body bg-light">
-					<h1>
-						Albums
-						<span class="h1-suffix">(This Tag has {{ $tag->albums->count()==1 ? '1 Album' : $tag->albums->count().' Albums' }} assigned.)</span>
-						<a><span class="pointer-expand fas fa-chevron-circle-down float-right mr-1"
-						 		 data-toggle="collapse" data-target="#collapsea">
-					 	</span></a>							
-					</h1>
-						<div id="collapsea" class="collapse {{ request()->has('pageA') ? 'show' : 'hide' }}" data-parent="#accordiona">				
-							<table class="table table-hover table-responsive-lg">
-								<thead class="thead-dark">
-									<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
-									<th>Title</th>
-									<th>Description</th>
-									<th width="120px">Updated</th>
-									<th width="130px" class="text-right">Page {{$albums->currentPage()}} of {{$albums->lastPage()}}</th>
-								</thead>
-								<tbody>						
-									@foreach($albums as $album)
-										<tr>
-											<th>{{ $album->id }}</th>
-											<td>{{ $album->title }}</td>
-											<td>
-												{{ substr(strip_tags($album->description), 0, 156) }}{{ strlen(strip_tags($album->description)) >156 ? '...' : '' }}
-											</td>
-											<td>{{ date('j M Y', strtotime($album->updated_at)) }}</td>
-											<td class="text-right" nowrap>
-												<a href="{{ route('albums.show', $album->id)}}" class="btn btn-sm btn-outline-dark">View Album</a>
-											</td>
-										</tr>
-									@endforeach
-								</tbody>
-							</table>
-							<div class="d-flex justify-content-center">
-								{{ $albums->appends(Request::all())->render() }} 
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		@endif
+		@include('partials.__albums', ['count' => $tag->albums->count(), 'zone' => 'Tag', 'page' => 'pageA'])
+		@include('partials.__posts',  ['count' => $tag->posts->count(),  'zone' => 'Tag', 'page' => 'pageP'])
 
 		@if($tag->photos->count() && $photos)
 			<div class="row mt-3">
@@ -137,50 +95,6 @@
 			</div>
 		@endif
 
-		@if($tag->posts->count() && $posts)
-			<div class="row mt-3">
-				<div class="col-md-12">
-					<div class="card card-body bg-light">
-					<h1>
-						Posts
-						<span class="h1-suffix">(This Tag has {{ $tag->posts->count()==1 ? '1 Post' : $tag->posts->count().' Posts' }} assigned.)</span>
-						<a><span class="pointer-expand fas fa-chevron-circle-down float-right mr-1"
-						 		 data-toggle="collapse" data-target="#collapsep">
-					 	</span></a>							
-					</h1>
-						<div id="collapsep" class="collapse {{ request()->has('pageP') ? 'show' : 'hide' }}" data-parent="#accordionp">				
-							<table class="table table-hover table-responsive-lg">
-								<thead class="thead-dark">
-									<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
-									<th>Title</th>
-									<th>Excerpt</th>
-									<th width="120px">Updated</th>
-									<th width="130px" class="text-right">Page {{$posts->currentPage()}} of {{$posts->lastPage()}}</th>
-								</thead>
-								<tbody>						
-									@foreach($posts as $post)
-										<tr>
-											<th>{{ $post->id }}</th>
-											<td>{{ $post->title }}</td>
-											<td>
-												{{ substr(strip_tags($post->excerpt), 0, 156) }}{{ strlen(strip_tags($post->excerpt)) >156 ? '...' : '' }}
-											</td>
-											<td>{{ date('j M Y', strtotime($post->updated_at)) }}</td>
-											<td class="text-right" nowrap>
-												<a href="{{ route('posts.show', $post->id)}}" class="btn btn-sm btn-outline-dark">View Post</a>
-											</td>
-										</tr>
-									@endforeach
-								</tbody>
-							</table>
-							<div class="d-flex justify-content-center">
-								{{ $posts->appends(Request::all())->render() }} 
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		@endif
 	@endif
 @endsection
 

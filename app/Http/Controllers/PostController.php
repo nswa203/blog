@@ -80,12 +80,13 @@ class PostController extends Controller
 		// URI=http://blog/posts/create
 
 		$categories = Category::orderBy('name', 'asc')->pluck('name', 'id');
-		$tags = Tag::orderBy('name', 'asc')->pluck('name', 'id');
-		$users = User::orderBy('name', 'asc')->pluck('name', 'id');
+		$folders    = Folder::  orderBy('name', 'asc')->pluck('name', 'id');
+		$tags       = Tag::     orderBy('name', 'asc')->pluck('name', 'id');
+		$users      = User::    orderBy('name', 'asc')->pluck('name', 'id');
 		$post = new Post;
 
 		return view('manage.posts.create', ['post' => $post,
-			'categories' => $categories, 'tags' => $tags, 'users' => $users, 'status_list' => $this->status(2)]);
+			'categories' => $categories, 'folders' => $folders, 'tags' => $tags, 'users' => $users, 'status_list' => $this->status(2)]);
 	}
 
 	/**
@@ -105,6 +106,8 @@ class PostController extends Controller
 			'excerpt' 			=> 'sometimes',
 			'author_id' 		=> 'sometimes|integer|exists:users,id',
 			'status' 			=> 'required|integer|min:0|max:4',
+			'folders'			=> 'array',
+			'folders.*'			=> 'integer|exists:folders,id',			
 			'tags'				=> 'array',
 			'tags.*'			=> 'integer|exists:tags,id',
 		]);
@@ -147,7 +150,8 @@ class PostController extends Controller
 
         if (isset($msgs)) { session()->flash('msgs', $msgs); }
 		if ($myrc) {
-			$myrc = $post->tags()->sync($request->tags, false);
+			$myrc = $post->folders()->sync($request->folders, false);
+			$myrc = $post->tags()   ->sync($request->tags,    false);
 			Session::flash('success', 'Post "' . $post->slug . '" was successfully saved.');
 			return redirect()->route('posts.show', $post->id);
 		} else {
@@ -186,12 +190,13 @@ class PostController extends Controller
 		$post = Post::findOrFail($id);
 
 		$categories = Category::orderBy('name', 'asc')->pluck('name', 'id');
-		$tags = Tag::orderBy('name', 'asc')->pluck('name', 'id');
-		$users = User::orderBy('name', 'asc')->pluck('name', 'id');
+		$folders    = Folder::  orderBy('name', 'asc')->pluck('name', 'id');
+		$tags       = Tag::     orderBy('name', 'asc')->pluck('name', 'id');
+		$users      = User::    orderBy('name', 'asc')->pluck('name', 'id');
 
 	    if ($post) {
             return view('manage.posts.edit', ['post' => $post,
-            		'categories' => $categories, 'tags' => $tags, 'users' => $users, 'status_list' => $this->status()]);
+            		'categories' => $categories, 'folders' => $folders, 'tags' => $tags, 'users' => $users, 'status_list' => $this->status()]);
         } else {
             Session::flash('failure', 'Post "' . $id . '" was NOT found.');
             return Redirect::back();
@@ -218,6 +223,8 @@ class PostController extends Controller
 			'excerpt' 			=> 'sometimes',
 			'author_id' 		=> 'sometimes|integer|exists:users,id',
 			'status' 			=> 'required|integer|min:0|max:4',
+			'folders'			=> 'array',
+			'folders.*'			=> 'integer|exists:folders,id',			
 			'tags'				=> 'array',
 			'tags.*'			=> 'integer|exists:tags,id',
 		]);
@@ -275,7 +282,8 @@ class PostController extends Controller
 
         if (isset($msgs)) { session()->flash('msgs', $msgs); }
 		if ($myrc) {
-			$myrc = $post->tags()->sync($request->tags, true);
+			$myrc = $post->folders()->sync($request->folders, true);
+			$myrc = $post->tags()   ->sync($request->tags,    true);
             if (isset($oldFiles)) { Storage::delete($oldFiles); }
             Session::flash('success', 'Post "' . $post->slug . '" was successfully saved.');
             return redirect()->route('posts.show', $id);
@@ -311,9 +319,7 @@ class PostController extends Controller
 	public function destroy($id) {
 		$post = Post::findOrFail($id);
 
-		$post->tags()->detach();
 		$myrc = $post->delete();
-
 		if ($myrc) {
 			if ($post->image) {
 				Storage::delete($post->image);

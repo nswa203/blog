@@ -26,33 +26,9 @@
 
 			<div class="col-md-4">
 				<div class="card card-body bg-light">
-					<dl class="row dd-nowrap">
-						<dt class="col-sm-5">URL:</dt>
-						<dd class="col-sm-7"><a href="{{ url('f/'.$folder->slug) }}">{{ url('f/'.$folder->slug) }}</a></dd>
-						<dt class="col-sm-5">Folder ID:</dt>
-						<dd class="col-sm-7"><a href="{{ route('albums.show', $folder->id) }}">{{ $folder->id }}</a></dd>
-						<dt class="col-sm-5">Category:</dt>						
-						<dd class="col-sm-7">
-							<a href="{{ route('categories.show', [$folder->category->id, session('zone')]) }}"><span class="badge badge-info">{{ $folder->category->name }}</span></a>
-						</dd>
-						<dt class="col-sm-5">Status:</dt>						
-						<dd class="col-sm-7 {{ $folder->size / $folder->max_size > .85 ? 'text-danger' : 'text-success' }}">
-							{{ $status_list[$folder->status] }},
-							{{ round(($folder->size / $folder->max_size) * 100, 2) }}% Used 
-						</dd>								
-						<dt class="col-sm-5">Author:</dt>
-						<dd class="col-sm-7">
-							@if($folder->user->id)
-								<a href="{{ route('users.show', $folder->user->id) }}">{{ $folder->user->name }}</a>
-							@endif
-						</dd>		
-						<dt class="col-sm-5">Created:</dt>
-						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($folder->created_at)) }}</dd>
-						<dt class="col-sm-5">Last Updated:</dt>
-						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($folder->updated_at)) }}</dd>
-					</dl>
+					
+					@include('partials.__foldersMeta')
 
-					<hr class="hr-spacing-top">
 					<div class="row">
 						<div class="col-sm-6">
 							{!! Html::decode(link_to_route('folders.edit', '<i class="fas fa-edit mr-2"></i>Edit', [$folder->id], ['class'=>'btn btn-primary btn-block'])) !!}
@@ -73,7 +49,116 @@
 					{{-- <img src="{{ asset('images/'.$folder->image) }}" width="100%" class="mt-3"/> --}}
 				@endif	
 			</div>
-		</div>	
+		</div>
+
+		@if($folder->posts->count() && $posts)
+			<div class="row mt-3" id="accordionp">
+				<div class="col-md-12">
+					<div class="card card-body bg-light">
+					<h1>
+						Posts
+						<span class="h1-suffix">(This Folder has {{ $folder->posts->count()==1 ? '1 Post' : $folder->posts->count().' Posts' }} assigned.)</span>
+						<a><span class="pointer-expand fas fa-chevron-circle-down float-right mr-1"
+						 		 data-toggle="collapse" data-target="#collapsep">
+					 	</span></a>							
+					</h1>
+						<div id="collapsep" class="collapse {{ request()->has('pageP') ? 'show' : 'hide' }}" data-parent="#accordionp">				
+							<table class="table table-hover table-responsive-lg">
+								<thead class="thead-dark">
+									<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
+									<th>Title</th>
+									<th>Excerpt</th>
+									<th>Category</th>
+									<th>Author</th>
+									<th width="120px">Published</th>
+									<th class="text-right" width="130px">Page {{$posts->currentPage()}} of {{$posts->lastPage()}}</th>
+								</thead>
+								<tbody>
+									@foreach($posts as $post)
+										<tr>
+											<th>{{ $post->id }}</th>
+											<td>{{ $post->title }}</td>
+											<td>
+												{{ substr(strip_tags($post->excerpt), 0, 156) }}{{ strlen(strip_tags($post->excerpt)) >156 ? '...' : '' }}
+											</td>
+											<td>
+												<a href="{{ route('categories.show', [$post->category_id, 'Posts']) }}"><span class="badge badge-info">{{ $post->category->name }}</span></a>
+											</td>
+											<td>
+												@if($post->user->id)
+													<a href="{{ route('users.show', $post->user->id) }}">{{ $post->user->name }}</a>
+												@endif	
+											</td>
+											<th>
+												@if($post->published_at)
+													<span class="text-success">{{ date('j M Y', strtotime($post->published_at)) }}</span>
+												@else	
+													<span class="text-danger">{{ $status_list[$post->status] }}</span>
+												@endif	
+											</th>
+											<td class="text-right" nowrap>
+												<a href="{{ route('posts.show', $post->id)}}" class="btn btn-sm btn-outline-dark">View Post</a>
+											</td>
+										</tr>
+									@endforeach
+								</tbody>
+							</table>
+							<div class="d-flex justify-content-center">
+								{{ $posts->appends(Request::all())->render() }} 
+							</div>
+						</div>	
+					</div>
+				</div>
+			</div>
+		@endif
+
+		@if($folder->profiles->count() && $profiles)
+			<div class="row mt-3" id="accordionp">
+				<div class="col-md-12">
+					<div class="card card-body bg-light">
+					<h1>
+						Profiles
+						<span class="h1-suffix">(This Folder has {{ $folder->profiles->count()==1 ? '1 Profile' : $folder->profiles->count().' Profiles' }} assigned.)</span>
+						<a><span class="pointer-expand fas fa-chevron-circle-down float-right mr-1"
+						 		 data-toggle="collapse" data-target="#collapsepr">
+					 	</span></a>							
+					</h1>
+						<div id="collapsepr" class="collapse {{ request()->has('pagePr') ? 'show' : 'hide' }}" data-parent="#accordionpr">				
+							<table class="table table-hover table-responsive-lg">
+								<thead class="thead-dark">
+									<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
+									<th>Name</th>
+									<th>eMail</th>
+									<th>Username</th>
+									<th width="120px">Created</th>
+									<th width="120px">Updated</th>
+									<th class="text-right" width="130px">Page {{$profiles->currentPage()}} of {{$profiles->lastPage()}}</th>
+								</thead>
+								<tbody>
+									@foreach($profiles as $profile)
+										<tr>
+											<th>{{ $profile->id }}</th>
+											<td>{{ $profile->user->name }}</td>
+											<td>{{ $profile->user->email }}</td>
+											<td>{{ $profile->username }}</td>
+											<td>{{ date('j M Y', strtotime($profile->created_at)) }}</td>
+											<td>{{ date('j M Y', strtotime($profile->updated_at)) }}</td>
+											<td class="text-right" nowrap>
+												<a href="{{ route('profiles.show', $profile->id)}}" class="btn btn-sm btn-outline-dark">View Profile</a>
+											</td>
+										</tr>
+									@endforeach
+								</tbody>
+							</table>
+							<div class="d-flex justify-content-center">
+								{{ $profiles->appends(Request::all())->render() }} 
+							</div>
+						</div>	
+					</div>
+				</div>
+			</div>
+		@endif		
+
 	@endif
 @endsection
 

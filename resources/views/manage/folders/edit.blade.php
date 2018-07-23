@@ -58,36 +58,9 @@
 
 		<div class="col-md-4">
 			<div class="card card-body bg-light">
-				<dl class="row dd-nowrap">
-					<dt class="col-sm-5">URL:</dt>
-					<dd class="col-sm-7"><a href="{{ url('f/'.$folder->slug) }}">{{ url('f/'.$folder->slug) }}</a></dd>
-					<dt class="col-sm-5">Folder ID:</dt>
-					<dd class="col-sm-7"><a href="{{ route('folders.show', $folder->id) }}">{{ $folder->id }}</a></dd>
-					<dt class="col-sm-5">Category:</dt>						
-					<dd class="col-sm-7">
-						<a href="{{ route('categories.show', [$folder->category_id, session('zone')]) }}"><span class="badge badge-info">{{ $folder->category->name }}</span></a>
-					</dd>
-					<dt class="col-sm-5">Published:</dt>						
-					<dd class="col-sm-7">
-						@if($folder->published_at)
-							{{ date('j M Y, h:i a', strtotime($folder->published_at)) }}
-						@else	
-							<span class="text-danger">{{ $folder->status_name }}</span>
-						@endif	
-					</dd>							
-					<dt class="col-sm-5">Author:</dt>
-					<dd class="col-sm-7">
-						@if($folder->user->id)
-							<a href="{{ route('users.show', $folder->user->id) }}">{{ $folder->user->name }}</a>
-						@endif
-					</dd>	
-					<dt class="col-sm-5">Created:</dt>
-					<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($folder->created_at)) }}</dd>
-					<dt class="col-sm-5">Last Updated:</dt>
-					<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($folder->updated_at)) }}</dd>
-				</dl>
+	
+				@include('partials.__foldersMeta')
 
-				<hr class="hr-spacing-top">
 				@foreach ($status_list as $index => $status)
 					<dt>
 						<div class="field">

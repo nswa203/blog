@@ -158,15 +158,10 @@ class TagController extends Controller
      */
     public function destroy(Request $request, $id) {
         $tag = Tag::findOrFail($id);
-
         if ($tag){
-            $tag->posts()->detach();
             $myrc = $tag->delete();
-        } else { $myrc=false; }
-            
-        if ($myrc) {
             Session::flash('success', 'The "' . $tag->name . '" Tag was successfully deleted.');
-            return redirect()->route('tags.index',['page' => $request->page]);
+            return Redirect::to($request->url);            
         } else {
             Session::flash('failure', 'Tag "' . $id . '"was NOT deleted.');
             return Redirect::back();            

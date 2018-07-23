@@ -1,75 +1,49 @@
 @extends('manage')
 
-@section('title','| Manage Delete Album')
+@section('title','| Manage Delete Folder')
 
 @section('stylesheets')
 @endsection
 
 @section('content')
-	@if($album)
+	@if($folder)
 		<div class="row">
 			<div class="col-md-8">
-				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-trash-alt mr-4"></span>DELETE ALBUM {{ $album->slug }}</a></h1>
+				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-trash-alt mr-4"></span>DELETE FOLDER {{ $folder->slug }}</a></h1>
 				<hr>
 
-				<h3>Title:</h3>
-				<p class="lead">{!! $album->title !!}</p>
+				<h3>Name:</h3>
+				<p class="lead">{!! $folder->name !!}</p>
 				
 				<h3>Slug:</h3>
-				<p class="lead">{!! $album->slug !!}</p>
+				<p class="lead">{!! $folder->slug !!}</p>
 
 				<h3>Description:</h3>
-				<p class="lead">{!! $album->description !!}</p>
+				<p class="lead">{!! $folder->description !!}</p>
 			</div>	
 
 			<div class="col-md-4">
 				<div class="card card-body bg-light">
-					<dl class="row dd-nowrap">
-						<dt class="col-sm-5">URL:</dt>
-						<dd class="col-sm-7"><a href="{{ url('f/'.$folder->slug) }}">{{ url('f/'.$folder->slug) }}</a></dd>
-						<dt class="col-sm-5">Album ID:</dt>
-						<dd class="col-sm-7"><a href="{{ route('albums.show', $album->id) }}">{{ $album->id }}</a></dd>
-						<dt class="col-sm-5">Category:</dt>						
-						<dd class="col-sm-7">
-							<a href="{{ route('categories.show', $album->category->id) }}"><span class="badge badge-info">{{ $album->category->name }}</span></a>
-						</dd>
-						<dt class="col-sm-5">Published:</dt>						
-						<dd class="col-sm-7">
-							@if($album->published_at)
-								{{ date('j M Y, h:i a', strtotime($album->published_at)) }}
-							@else	
-								<span class="text-danger">{{ $status_list[$album->status] }}</span>
-							@endif	
-						</dd>							
-						<dt class="col-sm-5">Author:</dt>
-						<dd class="col-sm-7">
-							@if($album->user->id)
-								<a href="{{ route('users.show', $album->user->id) }}">{{ $album->user->name }}</a>
-							@endif
-						</dd>												
-						<dt class="col-sm-5">Created:</dt>
-						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($album->created_at)) }}</dd>
-						<dt class="col-sm-5">Last Updated:</dt>
-						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($album->updated_at)) }}</dd>
-					</dl>
-					
-					<hr class="hr-spacing-top">
-					{!! Form::open(['route'=>['albums.destroy', $album->id], 'method'=>'DELETE']) !!}
+
+					@include('partials.__foldersMeta')
+
+					{!! Form::open(['route'=>['folders.destroy', $folder->id], 'method'=>'DELETE']) !!}
+					{{--
 					<dt>
-						@if($album->photos->count()>0)
+						@if($folder->photos->count()>0)
 						<label for="delete-photos">
 							{{ Form::checkbox('delete_photos', '1', null, ['class'=>'font-bold', 'hidden'=>'', 'id'=>'delete-photos']) }}
 							<span class="span text-danger">
 								Also DELETE THE
-								{{ $album->photos->count()==1 ? '1 Photo' : $album->photos->count().' Photos' }}
-								in this album
+								{{ $folder->photos->count()==1 ? '1 Photo' : $folder->photos->count().' Photos' }}
+								in this folder
 							</span>
 						</label>
 						@else
-							<span class="span text-success"> This Album contains NO photos</span>
+							<span class="span text-success"> This Folder contains NO photos</span>
 						@endif
 					</dt>
-
+					--}}
 					<hr class="hr-spacing-top mt-2">
 					<div class="row">
 						<div class="col-sm-12">
@@ -79,8 +53,8 @@
 					</div>
 					{!! Form::close() !!}
 				</div>
-				@if($album->image)
-					<img class="mt-4" src="{{ asset('images/'.$album->image) }}" width="100%" />
+				@if($folder->image)
+					<img class="mt-4" src="{{ asset('images/'.$folder->image) }}" width="100%" />
 				@endif
 			</div>
 		</div>	

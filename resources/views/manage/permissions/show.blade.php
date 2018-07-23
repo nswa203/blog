@@ -23,19 +23,9 @@
 
 			<div class="col-md-4">
 				<div class="card card-body bg-light">
-					<dl class="row dd-nowrap">
-						<dt class="col-sm-5">URL:</dt>
-						<dd class="col-sm-7">
-							<a href="{{ route('permissions.show', $permission->id) }}">{{ route('permissions.show', $permission->id) }}</a>
-						</dd>
-						<dt class="col-sm-5">Permission ID:</dt>
-						<dd class="col-sm-7"><a href="{{ route('permissions.show', $permission->id) }}">{{ $permission->id }}</a></dd>
-						<dt class="col-sm-5">Created:</dt>
-						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($permission->created_at)) }}</dd>
-						<dt class="col-sm-5">Last Updated:</dt>
-						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($permission->updated_at)) }}</dd>
-					</dl>
-					<hr class="hr-spacing-top">
+
+	 				@include('partials.__permissionsMeta')
+
 					<div class="row">
 						<div class="col-sm-6">
 							{!! Html::decode(link_to_route('permissions.edit', '<i class="fas fa-user-edit mr-2"></i>Edit', [$permission->id], ['class'=>'btn btn-primary btn-block'])) !!}
@@ -55,50 +45,9 @@
 			</div>
 		</div>
 
-		@if($permission->roles->count() && $roles)
-			<div class="row mt-3">
-				<div class="col-md-12">
-					<div class="card card-body bg-light">
-						<h1>
-							Roles
-							<span class="h1-suffix">(This Permission is associated with {{ $permission->roles->count()==1 ? '1 Role.' : $permission->roles->count().' Roles.' }})</span>
-							<a><span class="pointer-expand fas fa-chevron-circle-down float-right mr-1"
-						 		 data-toggle="collapse" data-target="#collapser">
-					 		</span></a>
-						</h1>
-						<div id="collapser" class="collapse {{ request()->has('pageR') ? 'show' : 'hide' }}" data-parent="#accordionr">				
-							<table class="table table-hover table-responsive-lg">
-								<thead class="thead-dark">
-									<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
-									<th>Name</th>
-									<th>Slug</th>
-									<th>Description</th>
-									<th width="120px">Updated</th>
-									<th width="130px" class="text-right">Page {{$roles->currentPage()}} of {{$roles->lastPage()}}</th>
-								</thead>
-								<tbody>	
-									@foreach($roles as $role)
-										<tr>
-											<th>{{ $role->id }}</th>
-											<td>{{ $role->display_name }}</td>
-											<td>{{ $role->name }}</td>
-											<td>{{ substr($role->description, 0, 156) }}{{ strlen($role->description)>156 ? '...' : '' }}</td>
-											<td>{{ date('j M Y', strtotime($role->updated_at)) }}</td>
-											<td class="text-right" nowrap>
-												<a href="{{ route('roles.show', $role->id)}}" class="btn btn-sm btn-outline-dark">View Role</a>
-											</td>
-										</tr>
-									@endforeach
-								</tbody>
-							</table>
-							<div class="d-flex justify-content-center">
-								{{ $roles->appends(Request::all())->render() }} 
-							</div>
-						</div>	
-					</div>
-				</div>
-			</div>
-		@endif						
+		@include('partials.__roles', ['count' => $permission->roles->count(), 'zone' => 'Permission', 'page' => 'pageR'])
+		@include('partials.__users', ['count' => $users->count(), 			  'zone' => 'Permission', 'page' => 'pageU'])
+
 	@endif
 @endsection
 

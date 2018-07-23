@@ -3,7 +3,8 @@
 @section('title','| Manage Edit Profile')
 
 @section('stylesheets')
-	{!! Html::style('css/parsley.css') !!}
+	{!! Html::style('css/parsley.css')     !!}
+	{!! Html::style('css/select2.min.css') !!}
 @endsection
 
 @section('content')
@@ -82,23 +83,16 @@
 
 				{{ 	Form::label('about_me', 'About Me:', ['class'=>'font-bold form-spacing-top mr-3']) }}
 				{{ 	Form::textarea('about_me', null, ['class'=>'form-control', 'rows'=>'3', 'id'=>'textarea-about_me']) }} 
+
+				{{ Form::label('folders', 'Folders:', ['class'=>'font-bold form-spacing-top']) }}
+				{{ Form::select('folders[]', $folders, null, ['class'=>'form-control select2-multi', 'multiple'=>'']) }}
 		</div>
 
 		<div class="col-md-4">
 			<div class="card card-body bg-light">
 
-				<dl class="row dd-nowrap">
-					<dt class="col-sm-5">URL:</dt>
-					<dd class="col-sm-7"><a href="{{ route('profiles.show', $profile->id) }}">{{ route('profiles.show', $profile->id) }}</a></dd>
-					<dt class="col-sm-5">User:</dt>
-					<dd class="col-sm-7"><a href="{{ route('users.show', $profile->user->id) }}">{{ $profile->user->name }}</a></dd>							
-					<dt class="col-sm-5">Created:</dt>
-					<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($profile->created_at)) }}</dd>
-					<dt class="col-sm-5">Last Updated:</dt>
-					<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($profile->updated_at)) }}</dd>
-				</dl>
+				@include('partials.__profilesMeta')
 
-				<hr class="hr-spacing-top">
 				<div class="row">
 					<div class="col-sm-6">
 						{!! Html::decode('<a href='.url()->previous().' class="btn btn-danger btn-block"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
@@ -131,7 +125,15 @@
 
 @section('scripts')
 	{!! Html::script('js/parsley.min.js') !!}
+	{!! Html::script('js/select2.min.js') !!}
 	{!! Html::script('js/tinymce.min.js') !!}
+
+	<script type="text/javascript">
+		$.fn.select2.defaults.set( "width", "100%" );
+		// Above line must be first to ensure Select2 works
+		// nicely alongside Bootrap 4   
+		$('.select2-multi').select2();
+	</script>
 
 	<script>
 		tinymce.init ({

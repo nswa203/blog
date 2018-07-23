@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use App\User;
-use App\Observers\UserObserver; 
+use App\Observers\UserObserver;
+use App\Folder;
+use App\Observers\FolderObserver; 
 
 class ObserverServiceProvider extends ServiceProvider
 {
@@ -16,6 +18,7 @@ class ObserverServiceProvider extends ServiceProvider
     public function boot()
     {
         User::observe(UserObserver::class);
+        Folder::observe(FolderObserver::class);        
     }
 
     /**

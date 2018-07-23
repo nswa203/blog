@@ -31,21 +31,9 @@
 
 		<div class="col-md-4">
 			<div class="card card-body bg-light">
-				<dl class="row dd-nowrap">
-					<dt class="col-sm-5">URL:</dt>
-					<dd class="col-sm-7"><a href="{{ route('users.show', $user->id) }}">{{ route('users.show', $user->id) }}</a></dd>
-						<dt class="col-sm-5">Profile:</dt>
-						<dd class="col-sm-7">
-							@if($user->profile['id'])
-								<a href="{{ route('profiles.show', $user->profile['id']) }}">{{ $user->profile['username'] }}</a>
-							@endif
-						</dd>								
-					<dt class="col-sm-5">Created:</dt>
-					<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($user->created_at)) }}</dd>
-					<dt class="col-sm-5">Last Updated:</dt>
-					<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($user->updated_at)) }}</dd>
-				</dl>
-				<hr class="hr-spacing-top">
+
+				@include('partials.__usersMeta')
+
 				<div id="app2" class="font-weight-bold"> <!-- Vue 2 -->
 					<div class="field">
 						<label for="password_options1" class="">

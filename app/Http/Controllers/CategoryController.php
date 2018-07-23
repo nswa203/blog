@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use App\Category;
 use Session;
+use File;
 
 class CategoryController extends Controller
 {
@@ -80,9 +81,15 @@ class CategoryController extends Controller
         $albums  = false;
         $folders = false;
         $posts   = false;
-        if ($zone == 'Albums' or $zone == 'Photos' or $zone == '*' ) { $albums = $category->albums()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageA'); }
-        if ($zone == 'Folders' or $zone == 'Files' or $zone == '*' ) { $folders  = $category->folders()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageF');  }
-        if ($zone == 'Posts'  or $zone == '*' ) { $posts  = $category->posts() ->orderBy('id', 'desc')->paginate(5, ['*'], 'pageP');  }
+        if ($zone == 'Albums' or $zone == 'Photos' or $zone == '*' ) {
+            $albums = $category->albums()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageA');
+        }
+        if ($zone == 'Folders' or $zone == 'Files' or $zone == '*' ) {
+            $folders  = $category->folders()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageF');
+        }
+        if ($zone == 'Posts'  or $zone == '*' ) {
+            $posts  = $category->posts()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageP');
+        }
 
         if ($category) {
             return view('manage.categories.show', ['category' => $category, 'albums' => $albums, 'folders'  => $folders, 'posts' => $posts]);
@@ -137,6 +144,17 @@ class CategoryController extends Controller
         $category = Category::findOrFail($id);
 
        if ($category) {
+            foreach ($category->albums as $album) {
+                $msg = 'Album "' . $album->title . '" will also be deleted!';
+                msgx(['Dependencies' => [$msg, true]]);                    
+            }
+            foreach ($category->folders as $folder) {
+                $msg = 'Folder "' . $folder->name . '" will also be deleted!';
+                msgx(['Dependencies' => [$msg, true]]);            }
+            foreach ($category->posts as $post) {
+                $msg = 'Post "' . $post->title . '" will also be deleted!';
+                msgx(['Dependencies' => [$msg, true]]);                    
+            }
             return view('manage.categories.delete', ['category' => $category]);
         } else {
             Session::flash('failure', 'Category "' . $id . '" was NOT found.');
@@ -152,15 +170,50 @@ class CategoryController extends Controller
      */
     public function destroy(Request $request, $id) {
         $category = Category::findOrFail($id);
-        // Can't yet delete Categories because
-        // 1. blades don't support null Category & No default Category set up
-        // 2. Don't know how to set all posts category-id fields to null easily 
 
         if ($category) {
-            Session::flash('failure', 'Category "' . $id . '" was NOT DELETED.<br>Delete Not yet supported!');
-            return redirect()->route('categories.index');
+            foreach ($category->albums as $album) {
+                $myrc = true;
+                $msg = 'Album "' . $album->title . '" was successfully deleted';
+                msgx(['Dependencies' => [$msg, $myrc!=null]]);                    
+            }
+            foreach ($category->folders as $folder) {
+                if ($folder->status == 1) {
+                    $msg = 'Public';
+                    $path = public_path($folder->directory);
+                } else {
+                    $msg = 'Private';
+                    $path = private_path($folder->directory);
+                }
+                $myrc = File::deleteDirectory($path);
+                if ($myrc) {
+                    $msg = $msg . ' Directory "' . $folder->directory . '" was successfully deleted.';
+                    msgx(['Dependencies' => [$msg, true]]);
+                } else {
+                    $msg = $msg . ' Directory "' . $folder->directory . '" could NOT be deleted.';
+                    msgx(['failure' => [$msg, true]]);                    
+                }    
+            }
+            foreach ($category->posts as $post) {
+                if ($post->banner) {
+                    $path = public_path('images\\' . $post->banner);
+                    $myrc = File::delete($path);
+                    $msg = 'Post Banner "' . $path . '" was successfully deleted.';
+                    msgx(['Dependencies' => [$msg, $myrc]]);
+                }
+                if ($post->image) {
+                    $path = public_path('images\\' . $post->image);
+                    $myrc = File::delete($path);
+                    $msg = 'Post Image "' . $path . '" was successfully deleted.';
+                    msgx(['Dependencies' => [$msg, $myrc]]);
+                }      
+            }
+
+            $myrc = $category->delete();     // Migration Cascades will handle all DB dependencies  
+            Session::flash('success', 'Category "' . $category->name . '" deleted OK.');
+            return Redirect::to($request->url);            
         } else {
-            Session::flash('failure', 'Category "' . $id . '" was NOT deleted.');
+            Session::flash('failure', 'Category "' . $id . '" was NOT found.');
             return Redirect::back();            
         }
     }

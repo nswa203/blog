@@ -201,7 +201,8 @@ class RoleController extends Controller
         $role = Role::findOrFail($id);
 
         if ($role) {
-            Session::flash('failure', 'Role "' . $id . '" was NOT DELETED.<br>Delete "Role" Not yet supported!');
+            $myrc = $role->delete();
+            Session::flash('success', 'Role "' . $role->name . '" deleted OK.');
             return redirect()->route('roles.index');
         } else {
             Session::flash('failure', 'Role "' . $id . '" was NOT deleted.');
