@@ -33,12 +33,14 @@ class PostController extends Controller
             'model'         => 'Post',
             'searchModel'   => ['title', 'slug', 'image', 'body', 'excerpt'],
             'searchRelated' => [
-				'albums'	=> ['title', 'slug', 'description'],
-				'category' 	=> ['name'],
-				'folders' 	=> ['name', 'slug', 'description'],
+				'user' 		=> ['name'],
+				'category'  => ['name'],
 				'tags' 		=> ['name'],
-				'user' 		=> ['name', 'email']
-	        ]
+				'comments' 	=> ['email', 'name', 'comment' ],
+				'folders'	=> ['name', 'slug', 'description'],
+				'albums'	=> ['title', 'slug', 'description']
+            ],
+            //'filter'		=>['status', '>=', '4']
         ];
         return search_helper($search, $query);
     }
@@ -63,7 +65,7 @@ class PostController extends Controller
 	 */
 	public function index(Request $request) {
         $posts = $this->searchQuery($request->search)->orderBy('id', 'desc')->paginate(10);
-		if ($posts) {
+		if ($posts && $posts->count() > 0) {
 
 		} else {
 			Session::flash('failure', 'No blog Posts were found.');

@@ -8,7 +8,7 @@
 @section('content')
 	@if($posts)
 		<div class="row">
-			<div class="col-md-9">
+			<div class="col-md-9 myWrap">
 				<h1><a class="pointer" id="menu-toggle2" data-toggle="tooltip" data-placement="top" title="Toggle NavBar">
 					@if (isset($search)) <span class="fas fa-search mr-4"></span>
 					@else 				 <span class="fas fa-file-alt mr-4"></span>
@@ -40,9 +40,9 @@
 						@foreach($posts as $post)
 							<tr>
 								<th>{{ $post->id }}</th>
-								<td>{{ $post->title }}</td>
+								<td>{{ myTrim($post->title, 32) }}</td>
 								<td>
-									{{ substr(strip_tags($post->excerpt),0,156) }}{{ strlen(strip_tags($post->excerpt))>156 ? '...' : '' }}
+									{{ myTrim($post->excerpt, 32) }}
 								</td>
 								<td>
 									<a href="{{ route('categories.show', [$post->category_id, session('zone')]) }}"><span class="badge badge-info">{{ $post->category->name }}</span></a>

@@ -11,6 +11,10 @@ class Folder extends Model
     	return $this->belongsTo('App\Category');
     }
 
+    public function files() {
+        return $this->hasMany('App\File');
+    }
+
     public function posts() {
         return $this->belongsToMany('App\Post');
     }

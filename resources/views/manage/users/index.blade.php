@@ -7,7 +7,7 @@
 
 @section('content')
 	<div class="row">
-		<div class="col-md-9">
+		<div class="col-md-9 myWrap">
 				<h1><a class="pointer" id="menu-toggle2" data-toggle="tooltip", data-placement="top", title="Toggle NavBar">
 				@if (isset($search)) <span class="fas fa-search mr-4"></span>
 				@else 				 <span class="fas fa-user-cog mr-4"></span>

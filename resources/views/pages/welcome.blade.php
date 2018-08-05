@@ -7,7 +7,7 @@
 
 @section('content')
 	<div class="row">
-		<div class="col-md-12">
+		<div class="col-md-12 myWrap">
 			<div class="jumbotron">
 				<div class="row">
 					<div class="col-md-2 inline">
@@ -25,12 +25,12 @@
 	</div>	
 
 	<div class="row mt-5">
-		<div class="col-md-8">
+		<div class="col-md-8 myWrap">
 			@if($posts)
 				@foreach($posts as $post)
 					<div class="post">
 						<h3>{{ $post->title}}</h3>
-						<p>{{ substr(strip_tags($post->body), 0, 256)}}{{ strlen(strip_tags($post->body))>256 ? '...' : '' }}</p>
+						<p>{{ myTrim($post->body, 256) }}</p>
 						<a href="{{ url($post->slug) }}" class="btn btn-primary">Read More</a>
 					</div>
 					<hr>
@@ -38,9 +38,10 @@
 			@endif
 		</div>
 
-		<div class="col-md-3 offset-md-1">
+		<div class="col-md-3 offset-md-1 myWrap">
 			<h2>Sidebar</h2>
 			<p>Just some text to show the extent of the sidebar.</p>
+			<p>ThisIsAPostWithAVeryLongTitleThatHasNoBreaksInItAndCanCauseProblemsWhenRenderingOutputForABrowserOftenWeGetOverflowIssuesWhereTheTextFlowsBeyondTheBoundsOfTheContainer!</p>
 		</div>
 	</div>
 @endsection

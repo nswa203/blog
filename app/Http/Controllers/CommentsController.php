@@ -42,7 +42,7 @@ class CommentsController extends Controller
      */
     public function index(Request $request) {
         $comments = $this->searchQuery($request->search)->orderBy('id', 'desc')->paginate(10);
-        if ($comments) {
+        if ($comments && $comments->count() > 0) {
 
         } else {
             Session::flash('failure', 'No Post Comments were found.');

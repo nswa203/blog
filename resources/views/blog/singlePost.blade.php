@@ -9,7 +9,7 @@
 
 	@section('content')
 		<div class="row">
-			<div class="col-md-8 offset-md-2">
+			<div class="col-md-8 offset-md-2 myWrap">
 				@if($post->banner)
 					<div class="image-crop-height mt-3 mb-5" style="--croph:232px">
 						<img src="{{ asset('images/'.$post->banner) }}" width="100%"
@@ -26,8 +26,14 @@
 				<p>{!! $post->body !!}</p>
 				<hr>
 				<p>
+					@foreach ($post->folders as $folder)
+						@if ($folder->status=='1')
+							<a href="{{ url('f/'.$folder->slug) }}""><span class="badge badge-success">{{ $folder->name }}</span></a>
+						@endif
+					@endforeach
+
 					@foreach ($post->tags as $tag)
-						<span class="badge badge-info">{{ $tag->name }}</span>
+						<a href="{{ url('t/'.$tag->id) }}""><span class="badge badge-info">{{ $tag->name }}</span></a>
 					@endforeach
 				</p>
 				<p>
@@ -53,7 +59,7 @@
 								<p class="author-time">{{ date('j M Y, h:i a', strtotime($comment->created_at)) }}</p>
 							</div>
 						</div>
-						<div class="comment-content">
+						<div class="comment-content myWrap">
 							{!! $comment->comment !!}
 						</div>
 					</div>

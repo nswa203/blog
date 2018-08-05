@@ -44,7 +44,7 @@ class ProfileController extends Controller
      */
     public function index(Request $request) {
         $profiles = $this->searchQuery($request->search)->orderBy('username', 'asc')->paginate(10);
-        if ($profiles) {
+        if ($profiles && $profiles->count() > 0) {
 
         } else {
             Session::flash('failure', 'No Profiles were found.');

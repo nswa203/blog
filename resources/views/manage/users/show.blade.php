@@ -8,7 +8,7 @@
 @section('content')
 	@if($user)
 		<div class="row">
-			<div class="col-md-8">
+			<div class="col-md-8 myWrap">
 				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-user mr-4"></span>View User Details</a></h1>
 				<hr>
 				<h3>Name:</h3>
@@ -50,11 +50,11 @@
 			</div>
 		</div>
 
-		@include('partials.__albums',      ['count' => $user->albums->count(),  'zone' => 'User', 'page' => 'pageA'])
-		@include('partials.__folders',     ['count' => $user->folders->count(), 'zone' => 'User', 'page' => 'pageF'])
-		@include('partials.__posts',       ['count' => $user->posts->count(),   'zone' => 'User', 'page' => 'pageP'])
-		@include('partials.__roles',	   ['count' => $user->roles->count(),   'zone' => 'User', 'page' => 'pageR'])
-		@include('partials.__permissions', ['count' => $permissions->count(),   'zone' => 'User', 'page' => 'pagePm'])
+		@include('partials.__albums',      ['count' => $user->albums->count(),  		 'zone' => 'User', 'page' => 'pageA'])
+		@include('partials.__folders',     ['count' => $folders_total,					 'zone' => 'User', 'page' => 'pageF'])
+		@include('partials.__permissions', ['count' => $user->allPermissions()->count(), 'zone' => 'User', 'page' => 'pagePm'])
+		@include('partials.__posts',       ['count' => $user->posts->count(),   		 'zone' => 'User', 'page' => 'pageP'])
+		@include('partials.__roles',	   ['count' => $user->roles->count(),   		 'zone' => 'User', 'page' => 'pageR'])
 
 	@endif
 @endsection

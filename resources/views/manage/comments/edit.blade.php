@@ -9,7 +9,7 @@
 @section('content')
 	@if($comment)
 		<div class="row">
-			<div class="col-md-8">
+			<div class="col-md-8 myWrap">
 				<h1><a class="pointer" id="menu-toggle2"><span class="far fa-comment-alt mr-4"></span>Edit Comment</a></h1>
 				<hr>
 				{!! Form::model($comment, ['route'=>['comments.update',$comment->id], 'method'=>'PUT', 'data-parsley-validate'=>'']) !!}
@@ -28,9 +28,9 @@
 				<div class="card card-body bg-light">
 					<dl class="row dd-nowrap">
 						<dt class="col-sm-5">Post URL:</dt>
-						<dd class="col-sm-7"><a href="{{ route('blog.single', $post->slug) }}">{{ route('blog.single', $post->slug) }}</a></dd>
+						<dd class="col-sm-7"><a href="{{ route('blog.singlePost', $post->slug) }}">{{ route('blog.singlePost', $post->slug) }}</a></dd>
 						<dt class="col-sm-5">Comment ID</dt>
-						<dd class="col-sm-7"><a href="{{ route('blog.single', $post->slug) }}">{{ $comment->id }}</a></dd>
+						<dd class="col-sm-7"><a href="{{ route('blog.singlePost', $post->slug) }}">{{ $comment->id }}</a></dd>
 						<dt class="col-sm-5">Created:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($comment->created_at)) }}</dd>
 						<dt class="col-sm-5">Last Updated:</dt>

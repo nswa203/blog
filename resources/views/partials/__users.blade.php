@@ -3,7 +3,7 @@
 
 @if($count)
 	<div class="row mt-3">
-		<div class="col-md-12">
+		<div class="col-md-12 myWrap">
 			<div class="card card-body bg-light">
 				<h1>
 					Users

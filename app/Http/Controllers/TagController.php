@@ -29,6 +29,29 @@ class TagController extends Controller
         return search_helper($search, $query);
     }
 
+    // $list['d'] for folders
+    public function folderStatus($default = -1) {
+        $status = [
+            '1' => 'Public',
+            '0' => 'Private',
+        ];
+        if ($default >= 0) { $status[$default] = '*' . $status[$default]; }
+        return $status;
+    }
+
+    // $list['f'] for files
+    public function fileStatus($default = -1) {
+        $status = [
+            '4' => 'Published',
+            '3' => 'Under Review',
+            '2' => 'In Draft',
+            '1' => 'Withheld',
+            '0' => 'Dead',
+        ];
+        if ($default >= 0) { $status[$default] = '*' . $status[$default]; }
+        return $status;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -36,7 +59,7 @@ class TagController extends Controller
      */
     public function index(Request $request) {
         $tags = $this->searchQuery($request->search)->orderBy('name', 'asc')->paginate(10);
-        if ($tags) {
+        if ($tags && $tags->count() > 0) {
 
         } else {
             Session::flash('failure', 'No Tags were found.');
@@ -78,20 +101,28 @@ class TagController extends Controller
         $tag=Tag::findOrFail($id);
 
         $albums = false;
+        $files  = false;
         $photos = false;
         $posts  = false;
-        if ($zone == 'Albums' or $zone == 'Photos' or $zone == '*' ) {
+        $list   = false;
+        if ($zone == 'Albums' or $zone == 'Photos' or $zone == '*' or $zone == 'Tags') {
             $albums = $tag->albums()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageA');
         }
-        if ($zone == 'Photos' or $zone == '*' ) {
+        if ($zone == 'Files' or $zone == '*' or $zone == 'Tags') {
+            $list['d'] = $this->folderStatus();
+            $list['f'] = $this->fileStatus();
+            $files  = $tag->files() ->orderBy('id', 'desc')->paginate(5, ['*'], 'pageFi');
+        }
+        if ($zone == 'Photos' or $zone == '*' or $zone == 'Tags') {
             $photos = $tag->photos()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageI');
         }
-        if ($zone == 'Posts'  or $zone == '*' ) {
+        if ($zone == 'Posts'  or $zone == '*' or $zone == 'Tags') {
             $posts  = $tag->posts() ->orderBy('id', 'desc')->paginate(5, ['*'], 'pageP');
         }
 
         if ($tag) {
-            return view('manage.tags.show', ['tag' => $tag, 'albums' => $albums, 'photos' => $photos, 'posts' => $posts]);
+            return view('manage.tags.show', ['tag' => $tag, 'albums' => $albums, 'files' => $files, 'photos' => $photos,
+                'posts' => $posts, 'list' => $list]);
         } else {
             Session::flash('failure', 'Tag "' . $id . '" was NOT found.');
             return Redirect::back();

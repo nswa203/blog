@@ -8,7 +8,7 @@
 @section('content')
 	@if($albums)
 		<div class="row">
-			<div class="col-md-9">
+			<div class="col-md-9 myWrap">
 				<h1><a class="pointer" id="menu-toggle2" data-toggle="tooltip" data-placement="top" title="Toggle NavBar">
 					@if (isset($search)) <span class="fas fa-search mr-4"></span>
 					@else 				 <span class="fas fa-images mr-4"></span>
@@ -41,7 +41,7 @@
 						@foreach($albums as $album)
 							<tr>
 								<th>{{ $album->id }}</th>
-								<td>{{ $album->title }}</td>
+								<td>{{ myTrim($album->title, 32) }}</td>
 								<td><a href="{{ url($album->slug) }}">{{ $album->slug }}</a></td>
 								<td>
 									<a href="{{ route('categories.show', [$album->category_id, session('zone')]) }}"><span class="badge badge-info">{{ $album->category->name }}</span></a>

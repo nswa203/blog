@@ -3,7 +3,7 @@
 
 @if($count && $roles)
 	<div class="row mt-3" id="accordionr">
-		<div class="col-md-12">
+		<div class="col-md-12 myWrap">
 			<div class="card card-body bg-light">
 				<h1>
 					Roles
@@ -29,7 +29,7 @@
 									<th>{{ $role->id }}</th>
 									<td>{{ $role->display_name }}</td>
 									<td>{{ $role->name }}</td>
-									<td>{{ substr($role->description, 0, 156) }}{{ strlen($role->description)>156 ? '...' : '' }}
+									<td>{{ myTrim($role->description, 32) }}
 									<td>{{ date('j M Y', strtotime($role->created_at)) }}</td>
 									<td>{{ date('j M Y', strtotime($role->updated_at)) }}</td>
 									<td class="text-right" nowrap>

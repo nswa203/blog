@@ -3,7 +3,7 @@
 
 @if($count && $albums)
 	<div class="row mt-3" id="accordiona">
-		<div class="col-md-12">
+		<div class="col-md-12 myWrap">
 			<div class="card card-body bg-light">
 			<h1>
 				Albums
@@ -28,8 +28,8 @@
 							@foreach($albums as $album)
 								<tr>
 									<th>{{ $album->id }}</th>
-									<td>{{ $album->title }}</td>
-									<td><a href="{{ url($album->slug) }}">{{ $album->slug }}</a></td>
+									<td>{{ myTrim($album->title, 32) }}</td>
+									<td><a href="{{ url($album->slug) }}">{{ myTrim($album->slug, 32) }}</a></td>
 									<td>
 										<a href="{{ route('categories.show', [$album->category_id, 'Albums']) }}"><span class="badge badge-info">{{ $album->category->name }}</span></a>
 									</td>

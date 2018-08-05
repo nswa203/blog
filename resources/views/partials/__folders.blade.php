@@ -6,7 +6,7 @@
 
 @if($count && $folders)
 	<div class="row mt-3" id="accordionf">
-		<div class="col-md-12">
+		<div class="col-md-12 myWrap">
 			<div class="card card-body bg-light">
 				<h1>
 					Folders
@@ -31,18 +31,18 @@
 							@foreach($folders as $folder)
 								<tr>
 									<th>{{ $folder->id }}</th>
-									<td>{{ $folder->name }}</td>
-									<td><a href="{{ url('f/'.$folder->slug) }}">{{ $folder->slug }}</a></td>
+									<td>{{ myTrim($folder->name, 32) }}</td>
+									<td><a href="{{ url('f/'.$folder->slug) }}">{{ myTrim($folder->slug, 32) }}</a></td>
 									<td>
-										<a href="{{ route('categories.show', [$folder->category_id, 'Albums']) }}"><span class="badge badge-info">{{ $folder->category->name }}</span></a>
+										<a href="{{ route('categories.show', [$folder->category_id, 'Folders']) }}"><span class="badge badge-info">{{ $folder->category->name }}</span></a>
 									</td>
 									<td>
 										@if($folder->user->id)
 											<a href="{{ route('users.show', $folder->user->id) }}">{{ $folder->user->name }}</a>
 										@endif	
 									</td>
-									<td class="{{ $folder->size / $folder->max_size > .85 ? 'text-danger' : 'text-success' }}">
-										{{ round(($folder->size / $folder->max_size) * 100, 2) }}%
+									<td class="{{ $folder->size / $folder->max_size / 1048576 > .85 ? 'text-danger' : 'text-success' }}">
+										{{ round(($folder->size / $folder->max_size / 1048576) * 100, 2) }}%
 									</td>
 									<td>{{ date('j M Y', strtotime($folder->updated_at)) }}</td>
 									<td class="text-right" nowrap>

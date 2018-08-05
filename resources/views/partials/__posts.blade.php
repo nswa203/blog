@@ -3,7 +3,7 @@
 
 @if($count && $posts)
 	<div class="row mt-3" id="accordionp">
-		<div class="col-md-12">
+		<div class="col-md-12 myWrap">
 			<div class="card card-body bg-light">
 				<h1>
 					Posts
@@ -27,9 +27,9 @@
 							@foreach($posts as $post)
 								<tr>
 									<th>{{ $post->id }}</th>
-									<td>{{ $post->title }}</td>
+									<td>{{ myTrim($post->title, 32) }}</td>
 									<td>
-										{{ substr(strip_tags($post->excerpt), 0, 156) }}{{ strlen(strip_tags($post->excerpt)) >156 ? '...' : '' }}
+										{{ myTrim($post->excerpt, 32) }}
 									</td>
 									<td>
 										<a href="{{ route('categories.show', [$post->category_id, 'Posts']) }}"><span class="badge badge-info">{{ $post->category->name }}</span></a>

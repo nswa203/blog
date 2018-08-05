@@ -8,7 +8,7 @@
 @section('content')
 	@if($profile)
 		<div class="row">
-			<div class="col-md-8">
+			<div class="col-md-8 myWrap">
 				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-trash-alt mr-4"></span>DELETE PROFILE {{ $profile->username }}</a></h1>
 				<hr>
 				@if($profile->banner)

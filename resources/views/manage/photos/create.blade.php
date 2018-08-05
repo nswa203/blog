@@ -9,7 +9,7 @@
 
 @section('content')
 	<div class="row">
-		<div class="col-md-8">
+		<div class="col-md-8 myWrap">
 			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-image mr-4"></span>Add Photos</a></h1>
 			<hr>
 

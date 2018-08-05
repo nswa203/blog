@@ -13,6 +13,7 @@
         <li><a href="{{ route('categories.index')   }}" class="{{ Request::is('manage/categories*'  )?'active':'' }}"><span class="fas fa-list-alt      mr-3"></span>Manage Categories</a></li>
         <li><a href="{{ route('tags.index')         }}" class="{{ Request::is('manage/tags*'        )?'active':'' }}"><span class="fas fa-tag           mr-3"></span>Manage Tags</a></li>
         <li><a href="{{ route('folders.index')      }}" class="{{ Request::is('manage/folders*'     )?'active':'' }}"><span class="fas fa-folder        mr-3"></span>Manage Folders</a></li>
+        <li><a href="{{ route('files.index')        }}" class="{{ Request::is('manage/files*'       )?'active':'' }}"><span class="fas fa-folder-open   mr-3"></span>Manage Files</a></li>
         <li><a href="{{ route('albums.index')       }}" class="{{ Request::is('manage/albums*'      )?'active':'' }}"><span class="fas fa-images        mr-3"></span>Manage Albums</a></li>
         <li><a href="{{ route('photos.index')       }}" class="{{ Request::is('manage/photos*'      )?'active':'' }}"><span class="fas fa-image         mr-3"></span>Manage Photos</a></li>
         <hr class="hr-danger">

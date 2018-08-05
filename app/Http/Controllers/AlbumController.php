@@ -63,7 +63,7 @@ class AlbumController extends Controller
      */
     public function index(Request $request) {
         $albums = $this->searchQuery($request->search)->orderBy('title', 'asc')->paginate(10);
-        if ($albums) {
+        if ($albums && $albums->count() > 0) {
 
         } else {
             Session::flash('failure', 'No Albums were found.');

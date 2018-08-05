@@ -61,7 +61,7 @@ class UserController extends Controller
      */
     public function index(Request $request) {
         $users = $this->searchQuery($request->search)->orderBy('name', 'asc')->paginate(10);
-        if ($users) {
+        if ($users && $users->count() > 0) {
 
         } else {
             Session::flash('failure', 'No Users were found.');
@@ -152,22 +152,27 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id) {
-        $user   = User::findOrFail($id);
+        $user = User::findOrFail($id);
 
-        $albums  = $user->albums()->orderBy('slug',         'asc')->paginate(5, ['*'], 'pageA');
+        $albums = $user->albums()->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageA');
         if($user->profile) { 
             $profile = Profile::find($user->profile->id);
             $folder_list = $user->folders()->get()->pluck('id')->merge($profile->folders()->get()->pluck('id'))->unique();
             $folders = Folder::whereIn('id', $folder_list)->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageF');
+            $folders_total = $folder_list->count();
         } else {
-            $folders = $user->folders()->orderBy('slug',         'asc')->paginate(5, ['*'], 'pageF');
+            $folders = $user->folders()->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageF');
+            $folders_total=$folders->count();
         }
-        $posts   = $user->posts()->orderBy('slug',         'asc')->paginate(5, ['*'], 'pageP');
-        $roles   = $user->roles()->orderBy('display_name', 'asc')->paginate(5, ['*'], 'pageR');
+
+        $posts = $user->posts()->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageP');
+        $roles = $user->roles()->orderBy('display_name', 'asc')->paginate(5, ['*'], 'pageR');
         $permissions = Permission::whereIn('id', $user->allPermissions()->pluck('id'))->orderBy('display_name', 'asc')->paginate(5, ['*'], 'pagePm');;
         
         if ($user) {
-            return view('manage.users.show', ['user' => $user, 'albums' => $albums, 'folders' => $folders, 'posts' => $posts, 'roles' => $roles, 'permissions' => $permissions, 'status_list' => $this->status()]);
+            return view('manage.users.show', [
+                'user'  => $user,    'albums' => $albums,   'folders'     => $folders,      'folders_total' => $folders_total,
+                'posts' => $posts,   'roles'  => $roles,    'permissions' => $permissions,  'status_list'    => $this->status()]);
         } else {
             Session::flash('failure', 'User "' . $id . '" was NOT found.');
             return Redirect::back();

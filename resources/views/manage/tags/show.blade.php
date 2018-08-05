@@ -8,7 +8,7 @@
 @section('content')
 	@if($tag)
 		<div class="row">
-			<div class="col-md-8">
+			<div class="col-md-8 myWrap">
 				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-tag mr-4"></span>View {{ $tag->name }} Tag</a></h1>
 				<hr>
 				<h3>Name:</h3>
@@ -48,6 +48,8 @@
 		</div>
 
 		@include('partials.__albums', ['count' => $tag->albums->count(), 'zone' => 'Tag', 'page' => 'pageA'])
+		@include('partials.__files',  ['count' => $tag->files->count(),  'zone' => 'Tag', 'page' => 'pageF'])
+		@include('partials.__photos', ['count' => $tag->photos->count(), 'zone' => 'Tag', 'page' => 'pageI'])
 		@include('partials.__posts',  ['count' => $tag->posts->count(),  'zone' => 'Tag', 'page' => 'pageP'])
 
 		@if($tag->photos->count() && $photos)

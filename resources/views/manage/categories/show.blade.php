@@ -8,7 +8,7 @@
 @section('content')
 	@if($category)
 		<div class="row">
-			<div class="col-md-8">
+			<div class="col-md-8 myWrap">
 				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-list-alt mr-4"></span>View {{ $category->name }} Category</a></h1>
 				<hr>
 				<h3>Name:</h3>

@@ -8,7 +8,7 @@
 @section('content')
 	@if($role)
 		<div class="row">
-			<div class="col-md-8">
+			<div class="col-md-8 myWrap">
 				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-user mr-4"></span>View Role</a></h1>
 				<hr>
 				<h3>Name:</h3>

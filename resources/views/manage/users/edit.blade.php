@@ -8,7 +8,7 @@
 
 @section('content')
 	<div class="row">
-		<div class="col-md-8">
+		<div class="col-md-8 myWrap">
 			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-user-edit mr-4"></span>Edit User</a></h1>
 			<hr>
 			{!! Form::model($user, ['route'=>['users.update', $user->id], 'method'=>'PUT', 'data-parsley-validate'=>'']) !!}

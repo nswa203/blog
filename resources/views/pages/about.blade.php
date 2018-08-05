@@ -4,7 +4,7 @@
 
 @section('content')
 	<div class="row">
-		<div class="col-md-12">
+		<div class="col-md-12 myWrap">
 			<div class="jumbotron">
 				<h1 class="mb-5"><span class="fas fa-info-circle mr-4"></span>About {{ env('APP_NAME') }}</h1>
 				<p>

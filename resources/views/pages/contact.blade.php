@@ -8,7 +8,7 @@
 
 @section('content')
 	<div class="row">
-		<div class="col-md-12">
+		<div class="col-md-12 myWrap">
 			<div class="jumbotron" style="padding-top:32px; padding-bottom:32px;">
 				<h1><span class="fas fa-envelope mr-4"></span>Contact {{ $data['name'] }}</h1>
 				<hr>

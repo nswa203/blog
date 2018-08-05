@@ -3,7 +3,7 @@
 
 @if($count)
 	<div class="row mt-3" id="accordionpm">
-		<div class="col-md-12">
+		<div class="col-md-12 myWrap">
 			<div class="card card-body bg-light">
 				<h1>
 					Permissions
@@ -29,7 +29,7 @@
 									<th>{{ $permission->id }}</th>
 									<td>{{ $permission->display_name }}</td>
 									<td>{{ $permission->name }}</td>
-									<td>{{ substr($permission->description, 0, 156) }}{{ strlen($permission->description)>156 ? '...' : '' }}
+									<td>{{ myTrim($permission->description, 32) }}
 									<td>{{ date('j M Y', strtotime($permission->created_at)) }}</td>
 									<td>{{ date('j M Y', strtotime($permission->updated_at)) }}</td>
 									<td class="text-right" nowrap>

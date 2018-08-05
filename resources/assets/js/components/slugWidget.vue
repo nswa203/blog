@@ -11,6 +11,8 @@
     .slug {
         background-color: #fdfd96;
         padding: 3px 5px;
+        overflow-wrap: break-word;
+        overflow-x: hidden;
     }
     .input {
         width: auto;

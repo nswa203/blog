@@ -9,7 +9,7 @@
 
 @section('content')
 	<div class="row">
-		<div class="col-md-8">
+		<div class="col-md-8 myWrap">
 			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-folder mr-4"></span>Create A New Folder</a></h1>
 			<hr>
 
@@ -49,7 +49,7 @@
 					</div>
 				</div>	
 	
-			{{ Form::label('max_size', 'Maximum Size:', ['class'=>'font-bold form-spacing-top']) }}
+			{{ Form::label('max_size', 'Maximum Size: MB', ['class'=>'font-bold form-spacing-top']) }}
 			{{ Form::text('max_size', 250, ['class'=>'form-control', 'placeholder'=>'Set the Maximum data space size (MB) for this User Profile...', 'data-parsley-required'=>'']) }}
 
 			{{ Form::label('user_id', 'Username:', ['class'=>'font-bold form-spacing-top']) }}
@@ -67,7 +67,7 @@
 				</dl>
 
 				<hr class="hr-spacing-top">
-				@foreach ($status_list as $index => $status)
+				@foreach ($list['d'] as $index => $status)
 					<dt>
 						<div class="field">
 							<label for="status-{{ $index }}" class="mb-3">

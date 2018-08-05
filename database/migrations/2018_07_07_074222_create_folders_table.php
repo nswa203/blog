@@ -21,7 +21,7 @@ class CreateFoldersTable extends Migration
             $table->text('description')->nullable()->default(null);
             $table->string('image')->nullable()->default(null);
             $table->bigInteger('size')->unsigned()->default(0);
-            $table->bigInteger('max_size')->unsigned()->default(250000000);
+            $table->bigInteger('max_size')->unsigned()->default(250);
             $table->integer('category_id')->unsigned(); //OK
             $table->integer('user_id')->unsigned(); //OK
             $table->integer('status')->default(1);

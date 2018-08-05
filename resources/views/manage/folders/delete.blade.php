@@ -8,7 +8,7 @@
 @section('content')
 	@if($folder)
 		<div class="row">
-			<div class="col-md-8">
+			<div class="col-md-8 myWrap">
 				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-trash-alt mr-4"></span>DELETE FOLDER {{ $folder->slug }}</a></h1>
 				<hr>
 
@@ -54,7 +54,7 @@
 					{!! Form::close() !!}
 				</div>
 				@if($folder->image)
-					<img class="mt-4" src="{{ asset('images/'.$folder->image) }}" width="100%" />
+					<img class="mt-4" src="{{ route('private.getFolderFile', [$folder->id, 'Folder.jpg']) }}" width="100%" />
 				@endif
 			</div>
 		</div>	

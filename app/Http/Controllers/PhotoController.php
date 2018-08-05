@@ -75,7 +75,7 @@ class PhotoController extends Controller
      */
     public function index(Request $request) {
         $photos = $this->searchQuery($request->search)->orderBy('id', 'desc')->paginate(10);
-        if ($photos) {
+        if ($photos && $photos->count() > 0) {
 
         } else {
             Session::flash('failure', 'No Photos were found.');

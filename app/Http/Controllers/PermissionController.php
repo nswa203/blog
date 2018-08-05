@@ -42,7 +42,7 @@ class PermissionController extends Controller
      */
     public function index(Request $request) {
         $permissions = $this->searchQuery($request->search)->orderBy('display_name', 'asc')->paginate(10);
-        if ($permissions) {
+        if ($permissions && $permissions->count() > 0) {
 
         } else {
             Session::flash('failure', 'No Permissions were found.');

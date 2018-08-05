@@ -3,7 +3,7 @@
 
 @if($count && $comments)
 	<div class="row mt-3">
-		<div class="col-md-12">
+		<div class="col-md-12 myWrap">
 			<div class="card card-body bg-light">
 				<h1>
 					Comments
@@ -33,7 +33,7 @@
 									<td>{{ $comment->name }}</td>
 									<td>{{ $comment->email }}</td>
 									<td>
-										{{ substr(strip_tags($comment->comment), 0, 256)}}{{ strlen(strip_tags($comment->comment)) >256 ? '...' : '' }}
+										{{ myTrim($comment->comment, 32) }}
 									</td>
 									<td>{{ date('j M Y', strtotime($comment->created_at)) }}</td>
 									<td class="text-right" nowrap>

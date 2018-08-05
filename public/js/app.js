@@ -29954,7 +29954,7 @@ exports = module.exports = __webpack_require__(26)(false);
 
 
 // module
-exports.push([module.i, "\n.slug-widget[data-v-6319b834]{\n    display: -webkit-box;\n    display: -ms-flexbox;\n    display: flex;\n    -webkit-box-pack: start;\n        -ms-flex-pack: start;\n            justify-content: flex-start;\n    -webkit-box-align: center;\n        -ms-flex-align: center;\n            align-items: center;\n}\n.wrapper[data-v-6319b834]{\n    margin-left: 8px;\n    margin-top: 10px;\n}\n.slug[data-v-6319b834] {\n    background-color: #fdfd96;\n    padding: 3px 5px;\n}\n.input[data-v-6319b834] {\n    width: auto;\n}\n", ""]);
+exports.push([module.i, "\n.slug-widget[data-v-6319b834]{\n    display: -webkit-box;\n    display: -ms-flexbox;\n    display: flex;\n    -webkit-box-pack: start;\n        -ms-flex-pack: start;\n            justify-content: flex-start;\n    -webkit-box-align: center;\n        -ms-flex-align: center;\n            align-items: center;\n}\n.wrapper[data-v-6319b834]{\n    margin-left: 8px;\n    margin-top: 10px;\n}\n.slug[data-v-6319b834] {\n    background-color: #fdfd96;\n    padding: 3px 5px;\n    overflow-wrap: break-word;\n    overflow-x: hidden;\n}\n.input[data-v-6319b834] {\n    width: auto;\n}\n", ""]);
 
 // exports
 
@@ -30308,6 +30308,8 @@ module.exports = function listToStyles (parentId, list) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
 //
 //
 //

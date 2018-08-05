@@ -7,15 +7,18 @@
 	<dt class="col-sm-5">URL:</dt>
 	<dd class="col-sm-7"><a href="{{ url('f/'.$folder->slug) }}">{{ url('f/'.$folder->slug) }}</a></dd>
 	<dt class="col-sm-5">Folder ID:</dt>
-	<dd class="col-sm-7"><a href="{{ route('albums.show', $folder->id) }}">{{ $folder->id }}</a></dd>
+	<dd class="col-sm-7"><a href="{{ route('folders.show', $folder->id) }}">{{ $folder->id }}</a></dd>
 	<dt class="col-sm-5">Category:</dt>						
 	<dd class="col-sm-7">
 		<a href="{{ route('categories.show', [$folder->category->id, session('zone')]) }}"><span class="badge badge-info">{{ $folder->category->name }}</span></a>
 	</dd>
+	<dt class="col-sm-5">Published:</dt>						
+	<dd class="col-sm-7 {{ $folder->status == 1 ? 'text-success' : 'text-danger' }}">
+		{{ $list['d'][$folder->status] }}
+	</dd>
 	<dt class="col-sm-5">Status:</dt>						
-	<dd class="col-sm-7 {{ $folder->size / $folder->max_size > .85 ? 'text-danger' : 'text-success' }}">
-		{{ $status_list[$folder->status] }},
-		{{ round(($folder->size / $folder->max_size) * 100, 2) }}% Used 
+	<dd class="col-sm-7 {{ $folder->size / $folder->max_size / 1048576 > .85 ? 'text-danger' : 'text-success' }}">
+		{{ $folder->max_size}}M - {{ round(($folder->size / $folder->max_size / 1048576) * 100, 2) }}% Used 
 	</dd>								
 	<dt class="col-sm-5">Owner:</dt>
 	<dd class="col-sm-7">

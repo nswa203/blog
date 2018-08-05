@@ -8,7 +8,7 @@
 @section('content')
 	@if($photo)
 		<div class="row">
-			<div class="col-md-8">
+			<div class="col-md-8 myWrap">
 				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-image mr-4"></span>{{ $photo->title }}</a></h1>
 				<hr>
 				<a href="{{ route('photos.showImage', $photo->id) }}">
@@ -94,6 +94,9 @@
 				@endif	
 			</div>
 		</div>
+
+		@include('partials.__albums', ['count' => $photo->albums->count(), 'zone' => 'Photo', 'page' => 'pageA'])
+		@include('partials.__tags',   ['count' => $photo->tags->count(),   'zone' => 'Photo', 'page' => 'pageT'])
 
 		@if($photo->albums->count() && $albums)
 			<div class="row mt-3">

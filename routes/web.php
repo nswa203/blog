@@ -21,7 +21,13 @@ Route::prefix('manage')->middleware('role:superadministrator|administrator|edito
 	Route::get('/posts/{id}/delete', 'PostController@delete')->name('posts.delete');
 	// Folders
 	Route::resource('/folders', 'FolderController');
-	Route::get('/folders/{id}/delete', 'FolderController@delete')->name('folders.delete');	
+	Route::get('/folders/{id}/delete', 'FolderController@delete')->name('folders.delete');
+	// Files
+	Route::resource('/files', 'FileController');
+	Route::get('/files/{id}/delete', 'FileController@delete')->name('files.delete');
+	Route::get('/files/{id}/image', 'FileController@showFile')->name('files.showFile');
+	Route::get('/files/{id}/createIn', 'FileController@createIn')->name('files.createIn');
+	Route::get('/files/{id}/indexOf', 'FileController@indexOf')->name('files.indexOf');
 	// Albums
 	Route::resource('/albums', 'AlbumController');
 	Route::get('/albums/{id}/delete', 'AlbumController@delete')->name('albums.delete');
@@ -40,7 +46,8 @@ Route::prefix('manage')->middleware('role:superadministrator|administrator|edito
 	Route::get('/comments/{id}/delete',	'CommentsController@delete'	)->name('comments.delete');
 	Route::get('/comments',				'CommentsController@index'	)->name('comments.index');
 	// Private folders & files
-	Route::get('private/{id}/{filename}', 'FolderController@getFile')->name('private.getfile');
+	Route::get('private/{id}/{filename}', 'FolderController@getFolderFile')->name('private.getFolderFile');
+	Route::get('private/{id}', 			  'FileController@getFile'        )->name('private.getFile');
 });
 Route::prefix('manage')->middleware('role:superadministrator|administrator')->group(function () {
 	// Users
@@ -69,13 +76,6 @@ Route::prefix('manage')->middleware('role:superadministrator|administrator')->gr
 // Tests
 Route::resource('tests', 'TestController');
 
-// Pages
-Route::get('contact',	'PagesController@getContact');
-Route::post('contact',	'PagesController@postContact');
-Route::get('about',		'PagesController@getAbout');
-Route::get('blog',		'BlogController@getIndex')->name('blog.index');
-Route::get('/',			'PagesController@getIndex');
-
 // Comments
 Route::post('comments/{post_id}',	'CommentsController@store'	)->name('comments.store');
 //Route::get('comments/{id}/edit',	'CommentsController@edit'	)->name('comments.edit');
@@ -92,11 +92,20 @@ Auth::routes();
 // Route::get('home', 'PagesController@getIndex');
 Route::get('/home', 'PagesController@getIndex')->name('home');
 
-// Slugs
+// Pages (Public routes)
+Route::get('contact',	'PagesController@getContact');
+Route::post('contact',	'PagesController@postContact');
+Route::get('about',		'PagesController@getAbout');
+Route::get('blog',		'PagesController@getIndexPost')->name('blog.index');
+Route::get('/',			'PagesController@getHomePost');
+
+Route::get('/t/{tag}',	'PagesController@getIndexTagPost')->name('blog.indexTagPost')->where('tag',  '[\w\d\-\_]+');
+Route::get('/a/{slug}', 'PagesController@getSingleAlbum') ->name('blog.singleAlbum') ->where('slug', '[\w\d\-\_]+');
+Route::get('/i/{id}', 	'PagesController@getSinglePhoto') ->name('blog.singlePhoto');
+Route::get('/f/{slug}', 'PagesController@getSingleFolder')->name('blog.singleFolder')->where('slug', '[\w\d\-\_]+');
+Route::get('/fi/{id}',  'PagesController@getSingleFile')  ->name('blog.singleFile');
 /* LAST LAST LAST LAST LAST LAST LAST LAST LAST LASTLAST LAST LAST LAST LASTLAST LAST LAST LAST */
 /* Since we are not using any prefix, this route will intercept any routes placed after it. 	*/
 /* So make it the LAST in your route list.														*/
 /* We are also limiting what characters may be used in our slug to "a-z A-Z 0-9 - _ "       	*/
-Route::get('/f/{slug}', 'BlogController@getSingleFolder')->name('blog.singleFolder')->where('slug', '[\w\d\-\_]+');
-Route::get('/a/{slug}', 'BlogController@getSingleAlbum') ->name('blog.singleAlbum') ->where('slug', '[\w\d\-\_]+');
-Route::get('/{slug}',	'BlogController@getSinglePost')  ->name('blog.singlePost')	->where('slug', '[\w\d\-\_]+');
+Route::get('/{slug}',	'PagesController@getSinglePost')  ->name('blog.singlePost')  ->where('slug', '[\w\d\-\_]+');

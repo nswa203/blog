@@ -8,7 +8,7 @@
 @section('content')
 	@if($tags)
 		<div class="row">
-			<div class="col-md-12">
+			<div class="col-md-12 myWrap">
 				<h1><a class="pointer" id="menu-toggle2" data-toggle="tooltip", data-placement="top", title="Toggle NavBar">
 					@if (isset($search)) <span class="fas fa-search mr-4"></span>
 					@else 				 <span class="fas fa-tag mr-4"></span>

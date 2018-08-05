@@ -9,7 +9,7 @@
 
 @section('content')
 	<div class="row">
-		<div class="col-md-8">
+		<div class="col-md-8 myWrap">
 			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-folder mr-4"></span>Edit Folder</a></h1>
 			<hr>
 
@@ -49,11 +49,14 @@
 					</div>
 				</div>	
 
+			{{ Form::label('max_size', 'Maximum Size: MB', ['class'=>'font-bold form-spacing-top']) }}
+			{{ Form::text('max_size', null, ['class'=>'form-control', 'placeholder'=>'Set the Maximum data space size (MB) for this User Profile...', 'data-parsley-required'=>'']) }}
+
 			{{ Form::label('user_id','Username:', ['class'=>'font-bold form-spacing-top']) }}
 			{{ Form::select('user_id', $users, null, ['class'=>'form-control custom-select', 'placeholder'=>'Select an Author...', 'data-parsley-required'=>'']) }}
 
 			{{ Form::label('description', 'Description:', ['class'=>'font-bold form-spacing-top']) }}
-			{{ Form::textarea('description', null, ['class'=>'form-control', 'id'=>'textarea-description', 'data-parsley-required'=>'', 'rows'=>'3']) }}
+			{{ Form::textarea('description', null, ['class'=>'form-control', 'id'=>'textarea-description', 'rows'=>'3']) }}
 		</div>
 
 		<div class="col-md-4">
@@ -61,7 +64,7 @@
 	
 				@include('partials.__foldersMeta')
 
-				@foreach ($status_list as $index => $status)
+				@foreach ($list['d'] as $index => $status)
 					<dt>
 						<div class="field">
 							<label for="status-{{ $index }}" class="mb-3">
@@ -91,7 +94,7 @@
 			<div class="mt-3">
 				<div id="myImgOld-1" style="display:none">
 					{{-- Used in Edit only 												--}}
-					<img src="{{ route('private.getfile', [$folder->id, 'Folder.jpg']) }}" width="100%" />
+					<img src="{{ route('private.getFolderFile', [$folder->id, 'Folder.jpg']) }}" width="100%" />
 				</div>
 				<div id="myImgNew-1" style="display:none">
 					{{-- Uploading image will be rendered here --}}

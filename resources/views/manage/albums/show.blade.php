@@ -8,7 +8,7 @@
 @section('content')
 	@if($album)
 		<div class="row">
-			<div class="col-md-8">
+			<div class="col-md-8 myWrap">
 				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-images mr-4"></span>Album {{ $album->title }}</a></h1>
 				<hr>
 				<a href="{{ asset('images/'.$album->image) }}">
@@ -82,6 +82,9 @@
 				@endif	
 			</div>
 		</div>	
+
+		@include('partials.__photos', ['count' => $album->photos->count(), 'zone' => 'Album', 'page' => 'pageI'])
+		@include('partials.__posts',  ['count' => $album->posts->count(),  'zone' => 'Album', 'page' => 'pageP'])
 		
 		@if($album->photos->count() && $photos)
 			<div class="row mt-3">

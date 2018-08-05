@@ -37,7 +37,7 @@ class CategoryController extends Controller
      */
     public function index(Request $request) {
         $categories = $this->searchQuery($request->search)->orderBy('name', 'asc')->paginate(10);
-        if ($categories) {
+        if ($categories && $categories->count() > 0) {
 
         } else {
             Session::flash('failure', 'No Categories were found.');
@@ -81,13 +81,14 @@ class CategoryController extends Controller
         $albums  = false;
         $folders = false;
         $posts   = false;
-        if ($zone == 'Albums' or $zone == 'Photos' or $zone == '*' ) {
+        
+        if ($zone == 'Albums' or $zone == 'Photos' or $zone == '*' or $zone == 'Categories') {
             $albums = $category->albums()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageA');
         }
-        if ($zone == 'Folders' or $zone == 'Files' or $zone == '*' ) {
+        if ($zone == 'Folders' or $zone == 'Files' or $zone == '*' or $zone == 'Categories') {
             $folders  = $category->folders()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageF');
         }
-        if ($zone == 'Posts'  or $zone == '*' ) {
+        if ($zone == 'Posts'  or $zone == '*' or $zone == 'Categories') {
             $posts  = $category->posts()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageP');
         }
 

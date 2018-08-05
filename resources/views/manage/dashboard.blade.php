@@ -7,7 +7,7 @@
 
 @section('content')
 	<div class="row">
-		<div class="col-md-12">
+		<div class="col-md-12 myWrap">
 			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-cog mr-4"></span>Manage Dashboard</a></h1>
 			<hr>
 		</div>

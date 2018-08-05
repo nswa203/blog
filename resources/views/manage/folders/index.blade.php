@@ -8,7 +8,7 @@
 @section('content')
 	@if($folders)
 		<div class="row">
-			<div class="col-md-9">
+			<div class="col-md-9 myWrap">
 				<h1><a class="pointer" id="menu-toggle2" data-toggle="tooltip" data-placement="top" title="Toggle NavBar">
 					@if (isset($search)) <span class="fas fa-search mr-4"></span>
 					@else 				 <span class="fas fa-folder mr-4"></span>
@@ -25,8 +25,8 @@
 		</div>
 
 		<div class="row mt-3">
-			<div class="col-md-12">
-				<table class="table table-hover table-responsive-lg">
+			<div class="col-md-12 myWrap">
+				<table class="table table-hover table-responsive-lg wrap-string">
 					<thead class="thead-dark">
 						<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 						<th>Name</th>
@@ -43,19 +43,21 @@
 						@foreach($folders as $folder)
 							<tr>
 								<th>{{ $folder->id }}</th>
-								<td>{{ $folder->name }}</td>
-								<td><a href="{{ url('f/'.$folder->slug) }}">{{ $folder->slug }}</a></td>
+								<td>{{ myTrim($folder->name, 32) }}</td>
+								<td><a href="{{ url('f/'.$folder->slug) }}">{{ myTrim($folder->slug, 32) }}</a></td>
 								<td>
 									<a href="{{ route('categories.show', [$folder->category_id, session('zone')]) }}"><span class="badge badge-info">{{ $folder->category->name }}</span></a>
 								</td>
 								<td>
 									<a href="{{ route('users.show', $folder->user_id) }}">{{ $folder->user->name }}</a>
 								</td>
-								<td>{{ ($folder->max_size/ 1000000) }}M</td>
-								<td class="{{ $folder->size / $folder->max_size > .85 ? 'text-danger' : 'text-success' }}">
-									{!! round(($folder->size / $folder->max_size) * 100, 2) !!}%
+								<td>{{ mySize($folder->max_size, 'M') }}</td>
+								<td class="{{ $folder->size / $folder->max_size / 1048576 > .85 ? 'text-danger' : 'text-success' }}">
+									{!! round(($folder->size / $folder->max_size / 1048576) * 100, 2) !!}%
 								</td>
-								<td>{{ $status_list[$folder->status] }}</td>
+								<td class="{{ $folder->status == 1 ? 'text-success' : 'text-danger' }}">
+									{{ $list['d'][$folder->status] }}
+								</td>
 								<td>{{ date('j M Y',strtotime($folder->updated_at)) }}</td>
 								<td class="text-right" nowrap>
 									<a href="{{ route('folders.show', $folder->id)}}" class="btn btn-sm btn-outline-dark">View</a>

@@ -7,7 +7,7 @@
 
 @section('content')
 	<div class="row">
-		<div class="col-md-9">
+		<div class="col-md-9 myWrap">
 				<h1><a class="pointer" id="menu-toggle2" data-toggle="tooltip", data-placement="top", title="Toggle NavBar">
 				@if (isset($search)) <span class="fas fa-search mr-4"></span>
 				@else 				 <span class="fas fa-user-cog mr-4"></span>
@@ -41,7 +41,7 @@
 								<th>{{ $permission->id }}</th>
 								<td>{{ $permission->display_name }}</td>
 								<td>{{ $permission->name }}</td>
-								<td>{{ substr($permission->description, 0, 156) }}{{ strlen($permission->description)>156 ? '...' : '' }}</td>
+								<td>{{ substr($permission->description, 0, 156) }}{{ myTrim($permission->description, 32) }}</td>
 								<td>{{ date('j M Y', strtotime($permission->created_at)) }}</td>
 								<td>{{ date('j M Y', strtotime($permission->updated_at)) }}</td>
 								<td class="text-right" nowrap>

@@ -11,6 +11,10 @@ class Tag extends Model
     	return $this->belongsToMany('App\Album');
     }
 
+    public function files() {
+    	return $this->belongsToMany('App\File');
+    }   
+
     public function photos() {
     	return $this->belongsToMany('App\Photo');
     }   

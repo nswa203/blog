@@ -463,6 +463,13 @@ dd {
     margin-right: 0px;
 }
 
+/* *********************************************************** */
+/* Force wrap of long strings - does not work with tables!     */
+/* *********************************************************** */
+.myWrap {
+  overflow-wrap: break-word;  
+}
+
 .pointer:hover { /* Show cursor pointer on hover - used on Toggle NavBar */ 
   cursor:pointer;
   color: #595959 !important;
@@ -476,8 +483,52 @@ dd {
   width: 1em;
 }
 
-.xselect2-selection__choice, /* Remove prefix x to change mult-select pills */ 
+.xselect2-selection__choice, /* Select2 Remove prefix x to change mult-select pills */ 
 .xselect2-selection__choice__remove {
   background-color: #80bdff !important;
   color: black !important;
 }
+
+/* *********************************************************** */
+/* Modify Bootstrap Carousel controls                          */
+/* *********************************************************** */
+.carousel-control-prev,
+.carousel-control-next {
+  bottom: 80%;
+  opacity: 0.8;
+}  
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  height: 100px;
+  width: 100px;
+  background-size: 100%, 100%;
+  background-image: none; 
+}
+
+.carousel-control-next-icon:after
+{
+  font-family: 'Font Awesome 5 Free';
+  content: "\f0a9";
+  font-weight: 900;
+  font-size: 40px;
+  margin-right: 10px;
+  opacity: 0.9;
+}
+
+.carousel-control-prev-icon:after {
+  font-family: 'Font Awesome 5 Free';
+  content: "\f0a8";
+  font-weight: 900;
+  font-size: 40px;
+  margin-left: 10px;
+}
+
+/* *********************************************************** */
+/* Force video to fit container - used on File upload          */
+/* *********************************************************** */
+video {
+  width: 100%  !important;
+  height: auto !important;
+}
+

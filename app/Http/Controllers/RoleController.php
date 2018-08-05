@@ -40,7 +40,7 @@ class RoleController extends Controller
      */
     public function index(Request $request) {
         $roles = $this->searchQuery($request->search)->orderBy('display_name', 'asc')->paginate(10);
-        if ($roles) {
+        if ($roles && $roles->count() > 0) {
 
         } else {
             Session::flash('failure', 'No Roles were found.');
@@ -107,7 +107,7 @@ class RoleController extends Controller
         //$role = Role::where('id', $id)->with('permissions')->with('users')->first();
         $role = Role::findOrFail($id);
 
-        $permissions = $role->permissions()->orderBy('display_name','asc')->paginate(5, ['*'], 'pageP');
+        $permissions = $role->permissions()->orderBy('display_name','asc')->paginate(5, ['*'], 'pagePm');
         $users       = $role->users()      ->orderBy('name',        'asc')->paginate(5, ['*'], 'pageU');
 
         if ($role) {

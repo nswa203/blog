@@ -8,7 +8,7 @@
 
 @section('content')
 	<div class="row">
-		<div class="col-md-8">
+		<div class="col-md-8 myWrap">
 			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-user-plus mr-4"></span>Create A New Role</a></h1>
 			<hr>
 			{!! Form::open(['route'=>'roles.store', 'data-parsley-validate'=>'']) !!}

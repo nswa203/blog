@@ -8,7 +8,7 @@
 @section('content')
 	@if($profile)
 		<div class="row">
-			<div class="col-md-8">
+			<div class="col-md-8 myWrap">
 				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-user-circle mr-4"></span>View Profile</a></h1>
 				<hr>
 				@if($profile->banner)
