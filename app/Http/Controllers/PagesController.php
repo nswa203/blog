@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use GuzzleHttp\Client;
+use App\Category;
 use App\File;
 use App\Folder;
 use App\Post;
@@ -27,39 +28,124 @@ class PagesController extends Controller
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
     // It requires the custom search_helper() function in Helpers.php.
     // If you change Helpers.php you should do "dump-autoload". 
-    public function searchQuery($search = '') {
-        $query = [
-            'model'         => 'Post',
-            'searchModel'   => ['title', 'slug', 'image', 'body', 'excerpt'],
-            'searchRelated' => [
-				'user' 		=> ['name'],
-				'category'  => ['name'],
-				'tags' 		=> ['name'],
-				'comments' 	=> ['email', 'name', 'comment' ],
-				'folders'	=> ['name', 'slug', 'description'],
-				'albums'	=> ['title', 'slug', 'description']
-            ],
-            'filter'		=>['status', '>=', '4']
-        ];
+    public function searchQuery($search = '', $op=false) {
+        if ($op == 'pc') {
+        	$search = '"' . $search . '"';
+	        $query = [
+	            'model'         => 'Post',
+	            'searchModel'   => [],
+	            'searchRelated' => [
+					'category' 	=> ['name'],
+	            ],
+	            'filter' 		=> ['status', '>=', '4']
+        	];
+        } elseif ($op == 'f') {
+        	$search = '"' . $search . '"';
+	        $query = [
+	            'model'         => 'Folder',
+	            'searchModel'   => ['slug'],
+	            'searchRelated' => [],
+	            'filter'		=> ['status', '>=', '1']
+        	];
+        } elseif ($op == 'fi') {
+        	$search = '"' . $search . '"';
+	        $query = [
+	            'model'         => 'File',
+	            'searchModel'   => ['id'],
+	            'searchRelated' => [],
+	            'filter'		=> ['status', '>=', '4']
+        	];        	              	        	        	
+        } elseif ($op == 'pt') {
+        	$search = '"' . $search . '"';
+	        $query = [
+	            'model'         => 'Post',
+	            'searchModel'   => [],
+	            'searchRelated' => [
+					'tags' 		=> ['name'],
+	            ],
+	            'filter'		=>['status', '>=', '4']
+        	];        	
+        } elseif ($op == 'pu') {
+        	$search = '"' . $search . '"';
+	        $query = [
+	            'model'         => 'Post',
+	            'searchModel'   => [],
+	            'searchRelated' => [
+					'user' 		=> ['name'],
+					'comments' 	=> ['name'],
+	            ],
+	            'filter'		=> ['status', '>=', '4']
+        	];
+        } elseif ($op == 'category') {
+        	$query = [
+	            'model'         => 'Category',
+	            'searchModel'   => [],
+	            'searchRelated' => [
+					'posts'		=> ['status'],
+	            ],
+        	];
+        } elseif ($op == 'tag') {
+        	$query = [
+	            'model'         => 'Tag',
+	            'searchModel'   => [],
+	            'searchRelated' => [
+					'posts'		=> ['status'],
+	            ],
+        	];
+        } else {        	
+	        $query = [
+	            'model'         => 'Post',
+	            'searchModel'   => ['title', 'slug', 'image', 'body', 'excerpt'],
+	            'searchRelated' => [
+					'user' 		=> ['name'],
+					'category'  => ['name'],
+					'tags' 		=> ['name'],
+					'comments' 	=> ['email', 'name', 'comment' ],
+					'folders'	=> ['name', 'slug', 'description'],
+					'albums'	=> ['title', 'slug', 'description']
+	            ],
+	            'filter'		=> ['status', '>=', '4']
+	        ];
+        }
         return search_helper($search, $query);
     }
 
 	// We only include "Published" Posts in this public view.
 	// The "public" filter is set in the above searchQuery
+	// We are only selecting Tags which have "Published" Posts.  
 	public function getHomePost(Request $request) {
-        $posts = $this->searchQuery($request->search)->orderBy('updated_at', 'desc')->paginate(4, ['*'], 'pageP');
+        $posts      = $this->searchQuery($request->search)->with('tags')->orderBy('updated_at', 'desc')->paginate(4, ['*'], 'pageP');
+        $tags       = $this->searchQuery('4', 'tag')     ->orderBy('name', 'asc')->get();
+        $categories = $this->searchQuery('4', 'category')->orderBy('name', 'asc')->get();
 		if ($posts && $posts->count() > 0) {
 
 		} else {
 			Session::flash('failure', 'No blog Posts were found.');
 		}
-		return view('pages.welcome', ['posts' => $posts, 'search' => $request->search]);
+		return view('pages.welcome', ['posts' => $posts, 'categories' => $categories, 'tags' => $tags, 'search' => $request->search]);
 	}
 
 	// We only include "Published" Posts in this public view.
 	// The "public" filter is set in the above searchQuery
 	public function getIndexPost(Request $request) {
-        $posts = $this->searchQuery($request->search)->orderBy('updated_at', 'desc')->paginate(4, ['*'], 'pageP');
+		if ($request->pc) {
+			$request->search = $request->pc;
+        	$posts = $this->searchQuery($request->search, 'pc')->orderBy('updated_at', 'desc')->paginate(4,  ['*'], 'pagePC');
+		} elseif ($request->pf) {
+			$request->search = $request->pf;
+        	$posts = $this->searchQuery($request->search, 'pf')->orderBy('updated_at', 'desc')->paginate(4,  ['*'], 'pagePF');
+		} elseif ($request->pfi) {
+			$request->search = $request->pfi;
+        	$posts = $this->searchQuery($request->search,'pfi')->orderBy('updated_at', 'desc')->paginate(4,  ['*'], 'pagePFI');   	     	
+		} elseif ($request->pt) {
+			$request->search = $request->pt;
+        	$posts = $this->searchQuery($request->search, 'pt')->orderBy('updated_at', 'desc')->paginate(4,  ['*'], 'pagePT');
+		} elseif ($request->pu && Auth::check()) {			
+			$request->search = Auth::user()->name;
+        	$posts = $this->searchQuery($request->search, 'pu')->orderBy('updated_at', 'desc')->paginate(10, ['*'], 'pagePU');
+		} else {
+	        $posts = $this->searchQuery($request->search      )->orderBy('updated_at', 'desc')->paginate(4,  ['*'], 'pageP');
+		}
 		if ($posts && $posts->count() > 0) {
 		
 		} else {
@@ -69,18 +155,21 @@ class PagesController extends Controller
 	}
 
 	// We only include "Published" Posts in this public view.
-	public function getIndexTagPost($id) {
-		$tag = Tag::findOrFail($id);
-        $posts = $tag->posts() ->orderBy('updated_at', 'desc')->paginate(4, ['*'], 'pageP');
-
-		if ($posts && $posts->count() > 0) {
-
+	// The "public" filter is set in the above searchQuery
+	// This in NOT a publlic method as it may be used to identify a User's name...
+	// ... so its protected behind an Administrator route.
+	// The public version of this (above) only lists the Logged in User's Posts.
+	// The Post search facility can search on User->name but is also protected. 
+	public function getIndexUserPost(Request $request, $user) {
+		$request->search = $user;
+        $posts = $this->searchQuery($request->search, 'pu')->orderBy('updated_at', 'desc')->paginate(4, ['*'], 'pagePU');
+   		if ($posts && $posts->count() > 0) {
+		
 		} else {
 			Session::flash('failure', 'No blog Posts were found.');
 		}
-		return view('blog.index', ['posts' => $posts, 'search' => $tag->name]);
+		return view('blog.index', ['posts' => $posts, 'search' => $request->search]);
 	}
-
 
 	// We only include "Published" Posts in this public view.
 	public function getSinglePost($slug) {
@@ -175,7 +264,8 @@ class PagesController extends Controller
 		});
 
 		if (!$myrc) {
-			Session::flash('success', 'Your eMail was successfully sent.');
+			$nick = explode(' ', $request->name);
+			Session::flash('success', $nick[0].', your eMail was successfully sent.');
 			return redirect()->route('home');
 		} else {
 			Session::flash('failure', 'The eMail was NOT sent.');

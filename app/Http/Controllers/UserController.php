@@ -42,18 +42,6 @@ class UserController extends Controller
         return search_helper($search, $query);
     }
 
-    public function status($default = -1) {
-        $status = [
-            '4' => 'Published',
-            '3' => 'Under Review',
-            '2' => 'In Draft',
-            '1' => 'Withheld',
-            '0' => 'Dead',
-        ];
-        if ($default >= 0) { $status[$default] = '*' . $status[$default]; }
-        return $status;
-    }
-
     /**
      * Display a listing of the resource.
      *
@@ -154,7 +142,12 @@ class UserController extends Controller
     public function show($id) {
         $user = User::findOrFail($id);
 
+        $list['a'] = albumStatus();
+        $list['d'] = folderStatus();
+        $list['p'] = postStatus();
+        
         $albums = $user->albums()->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageA');
+
         if($user->profile) { 
             $profile = Profile::find($user->profile->id);
             $folder_list = $user->folders()->get()->pluck('id')->merge($profile->folders()->get()->pluck('id'))->unique();
@@ -162,7 +155,7 @@ class UserController extends Controller
             $folders_total = $folder_list->count();
         } else {
             $folders = $user->folders()->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageF');
-            $folders_total=$folders->count();
+            $folders_total = $folders->count();
         }
 
         $posts = $user->posts()->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageP');
@@ -172,7 +165,7 @@ class UserController extends Controller
         if ($user) {
             return view('manage.users.show', [
                 'user'  => $user,    'albums' => $albums,   'folders'     => $folders,      'folders_total' => $folders_total,
-                'posts' => $posts,   'roles'  => $roles,    'permissions' => $permissions,  'status_list'    => $this->status()]);
+                'posts' => $posts,   'roles'  => $roles,    'permissions' => $permissions,  'list'          => $list]);
         } else {
             Session::flash('failure', 'User "' . $id . '" was NOT found.');
             return Redirect::back();

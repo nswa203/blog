@@ -11,15 +11,35 @@
 			<div class="col-md-8 myWrap">
 				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-folder-open mr-4"></span>File {{ $file->title }}</a></h1>
 				<hr>
-				<a href="{{ route('private.getFile', [$file->id]) }}">
-					<img src="{{ route('private.getFile', [$file->id]) }}" xwidth="150px" class="img-frame float-left mr-4" style="margin-top:0px; margin-bottom:10px;"
-						onerror="this.onerror=null; this.src='{{ asset('favicon.ico') }}';"
-					/>
-				</a>
-				<p class="lead">{!! $file->description !!}</p>
-				<p>Location: {{ $file->path }}</p>
-				<p>URL: {{ route('private.getFile', [$file->id]) }}</p>
+				<div class="col-md-5 mb-4" style="padding:0;">
+					<a href="{{ route('private.getFile', [$file->id]) }}">
+						@if(substr($file->mime_type, 0, 1) == 'a' or substr($file->mime_type, 0, 1) == 'v')
+							<video controls poster="{{
+									isset($meta->Picture) ? 'data:image/jpeg;base64,' . $meta->Picture :
+									(substr($file->mime_type, 0, 1) == 'a' ? asset('favicon.ico') : '')
+								}}"
+								class="float-left mr-4 img-frame-lg">
+			    				<source src="{{ route('private.getFile', [$file->id]) }}" type="video/mp4" />
+							</video> 
+						@elseif(substr($file->mime_type, 0, 1) == 'i' or substr($file->mime_type, 0, 1) == 't')
+							<img src="{{ route('private.getFile', [$file->id]) }}"
+								class="float-left mr-4 img-frame-lg"
+								style="width:100%; max-height:2000px;"
+								onerror="this.onerror=null; this.src='{{ asset('favicon.ico') }}';"
+							/>
+						@endif
+					</a>
+				</div>
+
+				@if (isset($meta->Caption))
+					<p class="lead">{{ $meta->Caption }}</p>
+				@endif
+
+				<p>Stored: {{ filePath($file) }}</p>
+				<p>Manage: {{ route('files.show', $file->id) }}</p>
+				<p>URL:  {{ url('fi/'.$file->id) }}
 				<p>Size: {{ mySize($file->size) }}</p>
+				<p>Type: {{ $file->mime_type }}
 				<hr>
 			</div>	
 
@@ -45,10 +65,20 @@
 						</div>						
 					</div>
 				</div>
-				@if($file->image)
-					{{-- <img src="{{ asset('images/'.$file->image) }}" width="100%" class="mt-3"/> --}}
-				@endif	
 			</div>
+
+			<div class="row">
+				<div class="col-sm-12 myWrap mt-2 ml-3">
+					@if (isset($meta))
+						@foreach($meta as $metaKey => $metaVal)
+							@if (gettype($metaVal) == 'string' && $metaKey != 'Picture')
+								<p>{{ $metaKey }} : {{ $metaVal }}</p>
+							@endif 
+						@endforeach
+					@endif	
+				</div>
+			</div>
+
 		</div>
 {{--
 		@include('partials.__profiles', ['count' => $file->profiles->count(), 'zone' => 'File', 'page' => 'pagePr'])

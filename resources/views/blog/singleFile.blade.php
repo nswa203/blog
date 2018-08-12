@@ -4,7 +4,7 @@
 @endsection
 
 @if ($file)
-	@section('title', "| $file->titlee")
+	@section('title', "| $file->title")
 
 	@section('content')
 		<div class="row">

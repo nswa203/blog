@@ -1,5 +1,8 @@
 <?php
 
+
+use App\myLibs\ID3TagsReader  as ID3Tags;
+use App\myLibs\EXIFTagsReader as EXIFTags;
 use App\Album;
 use App\Category;
 use App\Comment;
@@ -12,6 +15,99 @@ use App\Profile;
 use App\Role;
 use App\Tag;
 use App\User; 
+
+
+// If you change Helpers.php you should do "dump-autoload".
+// Extract embeded file tags
+if (! function_exists('getMeta')) {
+    function getMeta($file) {
+        $mime_type = $file->getMimeType();
+        if (substr($mime_type, 0, 1) == 'a') {            // Audio ID3 tags
+            $obj = new ID3Tags;
+            $meta = $obj->getTags($file);
+            //echo 'ID3';
+        } elseif (substr($mime_type, 0 , 1) == 'i') {     // Image EXIF tags
+            $obj = new EXIFTags;
+            $meta = $obj->getTags($file);
+            echo 'EXIF';
+        } else { $meta = null; }
+        //dd($meta);
+    return $meta;
+    }
+}    
+
+
+
+
+
+
+
+
+// If you change Helpers.php you should do "dump-autoload".
+// Status definitions for Folders
+// $list['d'] for Folders
+if (! function_exists('folderStatus')) {
+    function folderStatus($default = -1) {
+        $status = [
+            '1' => 'Public',
+            '0' => 'Private',
+        ];
+        if ($default >= 0) { $status[$default] = '*' . $status[$default]; }
+        return $status;
+    }
+}    
+// If you change Helpers.php you should do "dump-autoload".
+// Status definitions for Posts
+// $list['p'] for Posts
+if (! function_exists('postStatus')) {
+    function postStatus($default = -1) {
+        $status = [
+            '4' => 'Published',
+            '3' => 'Under Review',
+            '2' => 'In Draft',
+            '1' => 'Withheld',
+            '0' => 'Dead',
+        ];
+        if ($default >= 0) { $status[$default] = '*' . $status[$default]; }
+        return $status;
+    }
+}
+// If you change Helpers.php you should do "dump-autoload".
+// Status definitions for Files
+// $list['f'] for Files
+if (! function_exists('fileStatus')) {
+    function fileStatus($default = -1) {
+        $status = postStatus($default);              // Same as Posts at the moment!
+        //if ($default >= 0) { $status[$default] = '*' . $status[$default]; }
+        return $status;
+    }
+}
+// If you change Helpers.php you should do "dump-autoload".
+// Status definitions for Albums
+// $list['f'] for Albums
+if (! function_exists('albumStatus')) {
+    function albumStatus($default = -1) {
+        $status = postStatus($default);              // Same as Posts at the moment!
+        //if ($default >= 0) { $status[$default] = '*' . $status[$default]; }
+        return $status;
+    }
+}
+// If you change Helpers.php you should do "dump-autoload".
+// Option definitions for Files
+// $list['o'] for File Options
+if (! function_exists('fileOption')) {
+    function fileOption($default = -1) {
+        $options = [
+            '4' => 'Overwrite',
+            '3' => 'Auto',
+            '2' => 'Inject Name:',
+            '1' => 'Skip',
+            '0' => 'Fail',
+        ];
+        if ($default >= 0) { $options[$default] = '*' . $options[$default]; }
+        return $options;
+    }
+}
 
 // If you change Helpers.php you should do "dump-autoload".
 // Returns the size of all files in a folder and its subfolders.
@@ -144,24 +240,6 @@ if (! function_exists('mySize')) {
     }
 }    
 
-/*
-if (! function_exists('myWordMax')) {
-    function myWordMax($phrase, $len=80, $sep=' ') {
-        $result = '';
-        $words = preg_split("/[\s-]+/", $phrase);
-        foreach ($words as $word) {
-            if (strlen($word) <= $len) { $result = $result . ' ' . $word; }
-            else do { 
-                $part = substr($word, 0, $len);
-                $word = substr($word, $len);
-                $result = $result . $part;
-                if ($word) { $result = $result . $sep; }
-            } while ($word);
-        }
-        return $result;
-    }
-}
-*/
 // Truncate and optionally strip HTML tags from long strings   
 if (! function_exists('myTrim')) {
     function myTrim($string, $len=80, $term='~~', $strip=true) {
@@ -231,63 +309,14 @@ if (! function_exists('search_helper')) {
 	                }
 	            }
 	        }
-
-            // Filter everything
-            if (array_key_exists('filter', $q)) {
-                $query->where(function ($qq) use ($q) {
-                    $qq->where($q['filter'][0], $q['filter'][1], $q['filter'][2]);
-                });
-            } 
 	    } 
+
+        // Filter everything
+        if (array_key_exists('filter', $q)) {
+            $query->where(function ($qq) use ($q) {
+                $qq->where($q['filter'][0], $q['filter'][1], $q['filter'][2]);
+            });
+        } 
 	    return $query;
     }
 }    
-
-if (! function_exists('search_helperOld')) {
-    function search_helperOld($search=false, $q) {
-        $model = 'App\\' . $q['model'];
-        $query = $model::select('*');
-        if (array_key_exists('filter', $q)) { 
-            $query = $query->where($q['filter'][0], $q['filter'][1], $q['filter'][2]);
-        }
-
-        if ($search) {
-            // Build an array of search terms where phrases bounded by "" are treated as a single term
-            $search_list = [];
-            preg_match_all('/"(?:\\\\.|[^\\\\"])*"|\S+/', $search, $words);
-            foreach ($words[0] as $word) {
-                $search_list[] = trim($word, '"');
-            }  
-
-            // Eager load each related model
-            foreach ($q['searchRelated'] as $table => $columns) {
-                $query=$query->with($table);
-            }
-
-            // Search and filter each column in our model
-            foreach ($q['searchModel'] as $column) {
-                foreach ($search_list as $word) {
-                    $query->orWhere($column, 'LIKE', '%' . $word . '%');
-                    if (array_key_exists('filter', $q)) { 
-                        $query = $query->where($q['filter'][0], $q['filter'][1], $q['filter'][2]);
-                    }
-                }    
-            }
-
-            // Search and filter each column in related models
-            foreach ($q['searchRelated'] as $table => $columns) {
-                foreach ($columns as $column) {
-                    foreach ($search_list as $word) {
-                        $query->orWhereHas($table, function($qq) use ($column, $search, $word, $q){
-                            $qq->where($column, 'LIKE', '%' . $word . '%');
-                            if (array_key_exists('filter', $q)) {
-                                $qq = $qq->where($q['filter'][0], $q['filter'][1], $q['filter'][2]);
-                            }
-                        }); 
-                    }
-                }
-            }
-        } 
-        return $query;
-    }
-}

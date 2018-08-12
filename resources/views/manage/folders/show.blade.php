@@ -26,6 +26,9 @@
 				<p>URL:
 					<a href="{{ url('f/'.$folder->slug) }}">{{ url('f/'.$folder->slug) }}</a>
 				</p>
+				<p>Posts:
+					<a href="{{ url('blog?pf='.$folder->slug) }}">{{ url('blog?pf='.$folder->slug) }}</a>
+				</p>				
 				<div style="clear:both;">
 					<h4>{!! $folder->description !!}</h4>
 				</div>	
@@ -66,7 +69,7 @@
 			</div>
 		</div>
 
-		@include('partials.__files',    ['count' => $folder->files->count(),    'zone' => 'Folder', 'page' => 'pageF'])
+		@include('partials.__files',    ['count' => $folder->files->count(),    'zone' => 'Folder', 'page' => 'pageFi'])
 		@include('partials.__posts',    ['count' => $folder->posts->count(),    'zone' => 'Folder', 'page' => 'pageP'])
 		@include('partials.__profiles', ['count' => $folder->profiles->count(), 'zone' => 'Folder', 'page' => 'pagePr'])
 

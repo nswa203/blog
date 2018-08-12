@@ -86,14 +86,17 @@ class CategoryController extends Controller
             $albums = $category->albums()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageA');
         }
         if ($zone == 'Folders' or $zone == 'Files' or $zone == '*' or $zone == 'Categories') {
+            $list['d'] = folderStatus();
             $folders  = $category->folders()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageF');
         }
         if ($zone == 'Posts'  or $zone == '*' or $zone == 'Categories') {
+            $list['p'] = postStatus();
             $posts  = $category->posts()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageP');
         }
 
         if ($category) {
-            return view('manage.categories.show', ['category' => $category, 'albums' => $albums, 'folders'  => $folders, 'posts' => $posts]);
+            return view('manage.categories.show', ['category' => $category, 'albums' => $albums, 'folders'  => $folders,
+                'posts' => $posts, 'list' => $list]);
         } else {
             Session::flash('failure', 'Category "' . $id . '" was NOT found.');
             return Redirect::back();

@@ -67,7 +67,7 @@
 				<hr class="hr-spacing-top">
 				<dl class="row dd-nowrap">
 					@foreach ($list['f'] as $index => $status)
-						<dt class="col-sm-5 mt-1">{{ $loop->index==0 ? 'Status:' : '' }}</dt>
+						<dt class="col-sm-5 mt-1">{{ $loop->index == 0 ? 'Status:' : '' }}</dt>
 						<dt class="col-sm-7 mt-1 mb-2">
 							<label for="status-{{ $index }}" class="">
 								{{ Form::radio('status', $index, substr($status, 0, 1) == '*' ? true : null, ['class'=>'', 'hidden'=>'', 'id'=>'status-' . $index]) }}
@@ -80,7 +80,7 @@
 				<hr class="hr-spacing-top">
 				<dl class="row dd-nowrap">
 					@foreach ($list['o'] as $index => $option)
-						<dt class="col-sm-5 mt-1">{{ $loop->index==0 ? 'Overwrite:' : '' }}</dt>
+						<dt class="col-sm-5 mt-1">{{ $loop->index == 0 ? 'Overwrite:' : '' }}</dt>
 						<dt class="col-sm-7 mt-1 mb-2">
 							<label for="option-{{ $index }}" class="">
 								{{ Form::radio('option', $index, substr($option, 0, 1) == '*' ? true : null, ['class'=>'', 'hidden'=>'', 'id'=>'option-' . $index]) }}

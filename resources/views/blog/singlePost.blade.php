@@ -33,7 +33,7 @@
 					@endforeach
 
 					@foreach ($post->tags as $tag)
-						<a href="{{ url('t/'.$tag->id) }}""><span class="badge badge-info">{{ $tag->name }}</span></a>
+						<a href="{{ url('blog?pt='.$tag->name) }}""><span class="badge badge-info">{{ $tag->name }}</span></a>
 					@endforeach
 				</p>
 				<p>

@@ -13,6 +13,9 @@ use App\Tag;
 use Response;
 use Session;
 use Storage;
+use App\myLibs\TestClass as Test;
+use App\myLibs\ID3TagsReader  as ID3Tags;
+use App\myLibs\EXIFTagsReader as EXIFTags;
 
 class FileController extends Controller
 {
@@ -30,49 +33,13 @@ class FileController extends Controller
     public function searchQuery($search = '') {
         $query = [
             'model'         => 'File',
-            'searchModel'   => ['title', 'file'],
+            'searchModel'   => ['title', 'file', 'mime_type', 'meta'],
             'searchRelated' => [
                 'folder'  => ['name', 'slug', 'description'],
                 'tags'    => ['name'],
             ]
         ];
         return search_helper($search, $query);
-    }
-
-    // $list['o'] for options
-    public function fileOption($default = -1) {
-        $options = [
-            '4' => 'Overwrite',
-            '3' => 'Auto',
-            '2' => 'Inject Name:',
-            '1' => 'Skip',
-            '0' => 'Fail',
-        ];
-        if ($default >= 0) { $options[$default] = '*' . $options[$default]; }
-        return $options;
-    }
-
-    // $list['d'] for folders
-    public function folderStatus($default = -1) {
-        $status = [
-            '1' => 'Public',
-            '0' => 'Private',
-        ];
-        if ($default >= 0) { $status[$default] = '*' . $status[$default]; }
-        return $status;
-    }
-
-    // $list['f'] for files
-    public function fileStatus($default = -1) {
-        $status = [
-            '4' => 'Published',
-            '3' => 'Under Review',
-            '2' => 'In Draft',
-            '1' => 'Withheld',
-            '0' => 'Dead',
-        ];
-        if ($default >= 0) { $status[$default] = '*' . $status[$default]; }
-        return $status;
     }
 
     /**
@@ -82,8 +49,9 @@ class FileController extends Controller
      */
     public function index(Request $request) {
         $files = $this->searchQuery($request->search)->with('folder')->orderBy('id', 'desc')->paginate(10);
-        $list['f'] = $this->fileStatus();
-        $list['d'] = $this->folderStatus();
+        $list['f'] = fileStatus();
+        $list['d'] = folderStatus();
+   
         if ($files && $files->count() > 0) {
 
         } else {
@@ -93,8 +61,8 @@ class FileController extends Controller
      }
     public function indexOf(Request $request, $folder_id) {
         $files = $this->searchQuery($request->search)->with('folder')->where('folder_id', $folder_id)->orderBy('id', 'desc')->paginate(10);
-        $list['f'] = $this->fileStatus();
-        $list['d'] = $this->folderStatus();   
+        $list['f'] = fileStatus();
+        $list['d'] = folderStatus();   
         if ($files && $files->count() > 0) {
 
         } else {
@@ -113,8 +81,8 @@ class FileController extends Controller
         $folders = Folder::orderBy('slug', 'asc')->pluck('slug', 'id');
         $tags = Tag::orderBy('name', 'asc')->pluck('name', 'id');
         $file = new File;
-        $list['f'] = $this->fileStatus(2);
-        $list['o'] = $this->fileOption(3);        
+        $list['f'] = fileStatus(2);
+        $list['o'] = fileOption(3);        
         $mimes = 'audio/*,video/*,image/*,.pdf,.txt,.log';
 
         return view('manage.files.create', ['file' => $file, 'folders' => $folders, 'tags' => $tags,
@@ -126,8 +94,8 @@ class FileController extends Controller
         $folders = [$folder->id => $folder->slug];
         $tags = Tag::orderBy('name', 'asc')->pluck('name', 'id');
         $file = new File;
-        $list['f'] = $this->fileStatus(2);
-        $list['o'] = $this->fileOption(3);
+        $list['f'] = fileStatus(2);
+        $list['o'] = fileOption(3);
         $mimes = 'audio/*,video/*,image/*,.pdf,.txt,.log';
 
         return view('manage.files.create', ['file' => $file, 'folders' => $folders, 'tags' => $tags,
@@ -166,7 +134,7 @@ class FileController extends Controller
             $file->folder_id    = $request->folder_id;
             $file->size         = $item->getSize();
             $file->published_at = $file->status == '4' ? date('Y-m-d H:i:s') : null;
-
+            $file->mime_type    = $item->getMimeType();
             $fileName = $item->getClientOriginalName();                                     // fn.ft
             $fileWrap = myTrim($fileName, 48);                                              // fn... ft
             $filePath = folder_path($folder)->path . '\\' . $fileName;                      // C:\folder\fn.ft
@@ -220,6 +188,9 @@ class FileController extends Controller
                 }
             }                
 
+            // Extract meta data from file ----------------------------------------------------------------------------
+            $file->meta = getMeta($item);
+
             // Save the file
             $myrc = FileSys::copy($item, $filePath);
             if ($myrc) { 
@@ -257,10 +228,13 @@ class FileController extends Controller
     public function show($id)
     {
         $file = File::where('id', $id)->with('folder')->first();
-            $list['f'] = $this->fileStatus();
-            $list['d'] = $this->folderStatus();
+
         if ($file) {
-            return view('manage.files.show', ['file' => $file, 'list' => $list]);
+            $list['f'] = fileStatus();
+            $list['d'] = folderStatus();
+            //if (!$file->meta) { $file->meta = '{"FileTags":"None"}'; }
+
+            return view('manage.files.show', ['file' => $file, 'meta' => json_decode($file->meta), 'list' => $list]);
         } else {
             Session::flash('failure', 'File "' . $id . '" was NOT found.');
             return Redirect::back();
@@ -277,7 +251,8 @@ class FileController extends Controller
             $response = Response::make($file, 200);
             $response->header("Content-Type", $type);
             $myrc = true;
-        }    
+        } 
+   
         if ($myrc) { return $response; }
         else { abort(404); }
     }
@@ -289,9 +264,26 @@ class FileController extends Controller
      * @param  \App\File  $file
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
-    {
-        
+    public function edit($id) {
+        $file = File::findOrFail($id);
+        if ($file) {
+
+$id3 = new ID3Tags;
+$id3->getTags(filePath($file));
+$file->picture = $id3->Picture;
+
+            $folders = Folder::orderBy('slug', 'asc')->pluck('slug', 'id');
+            $tags = Tag::orderBy('name', 'asc')->pluck('name', 'id');
+            $mimes = 'audio/*,video/*,image/*,.pdf,.txt,.log';
+            $list['f'] = fileStatus();
+            $list['o'] = fileOption(3);
+            $list['d'] = folderStatus();
+            return view('manage.files.edit', ['file' => $file, 'folders' => $folders, 'tags' => $tags,
+                'mimes' => $mimes, 'list' => $list, 'folder_id' => null]);
+        } else {
+            Session::flash('failure', 'File "' . $id . '" was NOT found.');
+            return Redirect::back();
+        }
     }
 
     /**

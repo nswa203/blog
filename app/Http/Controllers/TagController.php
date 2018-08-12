@@ -29,29 +29,6 @@ class TagController extends Controller
         return search_helper($search, $query);
     }
 
-    // $list['d'] for folders
-    public function folderStatus($default = -1) {
-        $status = [
-            '1' => 'Public',
-            '0' => 'Private',
-        ];
-        if ($default >= 0) { $status[$default] = '*' . $status[$default]; }
-        return $status;
-    }
-
-    // $list['f'] for files
-    public function fileStatus($default = -1) {
-        $status = [
-            '4' => 'Published',
-            '3' => 'Under Review',
-            '2' => 'In Draft',
-            '1' => 'Withheld',
-            '0' => 'Dead',
-        ];
-        if ($default >= 0) { $status[$default] = '*' . $status[$default]; }
-        return $status;
-    }
-
     /**
      * Display a listing of the resource.
      *
@@ -109,14 +86,15 @@ class TagController extends Controller
             $albums = $tag->albums()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageA');
         }
         if ($zone == 'Files' or $zone == '*' or $zone == 'Tags') {
-            $list['d'] = $this->folderStatus();
-            $list['f'] = $this->fileStatus();
+            $list['d'] = folderStatus();
+            $list['f'] = fileStatus();
             $files  = $tag->files() ->orderBy('id', 'desc')->paginate(5, ['*'], 'pageFi');
         }
         if ($zone == 'Photos' or $zone == '*' or $zone == 'Tags') {
             $photos = $tag->photos()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageI');
         }
         if ($zone == 'Posts'  or $zone == '*' or $zone == 'Tags') {
+            $list['p'] = postStatus();
             $posts  = $tag->posts() ->orderBy('id', 'desc')->paginate(5, ['*'], 'pageP');
         }
 

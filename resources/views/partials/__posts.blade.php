@@ -18,6 +18,7 @@
 							<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
 							<th>Title</th>
 							<th>Excerpt</th>
+							<th>Slug</th>
 							<th>Category</th>
 							<th>Author</th>
 							<th width="120px">Published</th>
@@ -25,12 +26,12 @@
 						</thead>
 						<tbody>
 							@foreach($posts as $post)
+
 								<tr>
 									<th>{{ $post->id }}</th>
 									<td>{{ myTrim($post->title, 32) }}</td>
-									<td>
-										{{ myTrim($post->excerpt, 32) }}
-									</td>
+									<td>{{ myTrim($post->excerpt, 32) }}</td>
+									<td><a href="{{ url($post->slug) }}">{{ myTrim($post->slug, 16) }}</a></td>
 									<td>
 										<a href="{{ route('categories.show', [$post->category_id, 'Posts']) }}"><span class="badge badge-info">{{ $post->category->name }}</span></a>
 									</td>
@@ -43,7 +44,7 @@
 										@if($post->published_at)
 											<span class="text-success">{{ date('j M Y', strtotime($post->published_at)) }}</span>
 										@else	
-											<span class="text-danger">{{ $status_list[$post->status] }}</span>
+											<span class="text-danger">{{ $list['p'][$post->status] }}</span>
 										@endif	
 									</th>
 									<td class="text-right" nowrap>

@@ -29,15 +29,17 @@
 						/>
 					</a>
 				</div>
-			@endif	
-			<div class="col-md-8 offset-md-2"><hr></div>
+			@endif
+			@if (!$loop->last)
+				<div class="col-md-8 offset-md-2"><hr></div>
+			@endif		
 		</div>
 	@endforeach
 
 	<div class="row">
 		<div class="col-md-12 myWrap">
 			<div class="d-flex justify-content-center">
-				{{ $posts->appends(Request::only(['search']))->render() }}
+				{{ $posts->appends(Request::all())->render() }}
 			</div>
 		</div>
 	</div>

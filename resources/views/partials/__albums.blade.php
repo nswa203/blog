@@ -43,7 +43,7 @@
 										@if($album->published_at)
 											<span class="text-success">{{ date('j M Y', strtotime($album->published_at)) }}</span>
 										@else	
-											<span class="text-danger">{{ $status_list[$album->status] }}</span>
+											<span class="text-danger">{{ $list['a'][$album->status] }}</span>
 										@endif	
 									</th>
 									<td class="text-right" nowrap>

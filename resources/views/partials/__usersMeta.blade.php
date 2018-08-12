@@ -5,7 +5,7 @@
 
 <dl class="row dd-nowrap">
 	<dt class="col-sm-5">URL:</dt>
-	<dd class="col-sm-7"><a href="{{ route('users.show', $user->id) }}">{{ route('users.show', $user->id) }}</a></dd>
+	<dd class="col-sm-7"><a href="{{ url('manage/pu/'.$user->name) }}">{{ url('manage/pu/'.$user->name) }}</a></dd>
 	<dt class="col-sm-5">Profile:</dt>
 	<dd class="col-sm-7">
 		@if($user->profile['id'])

@@ -43,29 +43,6 @@ class FolderController extends Controller
         return search_helper($search, $query);
     }
 
-    // $list['d'] for folders
-    public function folderStatus($default = -1) {
-        $status = [
-            '1' => 'Public',
-            '0' => 'Private',
-        ];
-        if ($default >= 0) { $status[$default] = '*' . $status[$default]; }
-        return $status;
-    }
-
-    // $list['f'] for files
-    public function fileStatus($default = -1) {
-        $status = [
-            '4' => 'Published',
-            '3' => 'Under Review',
-            '2' => 'In Draft',
-            '1' => 'Withheld',
-            '0' => 'Dead',
-        ];
-        if ($default >= 0) { $status[$default] = '*' . $status[$default]; }
-        return $status;
-    }
-    
     /**
      * Display a listing of the resource.
      *
@@ -75,10 +52,11 @@ class FolderController extends Controller
     {
         $folders = $this->searchQuery($request->search)->orderBy('name', 'asc')->paginate(10);
         if ($folders && $folders->count() > 0) {
-            $list['d'] = $this->folderStatus();
+
         } else {
             Session::flash('failure', 'No Folders were found.');
         }
+        $list['d'] = folderStatus();
         return view('manage.folders.index', ['folders' => $folders, 'search' => $request->search, 'list' => $list]);
     }
 
@@ -91,7 +69,7 @@ class FolderController extends Controller
         $categories = Category::orderBy('name', 'asc')->pluck('name', 'id');
         $users = User::orderBy('name', 'asc')->pluck('name', 'id');
         $folder = new Folder;
-        $list['d'] = $this->folderStatus(0);
+        $list['d'] = folderStatus(0);
 
         return view('manage.folders.create', ['folder' => $folder, 'categories' => $categories, 'users' => $users, 'list' => $list]);
     }
@@ -181,8 +159,8 @@ class FolderController extends Controller
         if ($folder) {
             if ($folder->status == 0) { $folder->path = private_path($folder->directory); }
             else                      { $folder->path =  public_path($folder->directory); }
-            $list['d'] = $this->folderStatus();
-            $list['f'] = $this->fileStatus();
+            $list['d'] = folderStatus();
+            $list['f'] = fileStatus();
             return view('manage.folders.show', ['folder' => $folder, 'files' => $files, 'posts' => $posts, 'profiles' => $profiles,
                 'list' => $list]);
         } else {
@@ -226,7 +204,7 @@ class FolderController extends Controller
 
         if ($folder) {
             $folder->title = $folder->name;
-            $list['d'] = $this->folderStatus();
+            $list['d'] = folderStatus();
             return view('manage.folders.edit', ['folder' => $folder, 'categories' => $categories, 'users' => $users, 'list' => $list]);
         } else {
             Session::flash('failure', 'Folder "' . $id . '" was NOT found.');
@@ -349,13 +327,14 @@ class FolderController extends Controller
      */
     public function delete($id) {
         $folder = Folder::findOrFail($id);
+        $list['d'] = folderStatus();
 
         if ($folder) {
            
          } else {
             Session::flash('failure', 'Folder "' . $id . '" was NOT found.');
         }
-        return view('manage.folders.delete', ['folder'=>$folder]);
+        return view('manage.folders.delete', ['folder' => $folder, 'list' => $list]);
     }
 
     /**

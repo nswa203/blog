@@ -53,6 +53,8 @@ Route::prefix('manage')->middleware('role:superadministrator|administrator')->gr
 	// Users
 	Route::resource('/users', 'UserController');
 	Route::get('users/{id}/delete',	'UserController@delete')->name('users.delete');
+	// User's Posts
+	Route::get('/pu/{name}', 'PagesController@getIndexUserPost')->name('blog.getIndexUserPost');
 	// Profiles
 	Route::resource('/profiles', 'ProfileController')->except('create');
 	Route::get('profiles/{id}/create',	'ProfileController@create'	)->name('profiles.create');
@@ -90,7 +92,7 @@ Auth::routes();
 /* controllers. We don't have a "home", but rather than change multiple controllers we'll just 	*/
 /* create a Route to handle it here by routing any "home" requests to to the same target as "/"	*/
 // Route::get('home', 'PagesController@getIndex');
-Route::get('/home', 'PagesController@getIndex')->name('home');
+Route::get('/home', 'PagesController@getHomePost')->name('home');
 
 // Pages (Public routes)
 Route::get('contact',	'PagesController@getContact');
@@ -99,11 +101,15 @@ Route::get('about',		'PagesController@getAbout');
 Route::get('blog',		'PagesController@getIndexPost')->name('blog.index');
 Route::get('/',			'PagesController@getHomePost');
 
-Route::get('/t/{tag}',	'PagesController@getIndexTagPost')->name('blog.indexTagPost')->where('tag',  '[\w\d\-\_]+');
-Route::get('/a/{slug}', 'PagesController@getSingleAlbum') ->name('blog.singleAlbum') ->where('slug', '[\w\d\-\_]+');
-Route::get('/i/{id}', 	'PagesController@getSinglePhoto') ->name('blog.singlePhoto');
 Route::get('/f/{slug}', 'PagesController@getSingleFolder')->name('blog.singleFolder')->where('slug', '[\w\d\-\_]+');
 Route::get('/fi/{id}',  'PagesController@getSingleFile')  ->name('blog.singleFile');
+
+
+//Route::get('/c/{id}',	'PagesController@getIndexCategoryPost')->name('blog.indexCategoryPost');
+//Route::get('/t/{id}',	'PagesController@getIndexTagPost')	   ->name('blog.indexTagPost');
+Route::get('/i/{id}', 	'PagesController@getSinglePhoto')	   ->name('blog.singlePhoto');
+Route::get('/a/{slug}', 'PagesController@getSingleAlbum') 	   ->name('blog.singleAlbum') ->where('slug', '[\w\d\-\_]+');
+
 /* LAST LAST LAST LAST LAST LAST LAST LAST LAST LASTLAST LAST LAST LAST LASTLAST LAST LAST LAST */
 /* Since we are not using any prefix, this route will intercept any routes placed after it. 	*/
 /* So make it the LAST in your route list.														*/

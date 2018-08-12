@@ -19,6 +19,8 @@ class CreateFilesTable extends Migration
             $table->string('file')->nullable();
             $table->string('size')->nullable()->default(null);
             $table->integer('status')->default(1);
+            $table->string('mime_type');
+            $table->longText('meta')->nullable();
             $table->dateTime('published_at')->nullable()->default(null);
             $table->integer('folder_id')->unsigned(); //OK
             $table->timestamps();

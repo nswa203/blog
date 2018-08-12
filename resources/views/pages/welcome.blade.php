@@ -33,16 +33,35 @@
 						<p>{{ myTrim($post->body, 256) }}</p>
 						<a href="{{ url($post->slug) }}" class="btn btn-primary">Read More</a>
 					</div>
-					<hr>
+					@if (!$loop->last)
+						<hr>
+					@endif	
 				@endforeach
 			@endif
 		</div>
 
 		<div class="col-md-3 offset-md-1 myWrap">
-			<h2>Sidebar</h2>
-			<p>Just some text to show the extent of the sidebar.</p>
-			<p>ThisIsAPostWithAVeryLongTitleThatHasNoBreaksInItAndCanCauseProblemsWhenRenderingOutputForABrowserOftenWeGetOverflowIssuesWhereTheTextFlowsBeyondTheBoundsOfTheContainer!</p>
+			<h3><span class="fas fa-tag mr-2"></span>Tags</h3>
+			<p>Use our Tag Table to find a subject of interest.</p>
+			@if (Auth::check())
+				<p>
+					<a href="{{ url('blog?pu=Y') }}">
+					<span class="badge badge-info">{{ Auth::user()->name }}</span></a>
+				</p>
+			@endif			
+			<p>
+				@foreach ($categories as $category)
+					<a href="{{ url('blog?pc='.$category->name) }}""><span class="badge badge-info">{{ $category->name }}</span></a>
+				@endforeach 				
+			</p>
+			<p>
+				@foreach ($tags as $tag)
+					<a href="{{ url('blog?pt='.$tag->name) }}""><span class="badge badge-info">{{ $tag->name }}</span></a>
+				@endforeach 				
+			</p>
 		</div>
+
+
 	</div>
 @endsection
 
