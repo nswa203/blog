@@ -12,6 +12,10 @@
 			<li class="nav-item {{ Request::is('contact'	)?'active':'' }}"><a class="nav-link" href="/contact"	>Contact</a></li>
 		</ul>
 
+		<div class="mr-auto" style="margin-top:-2px">
+			@yield('navControls')
+		</div>
+
 		{!! Form::open(['route'=>['search.index'], 'method'=>'POST', 'class'=>'mr-3']) !!}
 			<div class="input-group">
 				{{ Form::text('search', null,  ['class'=>'form-control', 'id'=>'search', 'placeholder'=>'Search ' . Session::get('zone') . '...']) }} 

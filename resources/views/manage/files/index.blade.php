@@ -12,7 +12,7 @@
 				<h1><a class="pointer" id="menu-toggle2" data-toggle="tooltip" data-placement="top" title="Toggle NavBar">
 					@if (isset($search)) <span class="fas fa-search mr-4"></span>
 					@else 				 <span class="fas fa-folder-open mr-4"></span>
-					@endif 				 Manage Files
+					@endif 				 Manage Files 
 				</a></h1>
 			</div>
 
@@ -25,10 +25,28 @@
 		</div>
 
 		<div class="row mt-3">
-			<div class="col-md-12 myWrap">
-				<table class="table table-hover table-responsive-lg">
+			<div class="col-md-12 myWrap" > 
+				{!! Form::open(['route'=>'files.mixed']) !!}
+
+				<table class="table table-hover table-responsive-lg wrap-string" id="app"> <!-- Vue 2 -->
 					<thead class="thead-dark">
-						<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
+						<th width="20px">
+							
+							<i class="fas fa-hashtag mb-1 ml-2"></i>
+							
+
+
+
+
+						</th>
+
+<th width="10px">
+	<label for="itemsCheckAll" >
+    	<input hidden type="checkbox" id="itemsCheckAll" @click="checkAll('all')" value="all" v-model="itemsCheckAll" name=":custom-value2" />
+		<span class="span"></span>
+    </label>
+</th>
+
 						<th>Title</th>
 						<th>Folder</th>
 						<th>Tags</th>
@@ -41,6 +59,14 @@
 						@foreach($files as $file)
 							<tr>
 								<th>{{ $file->id }}</th>
+
+<td>
+	<label for="{!! $file->id !!}">
+    	<input hidden type="checkbox" id="{!! $file->id !!}" value="{!! $file->id !!}" v-model="itemsSelected" v-model="itemsAll" name=":custom-value" @change="checkAll('item')" />
+		<span class="span"></span>
+    </label>
+</td>
+
 								<td>{{ myTrim($file->title, 32) }}</td>
 								<td>
 									<a href="{{ route('folders.show', [$file->folder->id, session('zone')]) }}">
@@ -67,9 +93,12 @@
 										<span class="text-danger">{{ $list['f'][$file->status] }}, {{ $list['d'][$file->folder->status] }}</span>
 									@endif	
 								</th>
-								<td class="text-right" nowrap>
-									<a href="{{ route('files.show', $file->id)}}" class="btn btn-sm btn-outline-dark">View</a>
-									<a href="{{ route('files.edit', $file->id)}}" class="btn btn-sm btn-outline-dark">Edit</a>
+								<td>
+
+									{{ Form::button('<i class="fas fa-search"   ></i>', ['type'=>'submit', 'name'=>'choice', 'value' => 'show,'.$file->id, 'class'=>'btn btn-sm btn-success']) }}
+									{{ Form::button('<i class="far fa-edit"     ></i>', ['type'=>'submit', 'name'=>'choice', 'value' => 'edit,'.$file->id, 'class'=>'btn btn-sm btn-primary']) }}
+									{{ Form::button('<i class="far fa-trash-alt"></i>', ['type'=>'submit', 'name'=>'choice', 'value' => 'delete,'.$file->id, 'class'=>'btn btn-sm btn-danger']) }}
+
 								</td>
 							</tr>
 						@endforeach
@@ -78,10 +107,50 @@
 				<div class="d-flex justify-content-center">
 					{{ $files->appends(Request::only(['search']))->render() }} 
 				</div>
+
+<div id="app2"> <!-- Vue 2 -->
+	<input type="hidden" name="itemsSelected" :value="itemsSelected">
+</div> <!-- Vue 2 -->
+{!! Form::close() !!}
+
 			</div>
+
+				
 		</div>
 	@endif
 @endsection
 
 @section('scripts')
+	{!! Html::script('js/app.js') !!}
+
+	<script>
+	var commonData = {
+		itemsCheckAll: false,
+		itemsAll: {!! $files->pluck('id') !!},
+		itemsSelected: [{!! Request::old('itemsSelected') !!}],
+	};
+	
+	var app=new Vue({
+		el: '#app',
+		data: commonData,
+		methods: {
+		    checkAll: function(op='item') {
+		    	if (op=='all'){
+		    		if (itemsCheckAll.checked) {
+		    			this.itemsSelected=this.itemsAll;
+					} else {
+	    				this.itemsSelected=[];
+	    			}	
+		    	} else {
+	    			this.$nextTick(() => { itemsCheckAll.checked=false; });
+		    	}
+		   }
+	    },
+	});
+	
+	var app=new Vue({
+		el: '#app2',
+		data: commonData,			
+		});	
+	</script>
 @endsection

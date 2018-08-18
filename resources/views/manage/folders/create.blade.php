@@ -30,7 +30,7 @@
 				{{ Form::label('', 'Image:', ['class'=>'font-bold form-spacing-top']) }}
 				<div class="row ml-auto myFile-img" data-imgNew="myImgNew-1" data-imgOld="myImgOld-1" data-img="{{ $folder->image }}">
 					<div class="col-md-9 custom-file" onChange="myFile(this)">
-						{{ Form::file('image', ['class'=>'form-control custom-file-input', 'accept'=>'image/*']) }} 
+						{{ Form::file('image', ['class'=>'form-control custom-file-input', 'accept'=>$mimes]) }} 
 						{{ Form::label('image', 'Select a file...', ['class'=>'custom-file-label']) }}
 					</div>
 					<div class="col-md-3 myFile-img-delete" style="display:none">
@@ -207,7 +207,7 @@
 			var elReset =elRow.getElementsByClassName('myFile-img-reset')[0];	// Reset Button
 
 			var fileName=elInput.files[0].name;
-			var allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif|\.jpe)$/i;
+			var allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif|\.jpe|\.ico)$/i;
 			if (allowedExtensions.exec(fileName)) {
 		    	var maxSize=50;
 	    		if (fileName.length>maxSize+3) {								// Trim for Label

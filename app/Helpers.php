@@ -1,6 +1,4 @@
 <?php
-
-
 use App\myLibs\ID3TagsReader  as ID3Tags;
 use App\myLibs\EXIFTagsReader as EXIFTags;
 use App\Album;
@@ -14,36 +12,80 @@ use App\Post;
 use App\Profile;
 use App\Role;
 use App\Tag;
-use App\User; 
+use App\User;
 
+// If you change Helpers.php you should do "composer dump-autoload".
+// Wrapper for session array vars
+if (! function_exists('mySession')) {
+    function mySession($tag, $key=false, $val=false) {
+        $myrc = false;
+        $tag = $tag == 'this' ? 'zone' : $tag;          // Zone
+        $t = session($tag);
+        if ($key && $val) {                             // Write    
+            $t[$key] = $val;
+            session([$tag => $t]);      
+            $myrc = true; 
+        } elseif (array_key_exists($key, $t)) { 
+            $myrc = $t[$key];                           // Read
+        }
+        return $myrc; 
+    }
+}    
 
-// If you change Helpers.php you should do "dump-autoload".
+// If you change Helpers.php you should do "composer dump-autoload".
+// Supports dynamically adjustable paginator - per page size
+if (! function_exists('pageSize')) {
+    function pageSize($request, $tag, $default, $pageMin=false, $pageMax=false, $pageStep=false) {
+        $pageMin  = $pageMin  ?:  5;
+        $pageMax  = $pageMax  ?: 50;
+        $pageStep = $pageStep ?:  5;
+
+        $t = session($tag);
+        if ($t) { $pageSize = array_key_exists('pageSize', $t) ? $t['pageSize'] : $default; }
+        else { $pageSize = $default; } 
+        $pageSize = $request->pp ? $request->pp : $pageSize;
+        $pageSize = $pageSize < $pageMin ? $pageMin : $pageSize;
+        $pageSize = $pageSize > $pageMax ? $pageMax : $pageSize;
+        session([$tag => ['pageSize' => $pageSize]]);       // Save as a session value
+        return ['size' => $pageSize, 'min' => $pageMin, 'max' => $pageMax, 'step' => $pageStep]; 
+    }
+}    
+
+// If you change Helpers.php you should do "composer dump-autoload".
+// Supports files.show First, Previous, Next, Last
+if (! function_exists('showNav')) {
+    function showNav($id, $list=[]) {
+        $item = array_search($id, $list);
+        if ($item !== false) {
+            if ($item > 0)              { $start = $list[0];      $prev = $list[$item-1];        }
+            else                        { $start = false;         $prev = false;                 }
+            if ($item < count($list)-1) { $next = $list[$item+1]; $last = $list[count($list)-1]; }
+            else                        { $next = false;          $last = false;                 }    
+            $nav = ['fas fa-fast-backward', $start, 'fas fa-step-backward', $prev,
+                    'fas fa-step-forward',  $next,  'fas fa-fast-forward',  $last];
+        } else { $nav = false; }
+        //dd($id, $item, $nav, $list);
+    return $nav;
+    }
+}    
+
+// If you change Helpers.php you should do "composer dump-autoload".
 // Extract embeded file tags
 if (! function_exists('getMeta')) {
     function getMeta($file) {
         $mime_type = $file->getMimeType();
-        if (substr($mime_type, 0, 1) == 'a') {            // Audio ID3 tags
+        if (substr($mime_type, 0, 1) == 'a') {             // Audio ID3 tags
             $obj = new ID3Tags;
             $meta = $obj->getTags($file);
-            //echo 'ID3';
-        } elseif (substr($mime_type, 0 , 1) == 'i') {     // Image EXIF tags
+        } elseif (substr($mime_type, 0 , 2) == 'im') {     // Image EXIF tags
             $obj = new EXIFTags;
             $meta = $obj->getTags($file);
-            echo 'EXIF';
         } else { $meta = null; }
-        //dd($meta);
-    return $meta;
+    return strlen($meta)<2 ? null : $meta;
     }
 }    
 
-
-
-
-
-
-
-
-// If you change Helpers.php you should do "dump-autoload".
+// If you change Helpers.php you should do "composer dump-autoload".
 // Status definitions for Folders
 // $list['d'] for Folders
 if (! function_exists('folderStatus')) {
@@ -56,7 +98,7 @@ if (! function_exists('folderStatus')) {
         return $status;
     }
 }    
-// If you change Helpers.php you should do "dump-autoload".
+// If you change Helpers.php you should do "composer dump-autoload".
 // Status definitions for Posts
 // $list['p'] for Posts
 if (! function_exists('postStatus')) {
@@ -72,7 +114,7 @@ if (! function_exists('postStatus')) {
         return $status;
     }
 }
-// If you change Helpers.php you should do "dump-autoload".
+// If you change Helpers.php you should do "composer dump-autoload".
 // Status definitions for Files
 // $list['f'] for Files
 if (! function_exists('fileStatus')) {
@@ -82,7 +124,7 @@ if (! function_exists('fileStatus')) {
         return $status;
     }
 }
-// If you change Helpers.php you should do "dump-autoload".
+// If you change Helpers.php you should do "composer dump-autoload".
 // Status definitions for Albums
 // $list['f'] for Albums
 if (! function_exists('albumStatus')) {
@@ -92,7 +134,7 @@ if (! function_exists('albumStatus')) {
         return $status;
     }
 }
-// If you change Helpers.php you should do "dump-autoload".
+// If you change Helpers.php you should do "composer dump-autoload".
 // Option definitions for Files
 // $list['o'] for File Options
 if (! function_exists('fileOption')) {
@@ -109,7 +151,7 @@ if (! function_exists('fileOption')) {
     }
 }
 
-// If you change Helpers.php you should do "dump-autoload".
+// If you change Helpers.php you should do "composer dump-autoload".
 // Returns the size of all files in a folder and its subfolders.
 // Can optionally update the Folder object with the size  
 if (! function_exists('folderAndSize')) {
@@ -144,7 +186,7 @@ if (! function_exists('folderAndSize')) {
     }
 }
 
-// If you change Helpers.php you should do "dump-autoload". 
+// If you change Helpers.php you should do "composer dump-autoload". 
 if (! function_exists('folderSize')) {
     function folderSize($dir) {
 	    $total_size = 0;
@@ -167,7 +209,7 @@ if (! function_exists('folderSize')) {
 	}
 }
 
-// If you change Helpers.php you should do "dump-autoload". 
+// If you change Helpers.php you should do "composer dump-autoload". 
 if (! function_exists('msgx')) {
     function msgx($m=[]) {
     	if (!is_array($m)) { $m = ['Message' => [$m, true]]; }
@@ -184,7 +226,7 @@ if (! function_exists('msgx')) {
     }
 }
 
-// If you change Helpers.php you should do "composer dump-autoload". 
+// If you change Helpers.php you should do "composer composer dump-autoload". 
 if (! function_exists('private_path')) {
     function private_path($folder='') {
         $folder = !$folder ? '' : '\\' . $folder;
@@ -218,10 +260,11 @@ if (! function_exists('folderPath')) {
     }
 }
 if (! function_exists('filePath')) {
-    function filePath($file, $folder=false) {
+    function filePath($file=false, $folder=false) {
+        if (gettype($file) != 'object') { return false; }
         if (!$folder) { $folder = Folder::find($file->folder_id); }
-        if ( $folder) { return folderPath($folder) . '\\' . $file->file; }
-        else          { return false; }
+        if (!$folder or gettype($folder) != 'object') { return false; }
+        else { return folderPath($folder) . '\\' . $file->file; }
     }
 }
 if (! function_exists('fileURL')) {
@@ -251,7 +294,7 @@ if (! function_exists('myTrim')) {
 }     
 
 
-// If you change Helpers.php you should do "composer dump-autoload". 
+// If you change Helpers.php you should do "composer composer dump-autoload". 
 // We don't hard code the model here so all the possible models that the
 // controllers may request must be included up front
 /*
@@ -319,4 +362,57 @@ if (! function_exists('search_helper')) {
         } 
 	    return $query;
     }
-}    
+}
+
+
+
+
+
+
+
+if (! function_exists('search_helperOld')) {
+    function search_helperOld($search=false, $q) {
+        $model = 'App\\' . $q['model'];
+        $query = $model::select('*');
+
+        if ($search) {
+            // Build an array of search terms where phrases bounded by "" are treated as a single term
+            $search_list = [];
+            preg_match_all('/"(?:\\\\.|[^\\\\"])*"|\S+/', $search, $words);
+            foreach ($words[0] as $word) {
+                $search_list[] = trim($word, '"');
+            }  
+
+            // Eager load each related model
+            foreach ($q['searchRelated'] as $table => $columns) {
+                $query=$query->with($table);
+            }
+
+            // Search each column in our model
+            foreach ($q['searchModel'] as $column) {
+                foreach ($search_list as $word) {
+                    $query->orWhere($column, 'LIKE', '%' . $word . '%');
+                }    
+            }
+
+            // Search each column in related models
+            foreach ($q['searchRelated'] as $table => $columns) {
+                foreach ($columns as $column) {
+                    foreach ($search_list as $word) {
+                        $query->orWhereHas($table, function($qq) use ($column, $search, $word, $q){
+                            $qq->where($column, 'LIKE', '%' . $word . '%');
+                        }); 
+                    }
+                }
+            }
+        } 
+
+        // Filter everything
+        if (array_key_exists('filter', $q)) {
+            $query->where(function ($qq) use ($q) {
+                $qq->where($q['filter'][0], $q['filter'][1], $q['filter'][2]);
+            });
+        } 
+        return $query;
+    }
+}     

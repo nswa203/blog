@@ -50,7 +50,10 @@ class FolderController extends Controller
      */
     public function index(Request $request)
     {
-        $folders = $this->searchQuery($request->search)->orderBy('name', 'asc')->paginate(10);
+        $pager = pageSize($request, 'foldersIndex', 10, 5, 200, 5);    // model, size($request->pp), min, max, step
+        $folders = $this->searchQuery($request->search)->orderBy('name', 'asc')->paginate($pager['size']);
+        $folders->pager = $pager;
+
         if ($folders && $folders->count() > 0) {
 
         } else {
@@ -70,8 +73,10 @@ class FolderController extends Controller
         $users = User::orderBy('name', 'asc')->pluck('name', 'id');
         $folder = new Folder;
         $list['d'] = folderStatus(0);
+        $mimes = 'image/*,.ico';
 
-        return view('manage.folders.create', ['folder' => $folder, 'categories' => $categories, 'users' => $users, 'list' => $list]);
+        return view('manage.folders.create', ['folder' => $folder, 'categories' => $categories, 'users' => $users,
+            'mimes' => $mimes, 'list' => $list]);
     }
 
     /**
@@ -149,18 +154,27 @@ class FolderController extends Controller
      * @param  \App\Folder  $folder
      * @return \Illuminate\Http\Response
      */
-    public function show($id) {
+    public function show(Request $request, $id) {
         $folder = Folder::findOrFail($id);
 
-        $files    = $folder->files()->orderBy('title', 'asc')->paginate(5, ['*'], 'pageFi');
-        $posts    = $folder->posts()->orderBy('slug',  'asc')->paginate(5, ['*'], 'pageP');
-        $profiles = $folder->profiles()->with('user')->orderBy('username', 'asc')->paginate(5, ['*'], 'pagePr');
+        $pager = pageSize($request, 'folderShow', 5, 5, 200, 5);    // model, size($request->pp), min, max, step
+        $files = $folder->files()->orderBy('title', 'asc')->paginate($pager['size'], ['*'], 'pageFi');
+        $files->pager = $pager;
+
+        $posts    = $folder->posts()->orderBy('slug',  'asc')->paginate($pager['size'], ['*'], 'pageP');
+        $posts->pager = $pager;
+
+        $profiles = $folder->profiles()->with('user')->orderBy('username', 'asc')->paginate($pager['size'], ['*'], 'pagePr');
+        $profiles->pager = $pager;
 
         if ($folder) {
             if ($folder->status == 0) { $folder->path = private_path($folder->directory); }
             else                      { $folder->path =  public_path($folder->directory); }
             $list['d'] = folderStatus();
             $list['f'] = fileStatus();
+            $x = $folder->files()->orderBy('title', 'asc')->pluck('id')->toArray();
+            mySession('filesIndex', 'index', $x);
+            mySession('filesShow', 'indexURL', $request->url().'?'.$request->getQueryString());
             return view('manage.folders.show', ['folder' => $folder, 'files' => $files, 'posts' => $posts, 'profiles' => $profiles,
                 'list' => $list]);
         } else {

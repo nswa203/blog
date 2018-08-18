@@ -40,7 +40,7 @@
 		</div>
 
 		@include('partials.__albums', ['count' => $tag->albums->count(), 'zone' => 'Tag', 'page' => 'pageA'])
-		@include('partials.__files',  ['count' => $tag->files->count(),  'zone' => 'Tag', 'page' => 'pageF'])
+		@include('partials.__files',  ['count' => $tag->files->count(),  'zone' => 'Tag', 'page' => 'pageFi'])
 		@include('partials.__photos', ['count' => $tag->photos->count(), 'zone' => 'Tag', 'page' => 'pageI'])
 		@include('partials.__posts',  ['count' => $tag->posts->count(),  'zone' => 'Tag', 'page' => 'pageP'])
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use URL;
 
 class SearchController extends Controller
 {
@@ -13,7 +14,7 @@ class SearchController extends Controller
     public function index(Request $request) {
         $zone = session('zone');
         $search = $request->search ? 'search=' . $request->search : null;
-     
+
         if      ($zone == 'Posts')      { $route = 'posts.index'; }
         elseif  ($zone == 'Comments')   { $route = 'comments.index'; }
         elseif  ($zone == 'Albums')     { $route = 'albums.index'; }
@@ -29,6 +30,7 @@ class SearchController extends Controller
 
         else                            { $route = 'blog.index'; }
 
+        mySession($zone, 'lastSearch', URL::route($route, $search));
         return redirect()->route($route, $search);
     }
 

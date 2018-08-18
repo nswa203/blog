@@ -8,6 +8,8 @@
 	<dd class="col-sm-7"><a href="{{ url('fi/'.$file->id) }}">{{ url('fi/'.$file->id) }}</a></dd>
 	<dt class="col-sm-5">File ID:</dt>
 	<dd class="col-sm-7"><a href="{{ route('files.show', $file->id) }}">{{ $file->id }}</a></dd>
+	<dt class="col-sm-5">Folder:</dt>
+	<dd class="col-sm-7"><a href="{{ route('folders.show', $file->folder_id) }}">{{ $file->folder->name }}</a></dd>
 	<dt class="col-sm-5">Published:</dt>						
 	<dd class="col-sm-7">
 		@if($file->published_at)

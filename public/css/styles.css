@@ -531,3 +531,29 @@ video {
   width: 100%  !important;
   height: auto !important;
 }
+
+/* *********************************************************** */
+/* Custom paginator - per page selector                        */
+/* *********************************************************** */
+.page-btn,
+.page-btn-update {
+  border-style: solid;
+  border-width: 1px;
+  border-color: gainsboro;
+  background-color: white;
+  border-radius: 0px;
+  width:30px;
+  padding-left:0px;
+  padding-right:0px;
+}
+
+.page-in {
+  width: 30px;
+  border-style: solid;
+  border-width: 1px;
+  border-left: 0px;
+  border-right: 0px;
+  padding-left: 0px;
+  padding-right: 2px;
+  text-align: center;
+}

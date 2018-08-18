@@ -31,7 +31,7 @@
 								<td>{{ myTrim($file->title, 32) }}</td>
 								<td>
 									@foreach ($file->tags as $tag)
-										<a href="{{ route('tags.show', [$tag->id, session('Files')]) }}"><span class="badge badge-info">{{ $tag->name }}</span></a>
+										<a href="{{ route('tags.show', [$tag->id, 'Files']) }}"><span class="badge badge-info">{{ $tag->name }}</span></a>
 									@endforeach
 								</td>
 								<td>

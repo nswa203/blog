@@ -24,10 +24,11 @@ Route::prefix('manage')->middleware('role:superadministrator|administrator|edito
 	Route::get('/folders/{id}/delete', 'FolderController@delete')->name('folders.delete');
 	// Files
 	Route::resource('/files', 'FileController');
-	Route::get('/files/{id}/delete', 'FileController@delete')->name('files.delete');
-	Route::get('/files/{id}/image', 'FileController@showFile')->name('files.showFile');
-	Route::get('/files/{id}/createIn', 'FileController@createIn')->name('files.createIn');
-	Route::get('/files/{id}/indexOf', 'FileController@indexOf')->name('files.indexOf');
+	Route::get('/files/{id}/delete', 	'FileController@delete'	 )->name('files.delete');
+	Route::get('/files/{id}/image', 	'FileController@showFile')->name('files.showFile');
+	Route::get('/files/{id}/createIn', 	'FileController@createIn')->name('files.createIn');
+	Route::get('/files/{id}/indexOf', 	'FileController@indexOf' )->name('files.indexOf');
+	Route::post('/files/mixed',			'FileController@mixed'   )->name('files.mixed');
 	// Albums
 	Route::resource('/albums', 'AlbumController');
 	Route::get('/albums/{id}/delete', 'AlbumController@delete')->name('albums.delete');
@@ -46,8 +47,9 @@ Route::prefix('manage')->middleware('role:superadministrator|administrator|edito
 	Route::get('/comments/{id}/delete',	'CommentsController@delete'	)->name('comments.delete');
 	Route::get('/comments',				'CommentsController@index'	)->name('comments.index');
 	// Private folders & files
-	Route::get('private/{id}/{filename}', 'FolderController@getFolderFile')->name('private.getFolderFile');
-	Route::get('private/{id}', 			  'FileController@getFile'        )->name('private.getFile');
+	Route::get('private/{id}/{filename}',  'FolderController@getFolderFile')->name('private.getFolderFile');
+	Route::get('private/{id}', 			   'FileController@getFile'        )->name('private.getFile');
+	Route::get('private/find/{filename}/{foldername}', 'FileController@findFile')->name('private.findFile');
 });
 Route::prefix('manage')->middleware('role:superadministrator|administrator')->group(function () {
 	// Users

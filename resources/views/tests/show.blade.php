@@ -15,7 +15,11 @@
 				<folders></folders>
 				<images></images>
 			</div>
-
+			
+			<div>
+				
+			</div>	
+		
 		</div>	
 	</div>	
 @endsection

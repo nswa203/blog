@@ -177,6 +177,7 @@ class ID3TagsReader {
                 }
             }        
         }
+        $id3 = isset($id3) ? $id3 : [];
         return json_encode($id3);
     }
 

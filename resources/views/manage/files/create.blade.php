@@ -279,7 +279,7 @@
 					video.alt=file.name;
 					video.src=this.result;
 					video.controls    = true;
-					video.autoplay    = !sound|(sound&&index==0);
+					video.autoplay    = !sound|(sound&&index==-1); // Change -1 to 0 for auto play
 					video.muted       = !sound;
 					video.loop        = !sound;
 					video.playsinline = true;
