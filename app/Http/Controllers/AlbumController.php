@@ -26,9 +26,9 @@ class AlbumController extends Controller
     }
 
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
-    // It requires the custom search_helper() function in Helpers.php.
-    // If you change Helpers.php you should do "dump-autoload". 
-    public function searchQuery($search = '') {
+    // The table is sorted (ascending or descending) and finally filtered.
+    // It requires the custom queryHelper() function in Helpers.php.
+    public function searchQuery($request) {
         $query = [
             'model'         => 'Album',
             'searchModel'   => ['title', 'slug', 'description', 'image'],
@@ -38,9 +38,18 @@ class AlbumController extends Controller
                 'posts'    => ['title', 'body', 'excerpt'],
                 'tags'     => ['name'],
                 'user'     => ['name', 'email']
-            ]
+            ],
+            'sortModel'   => [
+                'i'       => 'd,id',                                                      
+                't'       => 'a,title',
+                's'       => 'a,slug',
+                'p'       => 'd,published',
+                'c'       => 'd,created_at',
+                'u'       => 'd,updated_at',
+                'default' => 't'                       
+            ],                                     
         ];
-        return search_helper($search, $query);
+        return queryHelper($query, $request);
     }
 
     // $status_list
@@ -62,7 +71,7 @@ class AlbumController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        $albums = $this->searchQuery($request->search)->orderBy('title', 'asc')->paginate(10);
+        $albums = $this->searchQuery($request)->paginate(10);
         if ($albums && $albums->count() > 0) {
 
         } else {

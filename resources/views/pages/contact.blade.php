@@ -32,7 +32,7 @@
 							{{ Form::label(null, 'Are You Human?', ['class'=>'font-bold form-spacing-top mr-5']) }}
 							{{ Form::button('<h4><i class="far fa-envelope mr-3"></i>Send Your Message</h4>',
 								['type'=>'submit', 'class'=>'form-control form-spacing-top btn btn-success float-lg-right float-none mb-3', 'style'=>'margin-top:54px; height:75px; width:300px;']) }}
-							<div class="g-recaptcha" data-sitekey="{!! env('CAPTCHA_SITEKEY') !!}"></div>
+							<div class="g-recaptcha" data-sitekey="{!! myConstants('CAPTCHA_SITEKEY') !!}"></div>
 						</div>
 					</div>
 				{!! Form::close() !!}
@@ -48,11 +48,12 @@
 	<script>
 		tinymce.init ({
 			selector: '#textarea-body',
-			plugins: "link lists",
+			plugins: "advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table contextmenu paste",
 			menubar: false,
-			toolbar: "",
+			extended_valid_elements: "iframe[src|width|height|name|align|frameborder|scrolling]",			
+			toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | alignleft aligncenter alignright alignjustify",
 			forced_root_block : 'div',
             branding: false,
-		});
+      	});
 	</script>
 @endsection

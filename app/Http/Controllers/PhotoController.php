@@ -26,15 +26,21 @@ class PhotoController extends Controller
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
     // It requires the custom search_helper() function in Helpers.php.
     // If you change Helpers.php you should do "dump-autoload". 
-    public function searchQuery($search = '') {
+    public function searchQuery($request) {
         $query = [
             'model'         => 'Photo',
             'searchModel'   => ['title', 'description', 'image', 'file', 'exif', 'iptc'],
             'searchRelated' => [
                 'albums' => ['title', 'slug', 'description'], 'tags' => ['name']
-            ]
+            ],
+            'sortModel'   => [
+                'i'       => 'd,id',                                                      
+                'c'       => 'd,created_at',
+                'u'       => 'd,updated_at',
+                'default' => 'i'                       
+            ],                                             
         ];
-        return search_helper($search, $query);
+        return queryHelper($query, $request);
     }
 
     // $status_list
@@ -74,7 +80,7 @@ class PhotoController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        $photos = $this->searchQuery($request->search)->orderBy('id', 'desc')->paginate(10);
+        $photos = $this->searchQuery($request)->paginate(10);
         if ($photos && $photos->count() > 0) {
 
         } else {
@@ -408,7 +414,6 @@ class PhotoController extends Controller
      */
     public function storeMultiple(Request $request) {
 $ajax = true;
-
         $this->validate($request, [
             'title'             => 'sometimes|max:191',
             'image'             => 'required|array|between:1,64',

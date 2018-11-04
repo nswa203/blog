@@ -8,6 +8,7 @@ use App\Role;
 use App\Permission;
 use App\User;
 use Session;
+use Validator;
 
 class RoleController extends Controller
 {
@@ -20,17 +21,26 @@ class RoleController extends Controller
     }
 
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
-    // It requires the custom search_helper() function in Helpers.php.
-    // If you change Helpers.php you should do "dump-autoload". 
-    public function searchQuery($search = '') {
+    // The table is sorted (ascending or descending) and finally filtered.
+    // It requires the custom queryHelper() function in Helpers.php.
+    public function searchSortQuery($request) {
         $query = [
             'model'         => 'Role',
             'searchModel'   => ['name', 'display_name', 'description'],
             'searchRelated' => [
                 'users'       => ['name', 'email']
-            ]
+            ],
+            'sortModel'   => [
+                'i'       => 'd,id',                                                      
+                'n'       => 'a,display_name',
+                's'       => 'a,name',                                           
+                'd'       => 'a,description',                                            
+                'c'       => 'd,created_at',
+                'u'       => 'd,updated_at',
+                'default' => 'n'                       
+            ]            
         ];
-        return search_helper($search, $query);
+        return queryHelper($query, $request);
     }
 
     /**
@@ -39,13 +49,16 @@ class RoleController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        $roles = $this->searchQuery($request->search)->orderBy('display_name', 'asc')->paginate(10);
+        $pager = pageSize($request, 'rolesIndex', 12, 4, 192, 4);    // size($request->pp), sessionTag, default, min, max, step
+        $roles = $this->searchSortQuery($request)->paginate($pager['size']);
+        $roles->pager = $pager;
+
         if ($roles && $roles->count() > 0) {
 
         } else {
             Session::flash('failure', 'No Roles were found.');
         }
-        return view('manage.roles.index', ['roles' => $roles, 'search' => $request->search]);
+        return view('manage.roles.index', ['roles' => $roles, 'search' => $request->search, 'sort' => $request->sort]);
     }
 
     /**
@@ -69,14 +82,18 @@ class RoleController extends Controller
         // & syncPermissions. Warning explode will create an empty element [0] if input is null.
         $permissions = $request->itemsSelected ? explode(',', $request->itemsSelected) : [];
         $request->merge(['permissions' => $permissions]);
-    
-        $this->validate($request, [
+
+        // We use our own validator here as auto validation cannot handle error return from a POST method 
+        $validator = Validator::make($request->all(), [
             'display_name'  => 'required|min:3|max:191',
             'name'          => 'required|min:3|max:96|alpha_dash|unique:roles,name',            
             'description'   => 'sometimes|max:191',
             'permissions'   => 'sometimes|array',
             'permissions.*' => 'exists:permissions,id'
-        ]);  
+        ]);
+        if ($validator->fails()) {
+            return redirect()->route('roles.create')->withErrors($validator)->withInput();
+        }
 
         $role = new Role();
         $role->display_name = $request->display_name;
@@ -93,7 +110,7 @@ class RoleController extends Controller
             return redirect()->route('roles.show', $role->id);
         } else {
             Session::flash('failure', 'Role "' . $request->display_name . '" was NOT saved.');
-            return redirect()->route('manage.roles.create')->withInput();
+            return redirect()->route('roles.create')->withInput();
         }
     }
 
@@ -105,16 +122,16 @@ class RoleController extends Controller
      */
     public function show($id) {
         //$role = Role::where('id', $id)->with('permissions')->with('users')->first();
-        $role = Role::findOrFail($id);
-
-        $permissions = $role->permissions()->orderBy('display_name','asc')->paginate(5, ['*'], 'pagePm');
-        $users       = $role->users()      ->orderBy('name',        'asc')->paginate(5, ['*'], 'pageU');
+        $role = Role::find($id);
 
         if ($role) {
+            $permissions = $role->permissions()->orderBy('display_name','asc')->paginate(5, ['*'], 'pagePm');
+            $users       = $role->users()      ->orderBy('name',        'asc')->paginate(5, ['*'], 'pageU');
+
             return view('manage.roles.show', ['role' => $role, 'permissions' => $permissions, 'users' => $users]);
         } else {
             Session::flash('failure', 'Role "' . $id . '" was NOT found.');
-            return Redirect::back();
+            return redirect()->route('roles.index');
         }
     }
 
@@ -126,13 +143,13 @@ class RoleController extends Controller
      */
     public function edit($id) {
         $role = Role::where('id', $id)->with('permissions')->first();
-        $permissions = Permission::orderBy('display_name', 'asc')->paginate(999);
 
         if ($role) {
+            $permissions = Permission::orderBy('display_name', 'asc')->paginate(999);
             return view('manage.roles.edit', ['role' => $role, 'permissions' => $permissions]);
         } else {
             Session::flash('failure', 'Role "' . $id . '" was NOT found.');
-            return Redirect::back();
+            return redirect()->route('roles.index');
         }
     }
 
@@ -148,13 +165,17 @@ class RoleController extends Controller
         // & syncPermissions. Warning explode will create an empty element [0] if input is null. 
         $permissions = $request->itemsSelected ? explode(',', $request->itemsSelected) : [];
         $request->merge(['permissions' => $permissions]);
-    
-        $this->validate($request, [
+
+        // We use our own validator here as auto validation cannot handle error return from a POST method 
+        $validator = Validator::make($request->all(), [
             'display_name'  => 'required|min:3|max:191',
             'description'   => 'sometimes|max:191',
             'permissions'   => 'sometimes|array',
             'permissions.*' => 'exists:permissions,id'
-        ]);  
+        ]);
+        if ($validator->fails()) {
+            return redirect()->route('roles.edit')->withErrors($validator)->withInput();
+        }
 
         $role = Role::findOrFail($id);
         $role->display_name = $request->display_name; 
@@ -170,7 +191,7 @@ class RoleController extends Controller
             return redirect()->route('roles.show', $role->id);
         } else {
             Session::flash('failure', 'Role "' . $id . '" was NOT saved.');
-            return redirect()->route('manage.roles.edit')->withInput();
+            return redirect()->route('roles.edit')->withInput();
         }
     }
 
@@ -181,13 +202,13 @@ class RoleController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function delete($id) {
-        $role = Role::findOrFail($id);
+        $role = Role::find($id);
 
         if ($role) {
            return view('manage.roles.delete', ['role' => $role]);
         } else {
             Session::flash('failure', 'Role "' . $id . '" was NOT found.');
-            return Redirect::back();            
+            return redirect()->route('roles.index');
         }
     }
 
@@ -200,13 +221,14 @@ class RoleController extends Controller
     public function destroy($id) {
         $role = Role::findOrFail($id);
 
-        if ($role) {
-            $myrc = $role->delete();
+        $myrc = $role->delete();
+
+        if ($myrc) {
             Session::flash('success', 'Role "' . $role->name . '" deleted OK.');
             return redirect()->route('roles.index');
         } else {
             Session::flash('failure', 'Role "' . $id . '" was NOT deleted.');
-            return Redirect::back();            
+            return redirect()->route('roles.delete', $id)->withinput();
         }
     }
 

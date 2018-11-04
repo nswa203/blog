@@ -27,7 +27,7 @@
 						<div class="col-sm-12">
 							{!! Form::open(['route'=>['users.destroy', $user->id], 'method'=>'DELETE']) !!}
 								{{  Form::button('<i class="fas fa-trash-alt mr-2"></i>YES DELETE NOW', ['type'=>'submit', 'class'=>'btn btn-danger btn-block']) }}
-								{!! Html::decode('<a href='.url()->previous().' class="btn btn-outline-danger btn-block mt-3"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
+								{!! Html::decode('<a href="Return" class="btn btn-outline-danger btn-block mt-3" onclick="window.history.back()"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
 							{!! Form::close() !!}
 						</div>
 					</div>

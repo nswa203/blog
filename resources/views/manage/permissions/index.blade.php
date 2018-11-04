@@ -26,13 +26,37 @@
 		<div class="row mt-3">
 			<div class="col-md-12">
 				<table class="table table-hover table-responsive-lg">
-					<thead class="thead-dark">
-						<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
-						<th>Name</th>
-						<th>Slug</th>
-						<th>Description</th>
-						<th width="120px">Created</th>
-						<th width="120px">Updated</th>
+					<thead class="thead-dark" style="color:inherit;">
+						<th class="thleft">
+							<a href="{{ route('permissions.index', ['sort'=>'i'.$sort, 'search'=>$search]) }}">
+								<i id="sort-i" class="ml-2"></i><i class="fas fa-hashtag mb-1"></i>
+							</a>	
+						</th>
+						<th class="thleft">
+							<a href="{{ route('permissions.index', ['sort'=>'n'.$sort, 'search'=>$search]) }}">
+								<i id="sort-n" class="ml-2"></i>Name
+							</a>	
+						</th>
+						<th class="thleft">
+							<a href="{{ route('permissions.index', ['sort'=>'s'.$sort, 'search'=>$search]) }}">
+								<i id="sort-s" class="ml-2"></i>Slug
+							</a>	
+						</th>
+						<th class="thleft">
+							<a href="{{ route('permissions.index', ['sort'=>'d'.$sort, 'search'=>$search]) }}">
+								<i id="sort-d" class="ml-2"></i>Description
+							</a>	
+						</th>					
+						<th class="thleft" width="120px">
+							<a href="{{ route('permissions.index', ['sort'=>'c'.$sort, 'search'=>$search]) }}">
+								<i id="sort-c" class="ml-2"></i>Created
+							</a>	
+						</th>
+						<th class="thleft" width="120px">
+							<a href="{{ route('permissions.index', ['sort'=>'u'.$sort, 'search'=>$search]) }}">
+								<i id="sort-u" class="ml-2"></i>Updated
+							</a>	
+						</th>
 						<th width="130px" class="text-right">Page {{$permissions->currentPage()}} of {{$permissions->lastPage()}}</th>
 					</thead>
 					<tbody>						
@@ -61,4 +85,10 @@
 @endsection
 
 @section('scripts')
+	{!! Html::script('js/app.js')     !!}
+	{!! Html::script('js/helpers.js') !!}
+
+	<script>
+		mySortArrow({!! json_encode($sort) !!});
+	</script>
 @endsection

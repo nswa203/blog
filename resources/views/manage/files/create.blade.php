@@ -14,9 +14,10 @@
 				</span>Add Files{{ $folder_id?' to: '.$folders[$folder_id]:'' }}</a></h1>
 			<hr>
 
-			{!! Form::open(['route'=>'files.store', 'data-parsley-validate'=>'', 'files'=>true]) !!}
+			{!! Form::open(['route'=>'files.store', 'data-parsley-validate'=>'', 'files'=>true, 'id'=>'myForm1']) !!}
 
-			<div width="100%">
+			<div width="100%" data-toggle="tooltip" data-placement="right" data-html="true"
+			 	 title="Shortcuts:<br>%title%, %filename%, %basename%, %baseext%, %size%, %folder%, %date%, %time%">
 				{{ Form::label('title', 'Title:', ['class'=>'font-bold form-spacing-top']) }}
 				{{ Form::text('title', null, ['class'=>'form-control form-control-lg', 'data-parsley-maxlength'=>'191',  'placeholder'=>'Leave empty to auto generate...', $folder_id?'autofocus':'']) }}
 			</div>
@@ -54,7 +55,11 @@
 					<div class="myFile-meta" style="display:none">
 						{{ Form::select('meta[]', [], null, ['class'=>'form-control myFile-meta-list', 'multiple'=>'']) }}
 					</div>					
-				</div>	
+				</div>
+				<div class="progress mt-2" style="background-color: white;">
+				  <div id="myPbar1" class="progress-bar" role="progressbar" style="width:0%;">0%</div>
+				</div>
+				<div id="myMsgs1"></div>
 		</div>
 
 		<div class="col-md-4">
@@ -155,7 +160,19 @@
 		});
 	</script>
 
-	<script>
+	<script type="text/javascript">
+		// ========================================================================== //
+		// Load all files using Ajax to manage a progress bar
+		myUpload({
+			formID: 				'myForm1',									// OK
+			url: 					"{{ route('files.store') }}",				// OK
+			formInputFileName: 		'files[]',
+			formMsgsID:				'myMsgs1',
+			formProgressBarID:		'myPbar1',									// OK
+		});
+	</script>	
+
+	<script type="text/javascript">
 		myImageAll();
 
 		// ========================================================================== //
@@ -290,6 +307,7 @@
 						jsmediatags.read(file, {
 					        onSuccess: function(tag) {
 					        	tags=tag.tags;
+					        	//console.log(tags);
 								image=tags.picture;
 					          	if (image) {
 						            base64String='';
@@ -322,8 +340,8 @@
 			}
 
 			var allowedImage = /(\.jpg|\.jpeg|\.png|\.gif|\.jpe|\.bmp|\.ico)$/i;
-			var allowedVideo = /(\.mp4|\.mov|\.avi|\.mkv|\.mpg|\.mts|\.flv)$/i;
-			var allowedAudio = /(\.mp3|\.wav|\.flac|\.wma)$/i;
+			var allowedVideo = /(\.mp4|\.mov|\.avi|\.mkv|\.mpg|\.mts|\.flv|\.webm)$/i;
+			var allowedAudio = /(\.mp3|\.wav|\.flac|\.wma|\.m4a)$/i;
 			elMeta.innerText=null;
 			slides.innerHTML='';
 

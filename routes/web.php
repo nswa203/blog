@@ -1,119 +1,124 @@
 <?php
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
- */
-
 // Manage
 Route::prefix('manage')->middleware('role:superadministrator|administrator|editor|author|contributor')->group(function () {
+	// Posts
+	Route::resource('/posts', 'PostController');
+	Route::get 	   ('/posts/{id}/delete', 'PostController@delete')->name('posts.delete');
+	// Comments
+	// Store can be found later in the table as it is not secured by middleware
+	Route::resource('/comments', 'CommentController')->except(['store']);
+	Route::get 	   ('/comments/{id}/delete', 'CommentController@delete')->name('comments.delete');
+	// Folders
+	Route::resource('/folders', 'FolderController');
+	Route::get     ('/folders/{id}/delete', 'FolderController@delete')->name('folders.delete');
+	// Files
+	Route::resource('/files', 'FileController')->except('destroy', 'delete');
+	Route::get ('/files/{id}/f', 	    'FileController@showFile'	   )->name('files.showFile');
+	Route::get ('/files/{id}/createIn', 'FileController@createIn'	   )->name('files.createIn');
+	Route::get ('/files/{id}/indexOf',  'FileController@indexOf' 	   )->name('files.indexOf');
+	Route::post('/files/mixed',		    'FileController@mixed'   	   )->name('files.mixed');
+	Route::post('/files/e',			    'FileController@updateMultiple')->name('files.updateMultiple');
+	Route::post('/files/c',			    'FileController@copy'    	   )->name('files.copy');
+	Route::post('/files/m',			    'FileController@move'    	   )->name('files.move');
+	Route::post('/files/x',			    'FileController@destroy' 	   )->name('files.destroy');
+
+
+
+
+	//Route::get     ('/comments/{id}/edit',   'CommentController@edit'   )->name('comments.edit');
+	//Route::put     ('/comments/{id}',		 'CommentController@update' )->name('comments.update');
+	//Route::delete  ('/comments/{id}',		 'CommentController@destroy')->name('comments.destroy');
+	//Route::get     ('/comments/{id}/delete', 'CommentController@delete' )->name('comments.delete');
+	//Route::get     ('/comments',			 'CommentController@index'  )->name('comments.index');
+
+
+
+
+
+
 	// Dashboard
 	Route::get('/dashboard', 'ManageController@dashboard')->name('manage.dashboard');
 	Route::get('/',			 'ManageController@dashboard')->name('manage.dashboard');
-	// Posts
-	Route::resource('/posts', 'PostController');
-	Route::get('/posts/{id}/delete', 'PostController@delete')->name('posts.delete');
-	// Folders
-	Route::resource('/folders', 'FolderController');
-	Route::get('/folders/{id}/delete', 'FolderController@delete')->name('folders.delete');
-	// Files
-	Route::resource('/files', 'FileController');
-	Route::get('/files/{id}/delete', 	'FileController@delete'	 )->name('files.delete');
-	Route::get('/files/{id}/image', 	'FileController@showFile')->name('files.showFile');
-	Route::get('/files/{id}/createIn', 	'FileController@createIn')->name('files.createIn');
-	Route::get('/files/{id}/indexOf', 	'FileController@indexOf' )->name('files.indexOf');
-	Route::post('/files/mixed',			'FileController@mixed'   )->name('files.mixed');
+
+
+
 	// Albums
 	Route::resource('/albums', 'AlbumController');
 	Route::get('/albums/{id}/delete', 'AlbumController@delete')->name('albums.delete');
 	// Photos
 	Route::resource('/photos', 'PhotoController');
-	Route::get('/photos/{id}/delete', 'PhotoController@delete')->name('photos.delete');
-	Route::get('/photos/{id}/image', 'PhotoController@showImage')->name('photos.showImage');
-	Route::get('/photos/{id}/createMultiple', 'PhotoController@createMultiple')->name('photos.createMultiple');
-	Route::post('/photos/storeMultiple', 'PhotoController@storeMultiple')->name('photos.storeMultiple');
+	Route::get ('/photos/{id}/delete', 'PhotoController@delete'                )->name('photos.delete');
+	Route::get ('/photos/{id}/image', 'PhotoController@showImage'              )->name('photos.showImage');
+	Route::get ('/photos/{id}/createMultiple', 'PhotoController@createMultiple')->name('photos.createMultiple');
+	Route::post('/photos/storeMultiple', 'PhotoController@storeMultiple'       )->name('photos.storeMultiple');
 	// Search
 	Route::post('search', 'SearchController@index')->name('search.index');
-	// Comments
-	Route::get('/comments/{id}/edit',	'CommentsController@edit'	)->name('comments.edit');
-	Route::put('/comments/{id}',		'CommentsController@update'	)->name('comments.update');
-	Route::delete('/comments/{id}',		'CommentsController@destroy')->name('comments.destroy');
-	Route::get('/comments/{id}/delete',	'CommentsController@delete'	)->name('comments.delete');
-	Route::get('/comments',				'CommentsController@index'	)->name('comments.index');
+
 	// Private folders & files
-	Route::get('private/{id}/{filename}',  'FolderController@getFolderFile')->name('private.getFolderFile');
-	Route::get('private/{id}', 			   'FileController@getFile'        )->name('private.getFile');
-	Route::get('private/find/{filename}/{foldername}', 'FileController@findFile')->name('private.findFile');
+	Route::get('private/{id}/{filename}',              'FolderController@getFolderFile')->name('private.getFolderFile');
+	Route::get('private/{id}', 			               'FileController@getFile'        )->name('private.getFile');
+	Route::get('private/find/{filename}/{foldername}', 'FileController@findFile'       )->name('private.findFile');
 });
 Route::prefix('manage')->middleware('role:superadministrator|administrator')->group(function () {
+	// Categories
+	Route::resource('categories', 'CategoryController')->except(['create']);
+	Route::get('categories/{id}/delete',        'CategoryController@delete')->name('categories.delete');
+	Route::get('categories/{category}/{zone?}', 'CategoryController@show'  )->name('categories.show');
+	// Tags
+	Route::resource('tags', 'TagController')->except(['create']);
+	Route::get('tags/{id}/delete',   'TagController@delete')->name('tags.delete');
+	Route::get('tags/{tag}/{zone?}', 'TagController@show'  )->name('tags.show');
 	// Users
 	Route::resource('/users', 'UserController');
 	Route::get('users/{id}/delete',	'UserController@delete')->name('users.delete');
-	// User's Posts
-	Route::get('/pu/{name}', 'PagesController@getIndexUserPost')->name('blog.getIndexUserPost');
-	// Profiles
-	Route::resource('/profiles', 'ProfileController')->except('create');
-	Route::get('profiles/{id}/create',	'ProfileController@create'	)->name('profiles.create');
-	Route::get('profiles/{id}/delete',	'ProfileController@delete')->name('profiles.delete');	
 	// Roles
 	Route::resource('/roles', 'RoleController');
 	Route::get('roles/{id}/delete',	'RoleController@delete')->name('roles.delete');
 	// Permissions
 	Route::resource('/permissions', 'PermissionController');
 	Route::get('permissions/{id}/delete', 'PermissionController@delete')->name('permissions.delete');
-	// Categories
-	Route::resource('categories', 'CategoryController')->except(['create']);
-	Route::get('categories/{id}/delete', 'CategoryController@delete')->name('categories.delete');
-	Route::get('categories/{category}/{zone?}', 'CategoryController@show')->name('categories.show');
-	// Tags
-	Route::resource('tags', 'TagController')->except(['create']);
-	Route::get('tags/{id}/delete', 'TagController@delete')->name('tags.delete');
-	Route::get('tags/{tag}/{zone?}', 'TagController@show')->name('tags.show');
+	// Profiles
+	Route::resource('/profiles', 'ProfileController')->except('create');
+	Route::get('profiles/{id}/create', 'ProfileController@create')->name('profiles.create');
+	Route::get('profiles/{id}/delete', 'ProfileController@delete')->name('profiles.delete');	
+
+
+	// User's Posts
+	Route::get('/pu/{name}', 'PageController@getIndexUserPost')->name('blog.getIndexUserPost');
+
 });
 
 // Tests
 Route::resource('tests', 'TestController');
+Route::put('upload/{id}', 'TestController@upload')->name('tests.upload');
 
 // Comments
-Route::post('comments/{post_id}',	'CommentsController@store'	)->name('comments.store');
-//Route::get('comments/{id}/edit',	'CommentsController@edit'	)->name('comments.edit');
-//Route::put('comments/{id}',			'CommentsController@update'	)->name('comments.update');
-//Route::delete('comments/{id}',		'CommentsController@destroy')->name('comments.destroy');
-//Route::get('comments/{id}/delete',	'CommentsController@delete'	)->name('comments.delete');
-//Route::get('comments',				'CommentsController@index'	)->name('comments.index');
+Route::post('comments/{post_id}', 'CommentController@store')->name('comments.store');
 
 // Auth
 Auth::routes();
 /* "home" is used as a default return URL within Laravel's built-in authentification 			*/
 /* controllers. We don't have a "home", but rather than change multiple controllers we'll just 	*/
 /* create a Route to handle it here by routing any "home" requests to to the same target as "/"	*/
-// Route::get('home', 'PagesController@getIndex');
-Route::get('/home', 'PagesController@getHomePost')->name('home');
+// Route::get('home', 'PageController@getIndex');
+Route::get('/home', 'PageController@getHomePost')->name('home');
 
 // Pages (Public routes)
-Route::get('contact',	'PagesController@getContact');
-Route::post('contact',	'PagesController@postContact');
-Route::get('about',		'PagesController@getAbout');
-Route::get('blog',		'PagesController@getIndexPost')->name('blog.index');
-Route::get('/',			'PagesController@getHomePost');
+Route::get ('contact',  'PageController@getContact'  	)->name('blog.contact');
+Route::post('contact',  'PageController@postContact' 	)->name('blog.email'  );
+Route::get ('about',    'PageController@getAbout'    	)->name('blog.about'  );
+Route::get ('blog',	    'PageController@getIndexPost'	)->name('blog.index'  );
 
-Route::get('/f/{slug}', 'PagesController@getSingleFolder')->name('blog.singleFolder')->where('slug', '[\w\d\-\_]+');
-Route::get('/fi/{id}',  'PagesController@getSingleFile')  ->name('blog.singleFile');
-
-
-//Route::get('/c/{id}',	'PagesController@getIndexCategoryPost')->name('blog.indexCategoryPost');
-//Route::get('/t/{id}',	'PagesController@getIndexTagPost')	   ->name('blog.indexTagPost');
-Route::get('/i/{id}', 	'PagesController@getSinglePhoto')	   ->name('blog.singlePhoto');
-Route::get('/a/{slug}', 'PagesController@getSingleAlbum') 	   ->name('blog.singleAlbum') ->where('slug', '[\w\d\-\_]+');
+Route::get ('al/{id}',  'PageController@getSingleAlbum' )->name('blog.singleAlbum' );
+Route::get ('fi/{id}',  'PageController@getSingleFile'  )->name('blog.singleFile'  );
+Route::get ('fo/{id}',  'PageController@getSingleFolder')->name('blog.singleFolder');
+Route::get ('ph/{id}', 	'PageController@getSinglePhoto' )->name('blog.singlePhoto' );
+Route::get ('po/{id}',  'PageController@getSinglePost'  )->name('blog.singlePost'  );
 
 /* LAST LAST LAST LAST LAST LAST LAST LAST LAST LASTLAST LAST LAST LAST LASTLAST LAST LAST LAST */
 /* Since we are not using any prefix, this route will intercept any routes placed after it. 	*/
 /* So make it the LAST in your route list.														*/
 /* We are also limiting what characters may be used in our slug to "a-z A-Z 0-9 - _ "       	*/
-Route::get('/{slug}',	'PagesController@getSinglePost')  ->name('blog.singlePost')  ->where('slug', '[\w\d\-\_]+');
+Route::get('/{slug}', 'PageController@getSinglePostBySlug')->name('blog.single')->where('slug', '[\w\d\-\_]+');
+Route::get('/',	      'PageController@getHomePost'        )->name('blog.home');

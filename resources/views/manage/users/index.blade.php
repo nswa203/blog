@@ -27,13 +27,33 @@
 		<div class="row mt-3">
 			<div class="col-md-12">
 				<table class="table table-hover table-responsive-lg">
-					<thead class="thead-dark">
-						<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
-						<th>Name</th>
-						<th>eMail</th>
+					<thead class="thead-dark" style="color:inherit;">
+						<th class="thleft">
+							<a href="{{ route('users.index', ['sort'=>'i'.$sort, 'search'=>$search]) }}">
+								<i id="sort-i" class="ml-2"></i><i class="fas fa-hashtag mb-1"></i>
+							</a>	
+						</th>
+						<th class="thleft">
+							<a href="{{ route('users.index', ['sort'=>'n'.$sort, 'search'=>$search]) }}">
+								<i id="sort-n" class="ml-2"></i>Name
+							</a>	
+						</th>
+						<th class="thleft">
+							<a href="{{ route('users.index', ['sort'=>'e'.$sort, 'search'=>$search]) }}">
+								<i id="sort-e" class="ml-2"></i>eMail
+							</a>	
+						</th>
 						<th>Username</th>
-						<th width="120">Created</th>
-						<th width="120">Updated</th>
+						<th class="thleft" width="120px">
+							<a href="{{ route('users.index', ['sort'=>'c'.$sort, 'search'=>$search]) }}">
+								<i id="sort-c" class="ml-2"></i>Created
+							</a>	
+						</th>
+						<th class="thleft" width="120px">
+							<a href="{{ route('users.index', ['sort'=>'u'.$sort, 'search'=>$search]) }}">
+								<i id="sort-u" class="ml-2"></i>Updated
+							</a>	
+						</th>
 						<th width="130" class="text-right">Page {{$users->currentPage()}} of {{$users->lastPage()}}</th>
 					</thead>
 					<tbody>						
@@ -60,7 +80,7 @@
 					</tbody>
 				</table>
 				<div class="d-flex justify-content-center">
-					{{ $users->appends(Request::only(['search']))->render() }} 
+					{{ $users->appends(Request::only(['search', 'sort']))->render() }} 
 				</div>
 			</div>
 		</div>
@@ -68,4 +88,10 @@
 @endsection
 
 @section('scripts')
+	{!! Html::script('js/app.js')     !!}
+	{!! Html::script('js/helpers.js') !!}
+
+	<script>
+		mySortArrow({!! json_encode($sort) !!});
+	</script>
 @endsection

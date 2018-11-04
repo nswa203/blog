@@ -12,8 +12,9 @@ use App\Folder;
 use App\Permission;
 use App\Profile;
 use App\Role;
-use Session;
 use File;
+use Session;
+use Validator;
 
 class UserController extends Controller
 {
@@ -26,9 +27,9 @@ class UserController extends Controller
     }
 
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
-    // It requires the custom search_helper() function in Helpers.php.
-    // If you change Helpers.php you should do "dump-autoload". 
-    public function searchQuery($search = '') {
+    // The table is sorted (ascending or descending) and finally filtered.
+    // It requires the custom queryHelper() function in Helpers.php.
+    public function searchSortQuery($request) {
         $query = [
             'model'         => 'User',
             'searchModel'   => ['name', 'email'],
@@ -37,9 +38,17 @@ class UserController extends Controller
                 'permissions' => ['name', 'display_name', 'description'],
                 'profile'     => ['username', 'about_me', 'phone', 'address'],
                 'roles'       => ['name', 'display_name', 'description']
-            ]
+            ],
+            'sortModel'   => [
+                'i'       => 'd,id',                                                      
+                'n'       => 'a,name',
+                'e'       => 'a,email',
+                'c'       => 'd,created_at',
+                'u'       => 'd,updated_at',
+                'default' => 'n'                       
+            ],                   
         ];
-        return search_helper($search, $query);
+        return queryHelper($query, $request);
     }
 
     /**
@@ -48,13 +57,16 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        $users = $this->searchQuery($request->search)->orderBy('name', 'asc')->paginate(10);
+        $pager = pageSize($request, 'usersIndex', 12, 4, 192, 4);    // size($request->pp), sessionTag, default, min, max, step
+        $users = $this->searchSortQuery($request)->paginate($pager['size']);
+        $users->pager = $pager;
+
         if ($users && $users->count() > 0) {
 
         } else {
             Session::flash('failure', 'No Users were found.');
         }
-        return view('manage.users.index', ['users' => $users, 'search' => $request->search]);
+        return view('manage.users.index', ['users' => $users, 'search' => $request->search, 'sort' => $request->sort]);
     }
 
     /**
@@ -79,14 +91,17 @@ class UserController extends Controller
         $roles = $request->itemsSelected ? explode(',', $request->itemsSelected) : [];
         $request->merge(['roles' => $roles]);
         $msg = '';
-   
-        $this->validate($request, [
+ 
+        $validator = Validator::make($request->all(), [
             'name'      => 'required|min:3|max:191',
             'email'     => 'required|min:5|max:191|email|unique:users',
             'password'  => 'sometimes|min:7|max:96',
             'roles'     => 'sometimes|array',
-            'roles.*'   => 'exists:roles,id'            
+            'roles.*'   => 'exists:roles,id'
         ]);
+        if ($validator->fails()) {
+            return redirect()->route('users.create')->withErrors($validator)->withInput();
+        }
 
         if ($request->has('password') && !empty($request->password)) {
             $password = trim($request->password);
@@ -121,7 +136,6 @@ class UserController extends Controller
             } else {
                 $msg = ' but an eMail notification could NOT be sent to ' . $user->email;
             }   
-
         }
 
         if ($myrc) {
@@ -129,7 +143,7 @@ class UserController extends Controller
             return redirect()->route('users.show', $user->id);
         } else {
             Session::flash('failure', 'User "' . $request->name . '" was NOT saved.');
-            return redirect()->route('manage.users.create')->withInput();
+            return redirect()->route('users.create')->withInput();
         }
     }
 
@@ -140,35 +154,36 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id) {
-        $user = User::findOrFail($id);
+        $user = User::find($id);
 
-        $list['a'] = albumStatus();
-        $list['d'] = folderStatus();
-        $list['p'] = postStatus();
-        
-        $albums = $user->albums()->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageA');
-
-        if($user->profile) { 
-            $profile = Profile::find($user->profile->id);
-            $folder_list = $user->folders()->get()->pluck('id')->merge($profile->folders()->get()->pluck('id'))->unique();
-            $folders = Folder::whereIn('id', $folder_list)->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageF');
-            $folders_total = $folder_list->count();
-        } else {
-            $folders = $user->folders()->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageF');
-            $folders_total = $folders->count();
-        }
-
-        $posts = $user->posts()->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageP');
-        $roles = $user->roles()->orderBy('display_name', 'asc')->paginate(5, ['*'], 'pageR');
-        $permissions = Permission::whereIn('id', $user->allPermissions()->pluck('id'))->orderBy('display_name', 'asc')->paginate(5, ['*'], 'pagePm');;
-        
         if ($user) {
+            $list['a'] = albumStatus();
+            $list['d'] = folderStatus();
+            $list['p'] = postStatus();
+            
+            $albums = $user->albums()->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageA');
+
+            if($user->profile) { 
+                $profile = Profile::find($user->profile->id);
+                $folder_list = $user->folders()->get()->pluck('id')->merge($profile->folders()->get()->pluck('id'))->unique();
+                $folders = Folder::whereIn('id', $folder_list)->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageF');
+                $folders_total = $folder_list->count();
+            } else {
+                $folders = $user->folders()->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageF');
+                $folders_total = $folders->count();
+            }
+
+            $posts = $user->posts()->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageP');
+            $roles = $user->roles()->orderBy('display_name', 'asc')->paginate(5, ['*'], 'pageR');
+            $permissions = Permission::whereIn('id', $user->allPermissions()->pluck('id'))->orderBy('display_name', 'asc')
+                ->paginate(5, ['*'], 'pagePm');
+
             return view('manage.users.show', [
                 'user'  => $user,    'albums' => $albums,   'folders'     => $folders,      'folders_total' => $folders_total,
                 'posts' => $posts,   'roles'  => $roles,    'permissions' => $permissions,  'list'          => $list]);
         } else {
             Session::flash('failure', 'User "' . $id . '" was NOT found.');
-            return Redirect::back();
+            return redirect()->route('users.index');
         }
     }
 
@@ -186,7 +201,7 @@ class UserController extends Controller
             return view('manage.users.edit', ['user' => $user, 'roles' => $roles]);
         } else {
             Session::flash('failure', 'User "' . $id . '" was NOT found.');
-            return Redirect::back();
+            return redirect()->route('users.index');
         }
     }
 
@@ -203,14 +218,17 @@ class UserController extends Controller
         $roles = $request->itemsSelected ? explode(',', $request->itemsSelected) : [];
         $request->merge(['roles' => $roles]);
         $msg = ''; 
-   
-        $this->validate($request, [
+
+        $validator = Validator::make($request->all(), [
             'name'      => 'required|min:3|max:191',
             //'email'     => 'required|min:5|max:191|email|unique:users,email,' . $id,
             'password'  => 'sometimes|min:7|max:96',
             'roles'     => 'sometimes|array',
-            'roles.*'   => 'exists:roles,id'            
+            'roles.*'   => 'exists:roles,id'
         ]);
+        if ($validator->fails()) {
+            return redirect()->route('users.edit')->withErrors($validator)->withInput();
+        }
 
         $user = User::findOrFail($id);
         $user->name     = $request->name;
@@ -254,9 +272,10 @@ class UserController extends Controller
             return redirect()->route('users.show', $user->id);
         } else {
             Session::flash('failure', 'User "' . $id . '" was NOT saved.');
-            return redirect()->route('manage.users.edit', $id)->withInput();
+            return redirect()->route('users.edit', $id)->withInput();
         }
     }
+
     /**
      * Remove the specified resource from storage.
      *
@@ -264,9 +283,9 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function delete($id) {
-        $user = User::findOrFail($id);
+        $user = User::find($id);
 
-       if ($user) {
+        if ($user) {
             if (isset($user->profile->username)) {
                 $msg = 'User Profile "' . $user->profile->username . '" will also be deleted!';
                 msgx(['Dependencies' => [$msg, true]]);
@@ -286,7 +305,7 @@ class UserController extends Controller
             return view('manage.users.delete', ['user' => $user]);
         } else {
             Session::flash('failure', 'User "' . $id . '" was NOT found.');
-            return Redirect::back();            
+            return redirect()->route('users.index');
         }
     }
 
@@ -299,67 +318,67 @@ class UserController extends Controller
     public function destroy($id) {
         $user = User::findOrFail($id);
 
-        if ($user) {
-            if (isset($user->profile->username)) {
-                if ($user->profile->banner) {
-                    $path = public_path('images\\' . $user->profile->banner);
-                    $myrc = File::delete($path);
-                    $msg = 'Profile Banner "' . $path . '" was successfully deleted.';
-                    msgx(['Dependencies' => [$msg, $myrc]]);
-                }
-                if ($user->profile->image) {
-                    $path = public_path('images\\' . $user->profile->image);
-                    $myrc = File::delete($path);
-                    $msg = 'Profile Image "' . $path . '" was successfully deleted.';
-                    msgx(['Dependencies' => [$msg, $myrc]]);
-                }                
+        if (isset($user->profile->username)) {
+            if ($user->profile->banner) {
+                $path = public_path('images\\' . $user->profile->banner);
+                $myrc = File::delete($path);
+                $msg = 'Profile Banner "' . $path . '" was successfully deleted.';
+                msgx(['Dependencies' => [$msg, $myrc]]);
             }
-            foreach ($user->albums as $album) {
-                $myrc = true;
-                $msg = 'Album "' . $album->title . '" was successfully deleted';
-                msgx(['Dependencies' => [$msg, $myrc!=null]]);                    
+            if ($user->profile->image) {
+                $path = public_path('images\\' . $user->profile->image);
+                $myrc = File::delete($path);
+                $msg = 'Profile Image "' . $path . '" was successfully deleted.';
+                msgx(['Dependencies' => [$msg, $myrc]]);
+            }                
+        }
+        foreach ($user->albums as $album) {
+            $myrc = true;
+            $msg = 'Album "' . $album->title . '" was successfully deleted';
+            msgx(['Dependencies' => [$msg, $myrc!=null]]);                    
+        }
+        foreach ($user->folders as $folder) {
+            if ($folder->status == 1) {
+                $msg = 'Public';
+                $path = public_path($folder->directory);
+            } else {
+                $msg = 'Private';
+                $path = private_path($folder->directory);
+                $userPath = dirname($path);
             }
-            foreach ($user->folders as $folder) {
-                if ($folder->status == 1) {
-                    $msg = 'Public';
-                    $path = public_path($folder->directory);
-                } else {
-                    $msg = 'Private';
-                    $path = private_path($folder->directory);
-                    $userPath = dirname($path);
-                }
-                $myrc = File::deleteDirectory($path);
-                if ($myrc) {
-                    $msg = $msg . ' Directory "' . $folder->directory . '" was successfully deleted.';
-                    msgx(['Dependencies' => [$msg, true]]);
-                } else {
-                    $msg = $msg . ' Directory "' . $folder->directory . '" could NOT be deleted.';
-                    msgx(['failure' => [$msg, true]]);                    
-                }    
+            $myrc = File::deleteDirectory($path);
+            if ($myrc) {
+                $msg = $msg . ' Directory "' . $folder->directory . '" was successfully deleted.';
+                msgx(['Dependencies' => [$msg, true]]);
+            } else {
+                $msg = $msg . ' Directory "' . $folder->directory . '" could NOT be deleted.';
+                msgx(['failure' => [$msg, true]]);                    
+            }    
+        }
+        foreach ($user->posts as $post) {
+            if ($post->banner) {
+                $path = public_path('images\\' . $post->banner);
+                $myrc = File::delete($path);
+                $msg = 'Post Banner "' . $path . '" was successfully deleted.';
+                msgx(['Dependencies' => [$msg, $myrc]]);
             }
-            foreach ($user->posts as $post) {
-                if ($post->banner) {
-                    $path = public_path('images\\' . $post->banner);
-                    $myrc = File::delete($path);
-                    $msg = 'Post Banner "' . $path . '" was successfully deleted.';
-                    msgx(['Dependencies' => [$msg, $myrc]]);
-                }
-                if ($post->image) {
-                    $path = public_path('images\\' . $post->image);
-                    $myrc = File::delete($path);
-                    $msg = 'Post Image "' . $path . '" was successfully deleted.';
-                    msgx(['Dependencies' => [$msg, $myrc]]);
-                }      
-            }
-            if (isset($userPath)) { File::deleteDirectory($userPath); }
+            if ($post->image) {
+                $path = public_path('images\\' . $post->image);
+                $myrc = File::delete($path);
+                $msg = 'Post Image "' . $path . '" was successfully deleted.';
+                msgx(['Dependencies' => [$msg, $myrc]]);
+            }      
+        }
+        if (isset($userPath)) { File::deleteDirectory($userPath); }
 
-            $myrc = $user->delete(); // Migration Cascades will handle all DB dependencies  
+        $myrc = $user->delete(); // Migration Cascades will handle all DB dependencies  
 
+        if ($myrc) {
             Session::flash('success', 'User "' . $user->name . '" was successfully deleted.');
             return redirect()->route('users.index');
         } else {
-            Session::flash('failure', 'User "' . $id . '" was NOT found.');
-            return Redirect::back();            
+            Session::flash('failure', 'User "' . $id . '" was NOT deleted.');
+            return redirect()->route('users.delete', $id)->withinput();
         }
     }
 

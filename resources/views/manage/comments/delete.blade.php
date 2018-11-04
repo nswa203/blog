@@ -26,7 +26,7 @@
 						<dt class="col-sm-5">Post URL:</dt>
 						<dd class="col-sm-7"><a href="{{ route('blog.single', $post->slug) }}">{{ route('blog.single', $post->slug) }}</a></dd>
 						<dt class="col-sm-5">Comment ID</dt>
-						<dd class="col-sm-7"><a href="{{ route('blog.single', $post->slug) }}">{{ $comment->id }}</a></dd>
+						<dd class="col-sm-7"><a href="{{ route('blog.singlePost', $post->id) }}">{{ $comment->id }}</a></dd>
 						<dt class="col-sm-5">Created:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($comment->created_at)) }}</dd>
 						<dt class="col-sm-5">Last Updated:</dt>
@@ -35,8 +35,8 @@
 					<hr class="hr-spacing-top">
 					<div class="row">
 						<div class="col-sm-12">
-							{{ Form::submit('YES DELETE NOW', ['class'=>'btn btn-danger btn-block font-weight-bold']) }}
-							<a href="{{ url()->previous() }}" class="form-control btn btn-outline-dark btn-block mt-3">Cancel</a>
+							{{ 	Form::button('<i class="fas fa-trash-alt mr-2"></i>YES DELETE NOW', ['type'=>'submit', 'class'=>'btn btn-danger btn-block']) }}
+							{!! Html::decode('<a href="Return" class="btn btn-outline-danger btn-block mt-3" onclick="window.history.back()"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
 						</div>
 					</div>
 				</div>

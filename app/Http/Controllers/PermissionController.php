@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Validator;
 use App\Permission;
 use App\Role;
 use App\User;
 use Session;
+use Validator;
 
 class PermissionController extends Controller
 {
@@ -21,18 +21,27 @@ class PermissionController extends Controller
     }
 
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
-    // It requires the custom search_helper() function in Helpers.php.
-    // If you change Helpers.php you should do "dump-autoload". 
-    public function searchQuery($search = '') {
+    // The table is sorted (ascending or descending) and finally filtered.
+    // It requires the custom queryHelper() function in Helpers.php.
+    public function searchSortQuery($request) {
         $query = [
             'model'         => 'Permission',
             'searchModel'   => ['name', 'display_name', 'description'],
             'searchRelated' => [
                 'roles' => ['name', 'display_name', 'description'],
                 'users' => ['name', 'email']
-            ]
+            ],
+            'sortModel'   => [
+                'i'       => 'd,id',                                                      
+                'n'       => 'a,display_name',
+                's'       => 'a,name',                                           
+                'd'       => 'a,description',                                            
+                'c'       => 'd,created_at',
+                'u'       => 'd,updated_at',
+                'default' => 'n'                       
+            ]                        
         ];
-        return search_helper($search, $query);
+        return queryHelper($query, $request);
     }
 
     /**
@@ -41,13 +50,16 @@ class PermissionController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        $permissions = $this->searchQuery($request->search)->orderBy('display_name', 'asc')->paginate(10);
+        $pager = pageSize($request, 'permissionsIndex', 12, 4, 192, 4);    // size($request->pp), sessionTag, default, min, max, step
+        $permissions = $this->searchSortQuery($request)->paginate($pager['size']);
+        $permissions->pager = $pager;
+
         if ($permissions && $permissions->count() > 0) {
 
         } else {
             Session::flash('failure', 'No Permissions were found.');
         }
-        return view('manage.permissions.index', ['permissions' => $permissions, 'search' => $request->search]);
+        return view('manage.permissions.index', ['permissions' => $permissions, 'search' => $request->search, 'sort' => $request->sort]);
     }
 
     /**
@@ -118,7 +130,7 @@ class PermissionController extends Controller
             return redirect()->route('permissions.show', $permission->id);
         } else {
             Session::flash('failure', 'Permission "' . $request->display_name .'" was NOT saved.');
-            return redirect()->route('manage.permissions.create')->withInput();
+            return redirect()->route('permissions.create')->withInput();
         }
     }
 
@@ -129,25 +141,25 @@ class PermissionController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id) {
-        $permission = Permission::findOrFail($id);
-
-        $roles = $permission->roles()->with('users')->get();
-        $users = [];
-        foreach ($roles as $role) {
-            foreach ($role->users as $user) {
-                if (!in_array($user->id, $users)) {
-                    $users[] = $user->id;
-                }    
-            }    
-        }
-        $roles = $permission->roles()       ->orderBy('display_name', 'asc')->paginate(5, ['*'], 'pageR');
-        $users = User::whereIn('id', $users)->orderBy('name',         'asc')->paginate(5, ['*'], 'pageU');
+        $permission = Permission::find($id);
 
         if ($permission) {
+            $roles = $permission->roles()->with('users')->get();
+            $users = [];
+            foreach ($roles as $role) {
+                foreach ($role->users as $user) {
+                    if (!in_array($user->id, $users)) {
+                        $users[] = $user->id;
+                    }    
+                }    
+            }
+            $roles = $permission->roles()       ->orderBy('display_name', 'asc')->paginate(5, ['*'], 'pageR');
+            $users = User::whereIn('id', $users)->orderBy('name',         'asc')->paginate(5, ['*'], 'pageU');
+
             return view('manage.permissions.show', ['permission' => $permission, 'roles' => $roles, 'users' => $users]);
         } else {
             Session::flash('failure', 'Permission "' . $id . '" was NOT found.');
-            return Redirect::back();
+            return redirect()->route('permissions.index');
         }
     }
 
@@ -158,13 +170,13 @@ class PermissionController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function edit($id) {
-        $permission = Permission::findOrFail($id);
+        $permission = Permission::find($id);
 
         if ($permission) {
             return view('manage.permissions.edit', ['permission' => $permission]);
         } else {
             Session::flash('failure', 'Permission "' . $id . '" was NOT found.');
-            return Redirect::back();
+            return redirect()->route('permissions.index');
         }
     }
 
@@ -192,7 +204,7 @@ class PermissionController extends Controller
             return redirect()->route('permissions.show', $permission->id);
         } else {
             Session::flash('failure', 'Permission "' . $id . '" was NOT saved.');
-            return redirect()->route('manage.permissions.edit')->withInput();
+            return redirect()->route('permissions.edit')->withInput();
         }
     }
 
@@ -203,13 +215,13 @@ class PermissionController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function delete($id) {
-        $permission = Permission::findOrFail($id);
+        $permission = Permission::find($id);
 
         if ($permission) {
             return view('manage.permissions.delete', ['permission' => $permission]);
         } else {
             Session::flash('failure', 'Permission "' . $id . '" was NOT found.');
-            return Redirect::back();            
+            return redirect()->route('permissions.index');
         }
     }
 
@@ -222,13 +234,14 @@ class PermissionController extends Controller
     public function destroy($id) {
         $permission = Permission::findOrFail($id);
 
-        if ($permission) {
-            $myrc = $permission->delete();
+        $myrc = $permission->delete();
+
+        if ($myrc) {
             Session::flash('success', 'Permission "' . $permission->name . '" deleted OK.');
             return redirect()->route('permissions.index');
         } else {
             Session::flash('failure', 'Permission "' . $id . '" was NOT deleted.');
-            return Redirect::back();            
+            return redirect()->route('permissions.delete', $id)->withinput();
         }
     }
 

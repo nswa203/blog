@@ -7,29 +7,19 @@ use App\Folder;
 
 // This Observer is stored in App\Observers and loaded from 
 // App\Providers\ObserverServiceProvider with "Folder::observe(FolderObserver::class);"
+// Possible Events: retrieved, creating, created, updating, updated, saving, saved, deleting, deleted, restoring, restored
 class FolderObserver
 {
+
     protected $request;
     public function __construct(Request $request) {
         $this->request = $request;
     }
     
-    /**
-     * Listen to the Folder creating event.
-     *
-     * @param  \App\Folder  $folder
-     * @return void
-     */
-    public function creating(Folder $folder)
+       public function saving(Folder $folder)
     {
-        //dd('Folder: Creating', $folder, $this->request);
+        unset($folder->path); 
+        $folder->size = folderSize(folderPath($folder));
     }
-    public function deleting(Folder $folder)
-    {
-        //dd('Folder: Deleting', $folder, $this->request);
-    }
-    public function deleted(Folder $folder)
-    {
-        //dd('Folder: Deleted', $folder, $this->request);
-    }
+
 }

@@ -19,7 +19,7 @@
 				<h2>{{ $post->title }}</h2>
 				<h5>Published: {{ date('j M Y, h:ia',strtotime($post->published_at)) }}</h5>
 				<p class='mt-4'>{{ myTrim($post->body, 256) }}</p>
-				<a href="{{ route('blog.singlePost', $post->slug) }}" class="btn btn-primary">Read More</a>
+				<a href="{{ route('blog.single', $post->slug) }}" class="btn btn-primary">Read More</a>
 			</div>
 			@if($post->image)
 				<div class="col-md-2" style="margin-top:-10px;">

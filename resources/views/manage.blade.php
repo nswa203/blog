@@ -18,6 +18,7 @@
                             @include('partials._messages')
                             @yield('content')
                         </div>
+                        @yield('contentLarge')
                     </div>
                 </div>
 

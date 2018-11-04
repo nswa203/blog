@@ -7,10 +7,11 @@ use Illuminate\Support\Facades\Redirect;
 use App\Profile;
 use App\Folder;
 use App\User;
+use Image;
 use Purifier;
 use Session;
-use Image;
 use Storage;
+use Validator;
 
 class ProfileController extends Controller
 {
@@ -23,18 +24,25 @@ class ProfileController extends Controller
     }
 
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
-    // It requires the custom search_helper() function in Helpers.php.
-    // If you change Helpers.php you should do "dump-autoload". 
-    public function searchQuery($search = '') {
+    // The table is sorted (ascending or descending) and finally filtered.
+    // It requires the custom queryHelper() function in Helpers.php.
+    public function searchSortQuery($request) {
         $query = [
             'model'         => 'Profile',
             'searchModel'   => ['username', 'about_me', 'phone', 'address'],
             'searchRelated' => [
                 'folders' => ['name', 'slug', 'directory', 'description'],
                 'user'    => ['name', 'email']
-            ]
+            ],
+            'sortModel'   => [
+                'i'       => 'd,id',                                                      
+                'n'       => 'a,username',
+                'c'       => 'd,created_at',
+                'u'       => 'd,updated_at',
+                'default' => 'n'                       
+            ]                        
         ];
-        return search_helper($search, $query);
+        return queryHelper($query, $request);
     }
     
     /**
@@ -43,13 +51,16 @@ class ProfileController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        $profiles = $this->searchQuery($request->search)->orderBy('username', 'asc')->paginate(10);
+        $pager = pageSize($request, 'profilesIndex', 12, 4, 192, 4);    // size($request->pp), sessionTag, default, min, max, step
+        $profiles = $this->searchSortQuery($request)->paginate($pager['size']);
+        $profiles->pager = $pager;
+
         if ($profiles && $profiles->count() > 0) {
 
         } else {
             Session::flash('failure', 'No Profiles were found.');
         }
-        return view('manage.profiles.index', ['profiles' => $profiles, 'search' => $request->search]);
+        return view('manage.profiles.index', ['profiles' => $profiles, 'search' => $request->search, 'sort' => $request->sort]);
     }
 
     /**
@@ -72,7 +83,8 @@ class ProfileController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request) {
-        $this->validate($request, [
+        // We use our own validator here as auto validation cannot handle error return from a POST method 
+        $validator = Validator::make($request->all(), [
             'username'          => 'required|min:3|max:191|unique:profiles,username',
             'image'             => 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
             'banner'            => 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
@@ -81,8 +93,11 @@ class ProfileController extends Controller
             'address'           => 'sometimes|max:191',
             'user_id'           => 'sometimes|integer|exists:users,id|unique:profiles,user_id',
             'folders'           => 'array',
-            'folders.*'         => 'integer|exists:folders,id',             
+            'folders.*'         => 'integer|exists:folders,id',  
         ]);
+        if ($validator->fails()) {
+            return redirect()->route('profiles.create')->withErrors($validator)->withInput();
+        }        
 
         $profile = new Profile;
         $profile->username         = $request->username;
@@ -111,6 +126,7 @@ class ProfileController extends Controller
         $myrc = $profile->save();
 
         if (isset($msgs)) { session()->flash('msgs', $msgs); }
+
         if ($myrc) {
             $myrc = $profile->folders()->sync($request->folders, false);
             Session::flash('success', 'Profile "' . $profile->username . '" was successfully saved.');
@@ -128,16 +144,16 @@ class ProfileController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id) {
-        $profile = Profile::with('user')->findOrFail($id);
-        $user = User::find($profile->user->id);
-        $folder_list = $user->folders()->get()->pluck('id')->merge($profile->folders()->get()->pluck('id'))->unique();
-        $folders = Folder::whereIn('id', $folder_list)->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageF');
+        $profile = Profile::with('user')->find($id);
 
         if ($profile) {
+            $user = User::find($profile->user->id);
+            $folder_list = $user->folders()->get()->pluck('id')->merge($profile->folders()->get()->pluck('id'))->unique();
+            $folders = Folder::whereIn('id', $folder_list)->orderBy('slug', 'asc')->paginate(5, ['*'], 'pageF');
             return view('manage.profiles.show', ['profile' => $profile, 'folders' => $folders]);
         } else {
             Session::flash('failure', 'Profile "' . $id . '" was NOT found.');
-            return Redirect::back();
+            return redirect()->route('profiles.index');
         }
     }
 
@@ -148,15 +164,15 @@ class ProfileController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function edit($id) {
-        $profile = Profile::with('user')->findOrFail($id);
-        $folders = Folder::orderBy('name', 'asc')->pluck('name', 'id');
-        $users   = [$profile->user->id => $profile->user->name];
+        $profile = Profile::with('user')->find($id);
 
         if ($profile) {
+            $folders = Folder::orderBy('name', 'asc')->pluck('name', 'id');
+            $users   = [$profile->user->id => $profile->user->name];            
             return view('manage.profiles.edit', ['profile' => $profile, 'folders' => $folders, 'users' => $users]);
         } else {
             Session::flash('failure', 'Profile "' . $id . '" was NOT found.');
-            return Redirect::back();
+            return redirect()->route('profiles.index');
         }
     }        
 
@@ -170,7 +186,8 @@ class ProfileController extends Controller
     public function update(Request $request, $id) {
         $profile = Profile::findOrFail($id);
 
-        $this->validate($request, [
+        // We use our own validator here as auto validation cannot handle error return from a POST method 
+        $validator = Validator::make($request->all(), [
             'username'          => 'required|min:3|max:191|unique:profiles,username,' . $id,
             'image'             => 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
             'banner'            => 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
@@ -178,8 +195,11 @@ class ProfileController extends Controller
             'phone'             => 'sometimes|max:191',
             'address'           => 'sometimes|max:191',
             'folders'           => 'array',
-            'folders.*'         => 'integer|exists:folders,id',             
+            'folders.*'         => 'integer|exists:folders,id',              
         ]);
+        if ($validator->fails()) {
+            return redirect()->route('profiles.edit', $id)->withErrors($validator)->withInput();
+        }        
 
         $profile->username         = $request->username;
         $profile->phone            = $request->phone;
@@ -221,6 +241,7 @@ class ProfileController extends Controller
         $myrc = $profile->save();
 
         if (isset($msgs)) { session()->flash('msgs', $msgs); }
+
         if ($myrc) {
             $myrc = $profile->folders()->sync($request->folders, true);
             if (isset($oldFiles)) { Storage::delete($oldFiles); }
@@ -239,14 +260,14 @@ class ProfileController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function delete($id) {
-        $profile = Profile::findOrFail($id);
+        $profile = Profile::find($id);
 
         if ($profile) {
-            
+            return view('manage.profiles.delete', ['profile' => $profile]);
         } else {
             Session::flash('failure', 'Profile ' . $id . ' was NOT found.');
+            return redirect()->route('profiles.index');
         }
-        return view('manage.profiles.delete', ['profile' => $profile]);
     }
 
     /**
@@ -259,6 +280,7 @@ class ProfileController extends Controller
         $profile = Profile::findOrFail($id);
 
         $myrc = $profile->delete();
+
         if ($myrc) {
             if ($profile->image) {
                 Storage::delete($profile->image);
@@ -272,8 +294,8 @@ class ProfileController extends Controller
             if (isset($msgs)) { session()->flash('msgs', $msgs); }
             return redirect()->route('profiles.index');
         } else {
-            Session::flash('failure', 'Profile ' . $id . ' was NOT found.');
-            return Redirect::back();
+            Session::flash('failure', 'Profile ' . $id . ' was NOT deleted.');
+            return redirect()->route('profiles.delete', $id)->withinput();
         }
     }
 

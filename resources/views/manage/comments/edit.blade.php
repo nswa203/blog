@@ -28,9 +28,9 @@
 				<div class="card card-body bg-light">
 					<dl class="row dd-nowrap">
 						<dt class="col-sm-5">Post URL:</dt>
-						<dd class="col-sm-7"><a href="{{ route('blog.singlePost', $post->slug) }}">{{ route('blog.singlePost', $post->slug) }}</a></dd>
+						<dd class="col-sm-7"><a href="{{ route('blog.single', $post->slug) }}">{{ route('blog.single', $post->slug) }}</a></dd>
 						<dt class="col-sm-5">Comment ID</dt>
-						<dd class="col-sm-7"><a href="{{ route('blog.singlePost', $post->slug) }}">{{ $comment->id }}</a></dd>
+						<dd class="col-sm-7"><a href="{{ route('blog.singlePost', $post->id) }}">{{ $comment->id }}</a></dd>
 						<dt class="col-sm-5">Created:</dt>
 						<dd class="col-sm-7">{{ date('j M Y, h:i a', strtotime($comment->created_at)) }}</dd>
 						<dt class="col-sm-5">Last Updated:</dt>
@@ -48,7 +48,7 @@
 					<hr class="hr-spacing-top mt-2">
 					<div class="row">
 						<div class="col-sm-6">
-							{!! Html::decode('<a href='.url()->previous().' class="btn btn-danger btn-block"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
+							{!! Html::decode('<a href="Return" class="btn btn-danger btn-block" onclick="window.history.back()"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
 						</div>
 						<div class="col-sm-6">
 							{{ Form::button('<i class="fas fa-edit mr-2"></i>Save', ['type'=>'submit', 'class'=>'btn btn-success btn-block']) }}
@@ -73,11 +73,11 @@
 	<script>
 		tinymce.init ({
 			selector: '#textarea-body',
-			plugins: "link lists",
+			plugins: "advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table contextmenu paste",
 			menubar: false,
-			toolbar: "",
+			extended_valid_elements: "iframe[src|width|height|name|align|frameborder|scrolling]",			
+			toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | alignleft aligncenter alignright alignjustify",
 			forced_root_block : 'div',
-			auto_focus : 'textarea-body',
             branding: false,
  		});
 	</script>

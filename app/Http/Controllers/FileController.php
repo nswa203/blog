@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Input;
@@ -14,6 +16,7 @@ use Response;
 use Session;
 use Storage;
 use URL;
+use Validator;
 use App\myLibs\TestClass as Test;
 
 class FileController extends Controller
@@ -27,107 +30,116 @@ class FileController extends Controller
     }
 
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
-    // It requires the custom search_helper() function in Helpers.php.
-    // If you change Helpers.php you should do "dump-autoload". 
-    public function searchQuery($search = '') {
+    // The table is sorted (ascending or descending) and finally filtered.
+    // It requires the custom queryHelper() function in Helpers.php.
+    public function searchSortQuery($request) {
         $query = [
             'model'         => 'File',
             'searchModel'   => ['title', 'file', 'mime_type', 'meta'],
             'searchRelated' => [
                 'folder'  => ['name', 'slug', 'description'],
                 'tags'    => ['name'],
+            ],    
+            'sortModel'   => [
+                'i'       => 'd,id',                                                      
+                't'       => 'a,title',                                           
+                's'       => 'd,size',                                            
+                'p'       => 'd,status',
+                'default' => 'i'                       
             ]
         ];
-        return search_helper($search, $query);
+        return queryHelper($query, $request);
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    /* **************************************************************************************************************** 
+    *  Index                                                                                                          *
+    **************************************************************************************************************** */
     public function index(Request $request) {
-        $pager = pageSize($request, 'filesIndex', 10, 5, 200, 5);    // size($request->pp), sessionTag, default, min, max, step
-        $files = $this->searchQuery($request->search)->with('folder')->orderBy('id', 'desc')->paginate($pager['size']);
+        $pager = pageSize($request, 'filesIndex', 12, 4, 192, 4);    // size($request->pp), sessionTag, default, min, max, step
+        $files = $this->searchSortQuery($request)->paginate($pager['size']);
         $files->pager = $pager;
+
+// Test code remove ****************************************************************************************
+
+// Test code remove ****************************************************************************************
 
         $list['f'] = fileStatus();
         $list['d'] = folderStatus();
 
         if ($files && $files->count() > 0) {
-            $x = $this->searchQuery($request->search)->with('folder')->orderBy('id', 'desc')->pluck('id')->toArray();
+            $x = $this->searchSortQuery($request)->pluck('id')->toArray();
             mySession('filesIndex', 'index', $x);
             mySession('filesShow', 'indexURL', $request->url().'?'.$request->getQueryString());
         } else {
             Session::flash('failure', 'No Files were found.');
         }
-        return view('manage.files.index', ['files' => $files, 'search' => $request->search, 'list' => $list]);
+        return view('manage.files.index', ['files' => $files, 'search' => $request->search, 'sort' => $request->sort, 'list' => $list]);
      }
+    
+    /* **************************************************************************************************************** 
+    *  IndexOf                                                                                                        *
+    **************************************************************************************************************** */     
     public function indexOf(Request $request, $folder_id) {
-        $pager = pageSize($request, 'filesIndexOf', 20, 5, 200, 10);    // model, size($request->pp), min, max, step
-        $files = $this->searchQuery($request->search)->with('folder')->where('folder_id', $folder_id)
-            ->orderBy('id', 'desc')->paginate($pager['size']);
+        $pager = pageSize($request, 'filesIndexOf', 12, 4, 192, 8);    // model, size($request->pp), min, max, step
+        $files = $this->searchSortQuery($request)->where('folder_id', $folder_id)->paginate($pager['size']);
         $files->pager = $pager;
 
         $list['f'] = fileStatus();
         $list['d'] = folderStatus();   
         
         if ($files && $files->count() > 0) {
-            $x = $this->searchQuery($request->search)->with('folder')->where('folder_id', $folder_id)
-                ->orderBy('id', 'desc')->pluck('id')->toArray();
+            $x = $this->searchSortQuery($request)->where('folder_id', $folder_id)->pluck('id')->toArray();
             mySession('filesIndex', 'index', $x);
             mySession('filesShow', 'indexURL', $request->url().'?'.$request->getQueryString());
         } else {
             Session::flash('failure', 'No Files were found.');
         }
-        return view('manage.files.index', ['files' => $files, 'search' => $folder_id, 'list' => $list]);
+        return view('manage.files.index', ['files' => $files, 'search' => $folder_id, 'sort' => $request->sort, 'list' => $list]);
      }      
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
+    /* **************************************************************************************************************** 
+    *  Create                                                                                                         *
+    **************************************************************************************************************** */ 
+    public function create() {
         $folders = Folder::orderBy('slug', 'asc')->pluck('slug', 'id');
         $tags = Tag::orderBy('name', 'asc')->pluck('name', 'id');
         $file = new File;
         $list['f'] = fileStatus(2);
         $list['o'] = fileOption(3);        
-        $mimes = 'text/*,image/*,audio/*,video/*,.pdf,.txt,.log,.ico,.nfo,.nft,.srt,.rex,.rexx,.bat,.cmd,.php,.js,.rar,.zip';
+        $mimes = 'text/*,image/*,audio/*,video/*,.pdf,.txt,.log,.ico,.nfo,.nft,.srt,.rex,.rexx,.bat,.cmd,.php,.js,.rar,.zip,.gpx';
 
         return view('manage.files.create', ['file' => $file, 'folders' => $folders, 'tags' => $tags,
             'mimes' => $mimes, 'list' => $list, 'folder_id' => null]);
     }
-    public function createIn($folder_id)
-    {
+
+    /* **************************************************************************************************************** 
+    *  CreatIn                                                                                                        *
+    **************************************************************************************************************** */ 
+    public function createIn($folder_id) {
         $folder = Folder::findOrFail($folder_id);
         $folders = [$folder->id => $folder->slug];
         $tags = Tag::orderBy('name', 'asc')->pluck('name', 'id');
         $file = new File;
         $list['f'] = fileStatus(2);
         $list['o'] = fileOption(3);
-        $mimes = 'text/*,image/*,audio/*,video/*,.pdf,.txt,.log,.ico,.nfo,.nft,.srt,.rex,.rexx,.bat,.cmd,.php,.js,.rar,.zip';
+        $mimes = 'text/*,image/*,audio/*,video/*,.pdf,.txt,.log,.ico,.nfo,.nft,.srt,.rex,.rexx,.bat,.cmd,.php,.js,.rar,.zip,.gpx';
 
         return view('manage.files.create', ['file' => $file, 'folders' => $folders, 'tags' => $tags,
             'mimes' => $mimes, 'list' => $list, 'folder_id' => $folder_id]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
+    /* **************************************************************************************************************** 
+    *  Store                                                                                                          *
+    **************************************************************************************************************** */ 
+    public function store(Request $request) {
         $files = Input::file('files');              // Provide Mime info msgs just in case validate triggers a failure  
-        for ($i=0; $i<count($files); $i++) {
+        for ($i=0; $i<count($files); ++$i) {
             $msg = 'MimeType File.' . $i . ': ' . $files[$i]->getMimeType();
             msgx(['info' => [$msg, true]]);
         }
-        $this->validate($request, [
+
+        // We use our own validator here as auto validation cannot handle error return from a POST method 
+        $validator = Validator::make($request->all(), [
             'title'     => 'sometimes|max:191',
             'files'     => 'required|array|between:1,64',
             'files.*'   => 'filled|max:10000000|mimetypes:audio/*,video/*,image/*,application/pdf,text/plain,application/octet-stream,application/zip,text/html,application/x-7z-compressed,text/x-php,text/x-msdos-batch,text/xml',
@@ -137,48 +149,40 @@ class FileController extends Controller
             'tags'      => 'array',
             'tags.*'    => 'integer|exists:tags,id',
         ]);
+        if ($validator->fails()) {
+            return redirect()->route('files.create')->withErrors($validator)->withInput();
+        }
+
         Session::put('msgx', []);                   // If we got here validate worked so remove info msgs 
 
-        //$files        = Input::file('files');
-        $folder       = folderWithSize($request->folder_id);                                // Get Folder:: with refreshed size
-        $countBad     = count($files);
-        $count        = 0;
+        $folder   = folderWithSize($request->folder_id);
+        $countBad = count($files);
+        $count    = 0;
+        $request->action = 'store';
+        $request->folderTarget = $folder;
 
         foreach ($files as $item) {
-            $count++;
+            $request->fileSource = $count;
             $file = new File;
+            ++$count;
             $file->title        = $request->title ? $request->title :
                 ($request->option == 2 ? '%basename% %date% %time%.%baseext%' :'%basename%.%baseext%');
             $file->status       = $request->status;
             $file->folder_id    = $request->folder_id;
             $file->size         = $item->getSize();
             $file->published_at = $file->status == '4' ? date('Y-m-d H:i:s') : null;
-            $file->mime_type    = $item->getMimeType();
             $fileName = $item->getClientOriginalName();                                     // fn.ft
             $fileWrap = myTrim($fileName, 48);                                              // fn... ft
             $filePath = folder_path($folder)->path . '\\' . $fileName;                      // C:\folder\fn.ft
             $pathName = pathinfo($fileName, PATHINFO_FILENAME);                             // fn
             $pathExt  = pathinfo($fileName, PATHINFO_EXTENSION);                            // ft
-
+            $file->file = $fileName;                                                        // fn.ft
             // Replacements ------------------------------------------------------------------------------------------
             $needles = ['%title%', '%filename%', '%basename%', '%baseext%', '%size%', '%folder%', '%date%', '%time%'];
-
             $replace = [$file->title, $fileName, $pathName, $pathExt, $file->size, $folder->name, date('Y-m-d'), date('H-m-s') ];
             $file->title = str_replace($needles, $replace, $file->title);
-            $folder_used = ($folder->size)             / $folder->max_size / 1048576 * 100;
-            $folder_want = ($folder->size+$file->size) / $folder->max_size / 1048576 * 100;
-
-            // Check for sufficient disk space -----------------------------------------------------------------------
-            if ($folder_want > 100) {
-                $myrc = false;
-                $msg = 'Folder "'.$folder->name.'" is '.round($folder_used, 2).'% full.'.' Space requested was '.round($folder_want, 2).'%'; 
-                msgx(['info' => [$msg, !$myrc]]);
-                $msg = 'File '.$count.': "'.$fileWrap.'" out of space.';
-                msgx(['warning' => [$msg, !$myrc]]);
-                break;
-            }
-
-            // Check for existing file with same name ----------------------------------------------------------------
+           
+             // Check for existing file with same name ----------------------------------------------------------------
             $myrc = FileSys::exists($filePath); 
             if ($myrc) {
                 $msg = 'File '.$count.': "'.$fileWrap.'" already exists in Folder "'.$folder->name.'".';
@@ -186,7 +190,7 @@ class FileController extends Controller
                 elseif ($request->option == 1) { msgx(['info'    => [$msg, true]]); continue; }
                 elseif ($request->option == 2) { $fileNameAlt = $file->title.'.'.$pathExt; }
                 elseif ($request->option == 3) {
-                    for ($i=1; $i<=100; $i++) {
+                    for ($i=1; $i<=100; ++$i) {
                         $fileNameAlt = $pathName.'_'.$i.'.'.$pathExt;
                         $p = folder_path($folder)->path.'\\'.$fileNameAlt;
                         if (!FileSys::exists($p)) { break; }    
@@ -198,6 +202,7 @@ class FileController extends Controller
                 }
 
                 if ($fileNameAlt) {
+                    $file->file = $fileNameAlt;
                     $fileWrapAlt = myTrim($fileNameAlt, 48);
                     $msg = 'File '.$count.': "'.$fileWrapAlt.'" already exists in Folder "'.$folder->name.'".';
                     $filePath = folder_path($folder)->path.'\\'.$fileNameAlt;
@@ -206,96 +211,115 @@ class FileController extends Controller
                     msgx(['info' => [$msg, true]]);                        
                 }
             }                
-
-            // Extract meta data from file ----------------------------------------------------------------------------
-            $file->meta = getMeta($item);
-
-            // Save the file
-            $myrc = FileSys::copy($item, $filePath);
-            if ($myrc) { 
-                $file->file = basename($filePath);
-                $file->save();
-                $file->tags()->sync($request->tags, false);
-                $folder->size = $folder->size + $file->size;
-                $countBad--;
+            $request->pathTarget = $filePath;
+            $myrc = $file->save();
+            if ($myrc) {
+                --$countBad;
                 $msg = 'File '.$count.': saved as "'.myTrim($file->file, 48).'".';
                 msgx(['info' => [$msg, true]]);                        
+            } else {
+                $msg = 'File '.$count.': "'.myTrim($file->file, 48).'" could not be saved to "'.$folder->slug.'"!';
+                msgx(['warning' => [$msg, true]]);
             }
-
         } // EndForEach
-
-        // Update Folder:: 
-        folderWithSize($folder, true);      // ...updating Folder Size
 
         if ($myrc && $countBad == 0) {
             Session::flash('success', 'All Files were successfully saved.');
+            if ($request->ajax()) {
+                return json_encode(['countBad' => $countBad, 'url' => route('files.indexOf', $folder->id)]);    
+            }            
             return redirect()->route('files.indexOf', $folder->id);
         } else {
             $count = count($files);
             Session::flash('failure',
                 $countBad == $count ? 'No Files were saved.' : $countBad.' of '.$count.' Files were NOT saved.');
-            return Redirect::back()->withInput();
+            if ($request->ajax()) {
+                return json_encode(['countBad' => $countBad]);    
+            }              
+            return redirect()->route('files.create', $id)->withInput();
         }
     }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\File  $file
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
+    
+    /* **************************************************************************************************************** 
+    *  Show                                                                                                           *
+    **************************************************************************************************************** */ 
+    public function show($id) {
         $file = File::where('id', $id)->with('folder')->first();
+        
         if ($file) {
             $file->ext = pathinfo($file->file, PATHINFO_EXTENSION);
             $list['f'] = fileStatus();
             $list['d'] = folderStatus();
-            $list['x'] = showNav($id, mySession('filesIndex', 'index'));     // Build list of First, Previous, Next, Last
+            $list['x'] = showNav2($id, mySession('filesIndex', 'index'));     // Build list of First, Previous, Next, Last, Max, Current
 
             return view('manage.files.show', ['file' => $file, 'meta' => json_decode($file->meta), 'list' => $list, 'search' => true]);
         } else {
             Session::flash('failure', 'File "' . $id . '" was NOT found.');
-            return Redirect::back();
+            return redirect()->route('files.index');
         }
     }
 
-    public function showFile($id)
+    /* **************************************************************************************************************** 
+    *  ShowFile                                                                                                       *
+    **************************************************************************************************************** */ 
+    public function showFile(Request $request, $id)
     {
         $file = File::where('id', $id)->with('folder')->first();
+        $playList = $request->pl ?: 1;
+
         if ($file) {
             $file->ext = pathinfo($file->file, PATHINFO_EXTENSION);
-            $list['x'] = showNav($id, mySession('filesIndex', 'index'));     // Build list of First, Previous, Next, Last
+            $list['x'] = showNav2($id, mySession('filesIndex', 'index'), $playList);
 
             return view('manage.files.showImage', ['file' => $file, 'meta' => json_decode($file->meta), 'list' => $list, 'search' => true]);
         } else {
             Session::flash('failure', 'File "' . $id . '" was NOT found.');
-            return Redirect::back();
+            return redirect()->route('files.index');
         }
     }
 
-
-    public function getFile($id) {
+    /* **************************************************************************************************************** 
+    *  GetFile                                                                                                        *
+    *  Hint: debug with http://blog/manage/private/nnn?r=angle       (where nnn = file number)                        *
+    *  NS01 NS02                                                                                                      *
+    **************************************************************************************************************** */ 
+    public function getFile(Request $request, $id) {
         $myrc = false;
         $file = File::findOrFail($id);
         $path = filePath($file);
+
         if (File::exists($path)) {
-            $file = FileSys::get($path);
             $type = FileSys::mimeType($path);
+            
+            if ($request->t == 'y' or is_numeric($request->t)) {                // NS02
+                $path = myThumb($path, $request->t);
+                $file = FileSys::get($path);
+            }            
+            else if ($request->r == 'y' or is_numeric($request->r)) {           // NS01 NS02
+                $file = myRotate($file, $request->r);
+            }
+            else { $file = false; }
+
+            if (!$file) { $file = FileSys::get($path); }
             $response = Response::make($file, 200);
             $response->header("Content-Type", $type);
             $myrc = true;
-        } 
-   
+        }
+
         if ($myrc) { return $response; }
         else { abort(404); }
     }
 
+    /* **************************************************************************************************************** 
+    *  FindFile                                                                                                       *
+    **************************************************************************************************************** */ 
     public function findFile($fileTitle, $folderSlug) {
         $myrc   = false;
         $folder = Folder::where('slug', $folderSlug)->first();
+
         if ($folder) {
             $file = File::where('title', $fileTitle)->where('folder_id', $folder->id)->first();
+           
             if ($file) {
                 $path = filePath($file, $folder);
                 if (File::exists($path)) {
@@ -306,93 +330,448 @@ class FileController extends Controller
                     $myrc = true;
                 }    
             } 
-        }    
+        }
+
         if ($myrc) { return $response; }
         else { abort(404); } 
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\File  $file
-     * @return \Illuminate\Http\Response
-     */
+    /* **************************************************************************************************************** 
+    *  Edit                                                                                                           *
+    **************************************************************************************************************** */ 
     public function edit($id) {
-        $file = File::findOrFail($id);
+        $file = File::find($id);
+        
         if ($file) {
             $folders = Folder::orderBy('slug', 'asc')->pluck('slug', 'id');
             $tags = Tag::orderBy('name', 'asc')->pluck('name', 'id');
-            $mimes = 'audio/*,video/*,image/*,.pdf,.txt,.log';
+            $list['d'] = folderStatus();
             $list['f'] = fileStatus();
             $list['o'] = fileOption(3);
-            $list['d'] = folderStatus();
+            $mimes = 'text/*,image/*,audio/*,video/*,.pdf,.txt,.log,.ico,.nfo,.nft,.srt,.rex,.rexx,.bat,.cmd,.php,.js,.rar,.zip,.gpx';
+
+            $file->ext = pathinfo($file->file, PATHINFO_EXTENSION);                            // ft
+
             return view('manage.files.edit', ['file' => $file, 'folders' => $folders, 'tags' => $tags,
-                'mimes' => $mimes, 'list' => $list, 'folder_id' => null]);
+                'mimes' => $mimes, 'list' => $list, 'folder_id' => null, 'meta' => json_decode($file->meta)]);
         } else {
             Session::flash('failure', 'File "' . $id . '" was NOT found.');
-            return Redirect::back();
+            return redirect()->route('files.index');
         }
     }
 
-    /**
-     * mixed router for file.show|edit|delete
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function mixed(Request $request)
-    {
-        $choice = explode(',', $request->choice);
-        if ($choice[0] == 'delete') {
+    /* **************************************************************************************************************** 
+    *  Update                                                                                                         *
+    **************************************************************************************************************** */ 
+    public function update(Request $request, $id) {
+        $file = File::findOrFail($id);
 
-        } elseif ($choice[0] == 'edit') {
+        // We use our own validator here as auto validation cannot handle error return from a POST method 
+        $validator = Validator::make($request->all(), [
+            'title'         => 'sometimes|max:191',
+            'files'         => 'sometimes|array|between:1,64',
+            'files.*'       => 'filled|max:10000000|mimetypes:audio/*,video/*,image/*,application/pdf,text/plain,application/octet-stream,application/zip,text/html,application/x-7z-compressed,text/x-php,text/x-msdos-batch,text/xml',
+            'status'        => 'required|integer|min:0|max:4',
+            'folder_id'     => 'required|integer|exists:folders,id',
+            'tags'          => 'array',
+            'tags.*'        => 'integer|exists:tags,id',
+        ]);
+        if ($validator->fails()) {
+            return redirect()->route('files.edit', $file->id)->withErrors($validator)->withInput();
+        }
 
-        } else {
-            if ($request->itemsSelected) {
-                $ids = explode(',', $request->itemsSelected);
-                mySession('filesIndex', 'index', $ids);
-                $id = $ids[0]; 
+        if ($request->delete_image) {
+            $msg = 'Delete File is not implemented in Edit - hit the Red Delete button!';
+            msgx(['warning' => [$msg, true]]);
+            return redirect()->route('files.show', $file->id);
+        }            
+
+        $folder = folderWithSize($file->folder_id);
+
+        // Replace 
+        $item = Input::file('files')[0];
+        if ($item) {
+            $request->action = 'replace';
+            $request->fileSource = 0;
+            $folder->size = $folder->size - $file->size;
+            $request->folderTarget = $folder;
+            $request->originalFilePath = folder_path($folder)->path . '\\' . $file->file;    // C:\folder\fn.ft
+            $file->size = $item->getSize();
+            $file->file = $item->getClientOriginalName();                                    // fn.ft
+            $myrc = $file->save();
+            $folder_id = $folder->id;
+        }
+
+        // Move
+        if ($request->folder_id != $file->folder_id) {
+            $request->action = 'move';
+            $request->fileSource = filePath($file, $folder);
+            $folderTarget = Folder::find($request->folder_id);
+            $request->folderTarget = $folderTarget;
+            $file->folder_id = $folderTarget->id;
+            $myrc = $file->save();
+            $folder_id = $folderTarget->id;
+        } 
+
+        // Alter
+        $request->action = 'alter';
+        $file->title = $request->title;
+        $file->status = $request->status;
+        if ($file->status == 4){
+            if ($file->published_at == null) { $file->published_at = date('Y-m-d H:i:s'); }
+        } else                               { $file->published_at = null; }
+        $file->status = $request->status;
+        $fileName = $file->file;
+        $fileWrap = myTrim($fileName, 48);                                              // fn... ft
+        $pathName = pathinfo($fileName, PATHINFO_FILENAME);                             // fn
+        $pathExt  = pathinfo($fileName, PATHINFO_EXTENSION);                            // ft
+        $filePath = folder_path($folder)->path . '\\' . $fileName;                      // C:\folder\fn.ft
+
+        // Replacements ------------------------------------------------------------------------------------------
+        $needles = ['%title%', '%filename%', '%basename%', '%baseext%', '%size%', '%folder%', '%date%', '%time%'];
+        $replace = [$file->title, $fileName, $pathName, $pathExt, $file->size, $folder->name, date('Y-m-d'), date('H-m-s') ];
+        $file->title = str_replace($needles, $replace, $file->title);
+
+        $myrc = $file->save();
+        $folder_id = $file->folder_id;
+
+        if ($myrc) {
+            Session::flash('success', 'File "' . $fileWrap .'" saved successfully.');
+            if ($request->ajax()) {
+                return json_encode(['countBad' => '0', 'url' => route('files.show', $file->id)]);    
             }
-            else { $id = $choice[1]; }    
-            return redirect()->route('files.show', $id);    
+            return redirect()->route('files.show', $file->id);
+        } else {
+            Session::flash('failure', 'File was NOT saved.');
+            if ($request->ajax()) {
+                return json_encode(['countBad' => '1']);    
+            }            
+            return redirect()->route('files.edit', $file->id)->withInput();
+        }
+    }    
+
+    /* **************************************************************************************************************** 
+    *  Mixed                                                                                                          *
+    *   CopyMultiple                                                                                                  *
+    *   DeleteMultiple                                                                                                *
+    *   EditMultiple                                                                                                  *
+    *   MoveMultiple                                                                                                  *
+    *   ShowMultiple                                                                                                  *
+    *   ShowFileMultiple                                                                                              *
+    **************************************************************************************************************** */ 
+    public function mixed(Request $request) {
+//  dd($request);
+        $choice = explode(',', $request->choice);
+        $ids = $request->itemsSelected;
+        if ($ids) { $ids = explode(',', $ids); }
+        else      { $ids = [$choice[1]]; }
+
+    /* **************************************************************************************************************** 
+    *   CopyMultiple                                                                                                  *
+    **************************************************************************************************************** */ 
+        if ($choice[0] == 'copy') {
+//            $files = $this->searchQuery($ids)->with('folder')->orderBy('id', 'desc')->get();
+            $files = $this->searchSortQuery($ids)->get();
+            $folders = Folder::orderBy('slug', 'asc')->pluck('slug', 'id');
+
+            $list['f'] = fileStatus();
+            $list['d'] = folderStatus();            
+            return view('manage.files.copy', ['files' => $files, 'folders' => $folders, 'search' => true, 'sort' => $request->sort, 'list' => $list, 'itemsSelected' => implode(',', $ids)]);
+        }    
+    /* **************************************************************************************************************** 
+    *   DeleteMultiple                                                                                                *
+    **************************************************************************************************************** */
+        else if ($choice[0] == 'delete') {
+//          $files = $this->searchQuery($ids)->with('folder')->orderBy('id', 'desc')->get();
+            $files = $this->searchSortQuery($ids)->get();
+
+            $list['f'] = fileStatus();
+            $list['d'] = folderStatus();
+            return view('manage.files.delete', ['files' => $files, 'search' => true, 'sort' => $request->sort, 'list' => $list, 'itemsSelected' => implode(',', $ids)]);
+        }    
+    /* **************************************************************************************************************** 
+    *   EditMultiple                                                                                                  *
+    **************************************************************************************************************** */
+        else if ($choice[0] == 'edit') {
+//          $files = $this->searchQuery($ids)->with('folder')->orderBy('id', 'desc')->get();
+            $files = $this->searchSortQuery($ids)->get();
+            $tags = Tag::orderBy('name', 'asc')->pluck('name', 'id');
+            
+            $list['f'] = fileStatus();
+            $list['d'] = folderStatus();            
+            return view('manage.files.alter', ['files' => $files, 'tags' => $tags, 'search' => true, 'sort' => $request->sort, 'list' => $list, 'itemsSelected' => implode(',', $ids)]);        }
+    /* **************************************************************************************************************** 
+    *   MoveMultiple                                                                                                  *
+    **************************************************************************************************************** */    
+        else if ($choice[0] == 'move') {
+//          $files = $this->searchQuery($ids)->with('folder')->orderBy('id', 'desc')->get();
+            $files = $this->searchSortQuery($ids)->get();
+            $folders = Folder::orderBy('slug', 'asc')->pluck('slug', 'id');
+
+            $list['f'] = fileStatus();
+            $list['d'] = folderStatus();            
+            return view('manage.files.move', ['files' => $files, 'folders' => $folders, 'search' => true, 'sort' => $request->sort, 'list' => $list, 'itemsSelected' => implode(',', $ids)]);
+        }      
+    /* **************************************************************************************************************** 
+    *   ShowFileMultiple                                                                                              *
+    **************************************************************************************************************** */    
+        else if ($choice[0] == 'showFile') {
+            $ids = $request->itemsSelected;
+            if ($ids) {
+                $ids = explode(',', $ids);
+                mySession('filesIndex', 'index', $ids);
+            } else { $ids = [$choice[1]]; }
+            return redirect()->route('files.showFile', [$ids[0], 'r=y']); 
+        }      
+    /* **************************************************************************************************************** 
+    *   ShowMultiple                                                                                                  *
+    **************************************************************************************************************** */   
+        else {
+            $ids = $request->itemsSelected;
+            if ($ids) {
+                $ids = explode(',', $ids);
+                mySession('filesIndex', 'index', $ids);
+            } else { $ids = [$choice[1]]; }
+            return redirect()->route('files.show', $ids[0]);    
+        }
+    /* **************************************************************************************************************** 
+    *   Error                                                                                                         *
+    **************************************************************************************************************** */ 
+        dd('Mixed Error!');
+    }
+
+    /* **************************************************************************************************************** 
+    *  updateMultiple                                                                                                 *
+    **************************************************************************************************************** */ 
+    public function updateMultiple(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'status*'   => 'sometimes|integer|min:0|max:4',
+            'tags'      => 'array',
+            'tags.*'    => 'integer|exists:tags,id',
+        ]);
+        if ($validator->fails()) {
+            return redirect()->route('files.index')->withErrors($validator)->withInput();
         }
 
-        $ids = $request->itemsSelected ? $request->itemsSelected : $choice[1];
-        dd($request, $choice[0].': '.$ids);
-    }
+        $myrc = true;
+        $request->action = 'alter';
+        $files = explode(',', $request->itemsSelected);
+        $countBad = count($files);
+        $count    = 0;
 
+        foreach ($files as $id) {
+            ++$count;
+            $file = File::with('tags')->find($id);
+            $file->status = $request->status[0] ? $request->status[0] : $file->status;
+            $file->published_at = $file->status == '4' ? date('Y-m-d H:i:s') : null;
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\File  $file
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, File $file)
-    {
-        //
-    }
+            if ($file) {
+                $myrc = $file->save();
+                if ($myrc) {
+                    $msg = 'File '.$count.': "'.$file->title.'" saved.';
+                    msgx(['info' => [$msg, true]]);
+                    $msg = 'Disk file '.$count.': "'.$file->file.'" saved.';
+                    msgx(['info' => [$msg, true]]);
+                    --$countBad;
+                } else {
+                    $msg = 'File '.$count.': "'.$file->title.'" could not be saved!';
+                    msgx(['warning' => [$msg, true]]);
+                }
+            }    
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\File  $file
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(File $file)
-    {
-        //
-    }
+        if ($myrc && $countBad == 0) {
+            Session::flash('success', 'All Files were successfully saved.');
+            return redirect()->route('files.index');
+        } else {
+            $count = count($files);
+            Session::flash('failure',
+                $countBad == $count ? 'No Files were saved.' : $countBad.' of '.$count.' Files were NOT saved.');
+            return redirect()->route('files.index')->withInput();
+        }
+    }    
 
+    /* **************************************************************************************************************** 
+    *  Copy                                                                                                           *
+    *  FileObserver handles physical copy of the disk file and ensures no collisions                                  *  
+    **************************************************************************************************************** */ 
+    public function copy(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'folder_id' => 'required|integer|exists:folders,id'
+        ]);
+        if ($validator->fails()) {
+            return redirect()->route('files.index')->withErrors($validator)->withInput();
+        }
 
-   /**
-     * API Change Paginator per page count
-     */
-    public function apiPageCount(Request $request) {
-        $slug = $request->slug;
+        $myrc = true;
+        $request->action = 'copy';
+        $files = explode(',', $request->itemsSelected);
+        $countBad = count($files);
+        $count    = 0;
+
+        $folderTarget = Folder::findOrFail($request->folder_id);
+        $request->folderTarget = $folderTarget;
+
+        foreach ($files as $id) {
+            ++$count;
+            $fileSource = File::with('tags')->find($id);
+            if ($fileSource) {
+                $folderSource = Folder::find($fileSource->folder_id);
+                $fileTarget = $fileSource->replicate();
+                $fileTarget->folder_id = $folderTarget->id;
+                $request->fileSource = filePath($fileSource, $folderSource);
+                $request->tags = $fileSource->tags->pluck('id');
+
+                $myrc = $fileTarget->save();
+                if ($myrc) {
+                    $msg = 'File '.$count.': "'.$fileSource->title.'" copied to "'.$folderTarget->slug.'".';
+                    msgx(['info' => [$msg, true]]);
+                    $msg = 'Disk file '.$count.': "'.$fileSource->file.'" copied to"'.$folderTarget->directory.'".';
+                    msgx(['info' => [$msg, true]]);
+                    --$countBad;
+                } else {
+                    $msg = 'File '.$count.': "'.$fileSource->title.'" could not be copied to "'.$folderTarget->slug.'"!';
+                    msgx(['warning' => [$msg, true]]);
+                }
+            }    
+        }
+
+        if ($myrc && $countBad == 0) {
+            Session::flash('success', 'All Files were successfully copied.');
+            return redirect()->route('files.index');
+        } else {
+            $count = count($files);
+            Session::flash('failure',
+                $countBad == $count ? 'No Files were copied.' : $countBad.' of '.$count.' Files were NOT copied.');
+            return redirect()->route('files.index')->withInput();
+        }
+    }    
+
+    /* **************************************************************************************************************** 
+    *  Move                                                                                                           *
+    *  FileObserver handles physical move of the disk file and ensures no collisions                                  *  
+    **************************************************************************************************************** */ 
+    public function move(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'folder_id' => 'required|integer|exists:folders,id'
+        ]);
+        if ($validator->fails()) {
+            return redirect()->route('files.index')->withErrors($validator)->withInput();
+        }
+
+        $myrc = true;
+        $request->action = 'move';
+        $files = explode(',', $request->itemsSelected);
+        $countBad = count($files);
+        $count    = 0;
+
+        $folderTarget = Folder::findOrFail($request->folder_id);
+        $request->folderTarget = $folderTarget;
+
+        foreach ($files as $id) {
+            ++$count;
+            $file = File::find($id);
+            if ($file) {
+                $folderSource = Folder::find($file->folder_id);
+                $request->fileSource = filePath($file, $folderSource);
+                $file->folder_id = $folderTarget->id;
+
+                $myrc = $file->save();
+                if ($myrc) {
+                    $msg = 'File '.$count.': "'.$file->title.'" moved to "'.$folderTarget->slug.'".';
+                    msgx(['info' => [$msg, true]]);
+                    $msg = 'Disk file '.$count.': "'.$file->file.'" moved to"'.$folderTarget->directory.'".';
+                    msgx(['info' => [$msg, true]]);
+                    --$countBad;
+                } else {
+                    $msg = 'File '.$count.': "'.$file->title.'" could not be moved to "'.$folderTarget->slug.'"!';
+                    msgx(['warning' => [$msg, true]]);
+                }
+            }    
+        }
+
+        if ($myrc && $countBad == 0) {
+            Session::flash('success', 'All Files were successfully moved.');
+            return redirect()->route('files.index');
+        } else {
+            $count = count($files);
+            Session::flash('failure',
+                $countBad == $count ? 'No Files were moved.' : $countBad.' of '.$count.' Files were NOT moved.');
+            return redirect()->route('files.index')->withInput();
+        }
+    }    
+
+    /* **************************************************************************************************************** 
+    *  Destroy                                                                                                        *
+    *  FileObserver handles physical removal of the disk file and general clean up.                                   *  
+    **************************************************************************************************************** */ 
+    public function destroy(Request $request) {
+        $myrc = true;
+        $files = explode(',', $request->itemsSelected);
+        $countBad = count($files);
+        $count    = 0;
         
-        return json_encode('OK');
+        foreach ($files as $id) {
+            ++$count;
+            $file = File::findOrFail($id);
+            if ($file) {
+                $myrc = $file->delete();
+                if ($myrc) {
+                    $msg = 'File '.$count.': "'.$file->title.'" deleted.';
+                    msgx(['info' => [$msg, true]]);
+                    $msg = 'Disk file '.$count.': "'.$file->file.'" erased.';
+                    msgx(['info' => [$msg, true]]);
+                    --$countBad;
+                }
+            }    
+        }
+
+        if ($myrc && $countBad == 0) {
+            Session::flash('success', 'All Files were successfully deleted.');
+            return redirect()->route('files.index');
+        } else {
+            $count = count($files);
+            Session::flash('failure',
+                $countBad == $count ? 'No Files were deleted.' : $countBad.' of '.$count.' Files were NOT deleted.');
+            return redirect()->route('files.delete')->withInput();
+        }
     }
+
+    /**
+     * API Get Elevation Data using Ordnance Survey OS Terrain 50 data 
+     *     Calculate Distances for multiple points.   
+     */
+    public function apiGetElevation(Request $request) {
+        $file = File::findOrFail($request->id);
+        $data = json_decode($file->meta);
+        $points = isset($data->rtept) ? $data->rtept : $data->trkpt;
+
+        //$distance = isset($data->Distance) ? $data->Distance : 0;
+        //$climb    = isset($data->Climb   ) ? $data->Climb    : 0;
+        $minY = isset($data->Lowest ) ? $data->Lowest  : 0;
+        $maxY = isset($data->Highest) ? $data->Highest : 0;
+
+        $data = [];
+        $data2 =[];       
+        $c = 0;
+        $d = 0;
+        $m = 1609.344;                         // Metres in a mile (Change to 1 for x-axis in metres)
+
+        for ($i=0; $i<sizeof($points); ++$i) {
+            $point = $points[$i];
+            $x = isset($point->d  ) ? $point->d   : 0;                  // delta Distance
+            $y = isset($point->ele) ? $point->ele : 0;                  // Elevation
+            $d = $d + $x;                                               // Total Distance
+            if($i>0 && $y>$eleOld) { $c = $c + $y - $eleOld; }          // Total Climb
+            $data[]  = ['x' => round($d/$m, 3), 'y' => round($y, 1)];
+            $data2[] = ['x' => round($d/$m, 3), 'y' => round($c, 1)];
+            $eleOld = $point->ele;
+        }
+        $minY = $minY<=10 ? 0 : $minY - 10;
+        $minY = ceil($minY / 10) * 10;
+        $maxY = ceil(($maxY + 10) / 10) * 10;
+        $range = [0, round($d/$m, 2), $minY, $maxY, round($c, 1)];
+        return json_encode(['data' => $data, 'range' => $range, 'data2' => $data2]);   
+    }    
 
 }

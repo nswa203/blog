@@ -10,10 +10,11 @@ use App\Category;
 use App\Folder;
 use App\Tag;
 use App\User;
-use Session;
+use Image;
 use Purifier;
-use Image; 
+use Session;
 use Storage;
+use Validator;
 
 class PostController extends Controller
  {
@@ -26,9 +27,9 @@ class PostController extends Controller
 	}
 
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
-    // It requires the custom search_helper() function in Helpers.php.
-    // If you change Helpers.php you should do "dump-autoload". 
-    public function searchQuery($search = '') {
+    // The table is sorted (ascending or descending) and finally filtered.
+    // It requires the custom queryHelper() function in Helpers.php.
+    public function searchSortQuery($request) {
         $query = [
             'model'         => 'Post',
             'searchModel'   => ['title', 'slug', 'image', 'body', 'excerpt'],
@@ -40,9 +41,17 @@ class PostController extends Controller
 				'folders'	=> ['name', 'slug', 'description'],
 				'albums'	=> ['title', 'slug', 'description']
             ],
+            'sortModel'   => [
+                'i'       => 'd,id',                                                      
+                't'       => 'a,title',
+                'e'       => 'a,excerpt',
+                'c'       => 'd,created_at',
+                'u'       => 'd,updated_at',
+                'default' => 'i'                       
+            ],
             //'filter'		=>['status', '>=', '4']
         ];
-        return search_helper($search, $query);
+        return queryHelper($query, $request);
     }
 
     // $status_list
@@ -64,13 +73,17 @@ class PostController extends Controller
 	 * @return \Illuminate\Http\Response
 	 */
 	public function index(Request $request) {
-        $posts = $this->searchQuery($request->search)->orderBy('id', 'desc')->paginate(10);
+        $pager = pageSize($request, 'postsIndex', 12, 4, 192, 4);    // size($request->pp), sessionTag, default, min, max, step
+        $posts = $this->searchSortQuery($request)->paginate($pager['size']);
+        $posts->pager = $pager;
+
 		if ($posts && $posts->count() > 0) {
 
 		} else {
 			Session::flash('failure', 'No blog Posts were found.');
 		}
-		return view('manage.posts.index', ['posts' => $posts, 'search' => $request->search, 'status_list' => $this->status()]);
+		return view('manage.posts.index', ['posts' => $posts,
+			'search' => $request->search, 'sort' => $request->sort, 'status_list' => $this->status()]);
 	}
 
 	/**
@@ -79,8 +92,6 @@ class PostController extends Controller
 	 * @return \Illuminate\Http\Response
 	 */
 	public function create() {
-		// URI=http://blog/posts/create
-
 		$categories = Category::orderBy('name', 'asc')->pluck('name', 'id');
 		$folders    = Folder::  orderBy('name', 'asc')->pluck('name', 'id');
 		$tags       = Tag::     orderBy('name', 'asc')->pluck('name', 'id');
@@ -98,28 +109,32 @@ class PostController extends Controller
 	 * @return \Illuminate\Http\Response
 	 */
 	public function store(Request $request) {
-		$this->validate($request, [
-			'title' 			=> 'required|min:8|max:191',
-			'slug' 				=> 'required|alpha_dash|min:5|max:191|unique:posts,slug',
-			'category_id' 		=> 'required|integer|exists:categories,id',
-			'image'	 			=> 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
-			'banner'	 		=> 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
-			'body' 				=> 'required|min:1',
-			'excerpt' 			=> 'sometimes',
-			'author_id' 		=> 'sometimes|integer|exists:users,id',
-			'status' 			=> 'required|integer|min:0|max:4',
-			'folders'			=> 'array',
-			'folders.*'			=> 'integer|exists:folders,id',			
-			'tags'				=> 'array',
-			'tags.*'			=> 'integer|exists:tags,id',
-		]);
+        // We use our own validator here as auto validation cannot handle error return from a POST method 
+        $validator = Validator::make($request->all(), [
+			'title' 	  => 'required|min:8|max:191',
+			'slug' 		  => 'required|alpha_dash|min:5|max:191|unique:posts,slug',
+			'category_id' => 'required|integer|exists:categories,id',
+			'image'	 	  => 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
+			'banner'	  => 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
+			'body' 		  => 'required|min:1',
+			'excerpt' 	  => 'sometimes',
+			'author_id'   => 'sometimes|integer|exists:users,id',
+			'status' 	  => 'required|integer|min:0|max:4',
+			'folders'	  => 'array',
+			'folders.*'	  => 'integer|exists:folders,id',			
+			'tags'		  => 'array',
+			'tags.*'	  => 'integer|exists:tags,id',
+        ]);
+        if ($validator->fails()) {
+            return redirect()->route('posts.create')->withErrors($validator)->withInput();
+        }
 
 		$post = new Post;
-		$post->title 			= $request->title;
-		$post->slug 			= $request->slug;
-		$post->category_id 		= $request->category_id;
-		$post->body 			= Purifier::clean($request->body);
-		$post->status			= $request->status;
+		$post->title 	   = $request->title;
+		$post->slug 	   = $request->slug;
+		$post->category_id = $request->category_id;
+		$post->body 	   = Purifier::clean($request->body);
+		$post->status	   = $request->status;
 
 		$post->excerpt = $request->excerpt ? $request->excerpt : $request->body; 
 		$post->excerpt = Purifier::clean(strip_tags($post->excerpt));
@@ -149,16 +164,16 @@ class PostController extends Controller
         }
 
 		$myrc = $post->save();
-
         if (isset($msgs)) { session()->flash('msgs', $msgs); }
+
 		if ($myrc) {
 			$myrc = $post->folders()->sync($request->folders, false);
 			$myrc = $post->tags()   ->sync($request->tags,    false);
 			Session::flash('success', 'Post "' . $post->slug . '" was successfully saved.');
 			return redirect()->route('posts.show', $post->id);
 		} else {
-			Session::flash('failure', 'Post "' . $id . '" was NOT saved.');
-            return redirect()->route('posts.create', $id)->withInput();
+			Session::flash('failure', 'New Post was NOT saved.');
+            return redirect()->route('posts.create')->withInput();
 		}
 	}
 
@@ -168,17 +183,16 @@ class PostController extends Controller
 	 * @param  int  $id
 	 * @return \Illuminate\Http\Response
 	 */
-	public function show($id) {
-		$post = Post::findOrFail($id);
-
-        $comments = $post->comments()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageC');
-        $folders  = $post->folders() ->orderBy('slug','asc')->paginate(5, ['*'], 'pageF');
+	public function show(Request $request, $id) {
+		$post = Post::find($id);
 
 		if ($post) {
+	        $comments = $post->comments()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageC');
+	        $folders  = $post->folders() ->orderBy('slug','asc')->paginate(5, ['*'], 'pageF');
             return view('manage.posts.show', ['post' => $post, 'comments' => $comments, 'folders' => $folders, 'status_list' => $this->status()]);
 		} else {
 			Session::flash('failure', 'Post "' . $id . '" was NOT found.');
-            return Redirect::back();
+            return redirect()->route('posts.index');
 		}
 	}
 
@@ -189,19 +203,19 @@ class PostController extends Controller
 	 * @return \Illuminate\Http\Response
 	 */
 	public function edit($id) {
-		$post = Post::findOrFail($id);
-
-		$categories = Category::orderBy('name', 'asc')->pluck('name', 'id');
-		$folders    = Folder::  orderBy('name', 'asc')->pluck('name', 'id');
-		$tags       = Tag::     orderBy('name', 'asc')->pluck('name', 'id');
-		$users      = User::    orderBy('name', 'asc')->pluck('name', 'id');
+		$post = Post::find($id);
 
 	    if ($post) {
-            return view('manage.posts.edit', ['post' => $post,
-            		'categories' => $categories, 'folders' => $folders, 'tags' => $tags, 'users' => $users, 'status_list' => $this->status()]);
+			$categories = Category::orderBy('name', 'asc')->pluck('name', 'id');
+			$folders    = Folder::  orderBy('name', 'asc')->pluck('name', 'id');
+			$tags       = Tag::     orderBy('name', 'asc')->pluck('name', 'id');
+			$users      = User::    orderBy('name', 'asc')->pluck('name', 'id');
+
+            return view('manage.posts.edit', ['post' => $post, 'categories' => $categories,
+            	'folders' => $folders, 'tags' => $tags, 'users' => $users, 'status_list' => $this->status()]);
         } else {
             Session::flash('failure', 'Post "' . $id . '" was NOT found.');
-            return Redirect::back();
+			return redirect()->route('posts.index');
         }
 	}
 
@@ -213,9 +227,8 @@ class PostController extends Controller
 	 * @return \Illuminate\Http\Response
 	 */
 	public function update(Request $request, $id) {
-		$post = Post::findOrFail($id);
-
-		$this->validate($request, [
+        // We use our own validator here as auto validation cannot handle error return from a POST method 
+        $validator = Validator::make($request->all(), [
 			'title' 			=> 'required|min:8|max:191',
 			'slug' 				=> 'required|alpha_dash|min:5|max:191|unique:posts,slug,' . $id,
 			'category_id' 		=> 'required|integer|exists:categories,id',
@@ -229,8 +242,13 @@ class PostController extends Controller
 			'folders.*'			=> 'integer|exists:folders,id',			
 			'tags'				=> 'array',
 			'tags.*'			=> 'integer|exists:tags,id',
-		]);
-	
+        ]);
+        if ($validator->fails()) {
+            return redirect()->route('posts.edit')->withErrors($validator)->withInput();
+        }
+
+		$post = Post::findOrFail($id);
+
 		$post->title 			= $request->title;
 		$post->slug 			= $request->slug;
 		$post->category_id 		= $request->category_id;
@@ -283,6 +301,7 @@ class PostController extends Controller
 		$myrc = $post->save();
 
         if (isset($msgs)) { session()->flash('msgs', $msgs); }
+
 		if ($myrc) {
 			$myrc = $post->folders()->sync($request->folders, true);
 			$myrc = $post->tags()   ->sync($request->tags,    true);
@@ -302,14 +321,14 @@ class PostController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function delete($id) {
-        $post = Post::findOrFail($id);
+        $post = Post::find($id);
 
         if ($post) {
-            
+	        return view('manage.posts.delete', ['post'=>$post, 'status_list' => $this->status()]);
         } else {
             Session::flash('failure', 'Post ' . $id . ' was NOT found.');
+            return redirect()->route('posts.index');
         }
-        return view('manage.posts.delete', ['post'=>$post, 'status_list' => $this->status()]);
     }
 
 	/**
@@ -322,6 +341,7 @@ class PostController extends Controller
 		$post = Post::findOrFail($id);
 
 		$myrc = $post->delete();
+		
 		if ($myrc) {
 			if ($post->image) {
 				Storage::delete($post->image);
@@ -335,8 +355,8 @@ class PostController extends Controller
             if (isset($msgs)) { session()->flash('msgs', $msgs); }
 			return redirect()->route('posts.index');
         } else {
-            Session::flash('failure', 'Post ' . $id . ' was NOT found.');
-            return Redirect::back();
+            Session::flash('failure', 'Post ' . $id . ' was NOT Deleted.');
+            return redirect()->route('posts.delete', $id)->withInput();
         }
 	}
 

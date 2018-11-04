@@ -15,6 +15,7 @@ use Purifier;
 use Response;
 use Session;
 use Storage;
+use Validator;
 
 class FolderController extends Controller
 {
@@ -27,9 +28,9 @@ class FolderController extends Controller
     }
 
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
-    // It requires the custom search_helper() function in Helpers.php.
-    // If you change Helpers.php you should do "dump-autoload". 
-    public function searchQuery($search = '') {
+    // The table is sorted (ascending or descending) and finally filtered.
+    // It requires the custom queryHelper() function in Helpers.php.
+    public function searchSortQuery($request) {
         $query = [
             'model'         => 'Folder',
             'searchModel'   => ['name', 'slug', 'directory', 'description', 'image'],
@@ -38,9 +39,18 @@ class FolderController extends Controller
                 'posts'    => ['title', 'body', 'excerpt'],
                 'profiles' => ['username', 'about_me', 'phone', 'address'],
                 'user'     => ['name', 'email']
-            ]
+            ],
+            'sortModel'   => [
+                'i'       => 'd,id',                                                      
+                'n'       => 'a,name',
+                's'       => 'a,slug',                                           
+                'd'       => 'a,description',                                            
+                'm'       => 'd,max_size',
+                'u'       => 'd,updated_at',
+                'default' => 'n'                       
+            ]                                    
         ];
-        return search_helper($search, $query);
+        return queryHelper($query, $request);
     }
 
     /**
@@ -50,8 +60,8 @@ class FolderController extends Controller
      */
     public function index(Request $request)
     {
-        $pager = pageSize($request, 'foldersIndex', 10, 5, 200, 5);    // model, size($request->pp), min, max, step
-        $folders = $this->searchQuery($request->search)->orderBy('name', 'asc')->paginate($pager['size']);
+        $pager = pageSize($request, 'foldersIndex', 12, 4, 192, 4);    // size($request->pp), sessionTag, default, min, max, step
+        $folders = $this->searchSortQuery($request)->paginate($pager['size']);
         $folders->pager = $pager;
 
         if ($folders && $folders->count() > 0) {
@@ -60,7 +70,8 @@ class FolderController extends Controller
             Session::flash('failure', 'No Folders were found.');
         }
         $list['d'] = folderStatus();
-        return view('manage.folders.index', ['folders' => $folders, 'search' => $request->search, 'list' => $list]);
+        return view('manage.folders.index', ['folders' => $folders, 'search' => $request->search, 'sort' => $request->sort,
+            'list' => $list]);
     }
 
     /**
@@ -85,8 +96,10 @@ class FolderController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+
     public function store(Request $request) {
-        $this->validate($request, [
+        // We use our own validator here as auto validation cannot handle error return from a POST method 
+        $validator = Validator::make($request->all(), [
             'title'             => 'required|min:3|max:191',
             'slug'              => 'required|alpha_dash|min:3|max:191|unique:folders,slug',
             'description'       => 'sometimes|max:2048',
@@ -96,6 +109,9 @@ class FolderController extends Controller
             'user_id'           => 'sometimes|integer|exists:users,id',
             'status'            => 'required|integer|min:0|max:1',
         ]);
+        if ($validator->fails()) {
+            return redirect()->route('folders.create')->withErrors($validator)->withInput();
+        }        
 
         $folder = new Folder;
         $folder->name             = $request->title;
@@ -135,7 +151,7 @@ class FolderController extends Controller
             msgx(['info' => [$msg, $myrc!=null]]);
         }
 
-        $folder->size = folderSize($path);
+        //$folder->size = folderSize($path);
         $myrc = $folder->save();
         
         if ($myrc) {
@@ -155,19 +171,19 @@ class FolderController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show(Request $request, $id) {
-        $folder = Folder::findOrFail($id);
-
-        $pager = pageSize($request, 'folderShow', 5, 5, 200, 5);    // model, size($request->pp), min, max, step
-        $files = $folder->files()->orderBy('title', 'asc')->paginate($pager['size'], ['*'], 'pageFi');
-        $files->pager = $pager;
-
-        $posts    = $folder->posts()->orderBy('slug',  'asc')->paginate($pager['size'], ['*'], 'pageP');
-        $posts->pager = $pager;
-
-        $profiles = $folder->profiles()->with('user')->orderBy('username', 'asc')->paginate($pager['size'], ['*'], 'pagePr');
-        $profiles->pager = $pager;
+        $folder = Folder::find($id);
 
         if ($folder) {
+            $pager = pageSize($request, 'folderShow', 5, 5, 200, 5);    // model, size($request->pp), min, max, step
+            $files = $folder->files()->orderBy('title', 'asc')->paginate($pager['size'], ['*'], 'pageFi');
+            $files->pager = $pager;
+
+            $posts    = $folder->posts()->orderBy('slug',  'asc')->paginate($pager['size'], ['*'], 'pageP');
+            $posts->pager = $pager;
+
+            $profiles = $folder->profiles()->with('user')->orderBy('username', 'asc')->paginate($pager['size'], ['*'], 'pagePr');
+            $profiles->pager = $pager;
+
             if ($folder->status == 0) { $folder->path = private_path($folder->directory); }
             else                      { $folder->path =  public_path($folder->directory); }
             $list['d'] = folderStatus();
@@ -179,7 +195,7 @@ class FolderController extends Controller
                 'list' => $list]);
         } else {
             Session::flash('failure', 'Folder "' . $id . '" was NOT found.');
-            return Redirect::back();
+            return redirect()->route('folders.index');
         }
     }
 
@@ -204,7 +220,6 @@ class FolderController extends Controller
         else { abort(404); }
     }
 
-
     /**
      * Show the form for editing the specified resource.
      *
@@ -212,17 +227,18 @@ class FolderController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function edit($id) {
-        $folder = Folder::findOrFail($id);
-        $categories = Category::orderBy('name', 'asc')->pluck('name', 'id');
-        $users = User::orderBy('name', 'asc')->pluck('name', 'id');
+        $folder = Folder::find($id);
 
         if ($folder) {
+            $categories = Category::orderBy('name', 'asc')->pluck('name', 'id');
+            $users = User::orderBy('name', 'asc')->pluck('name', 'id');
+
             $folder->title = $folder->name;
             $list['d'] = folderStatus();
             return view('manage.folders.edit', ['folder' => $folder, 'categories' => $categories, 'users' => $users, 'list' => $list]);
         } else {
             Session::flash('failure', 'Folder "' . $id . '" was NOT found.');
-            return Redirect::back();
+            return redirect()->route('folders.index');
         }
     }
 
@@ -233,11 +249,11 @@ class FolderController extends Controller
      * @param  \App\Folder  $folder
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         $folder = Folder::findOrFail($id);
 
-        $this->validate($request, [
+        // We use our own validator here as auto validation cannot handle error return from a POST method 
+        $validator = Validator::make($request->all(), [
             'title'             => 'sometimes|min:3|max:191',
             'slug'              => 'sometimes|alpha_dash|min:3|max:191|unique:folders,slug,' . $id,
             'description'       => 'sometimes|max:2048',
@@ -247,6 +263,9 @@ class FolderController extends Controller
             'user_id'           => 'sometimes|integer|exists:users,id',
             'status'            => 'sometimes|integer|min:0|max:1',
         ]);
+        if ($validator->fails()) {
+            return redirect()->route('folders.edit')->withErrors($validator)->withInput();
+        }        
 
         $folder->description = isset($request->description) ? Purifier::clean($request->description) : $folder->description;
         $folder->max_size    = isset($request->max_size)    ? $request->max_size                     : $folder->max_size;
@@ -318,7 +337,7 @@ class FolderController extends Controller
             msgx(['info' => [$msg, $myrc!=null]]);
         }
 
-        $folder->size = folderSize($path);
+        //$folder->size = folderSize($path);
 
         $myrc = $folder->save();
         
@@ -329,7 +348,7 @@ class FolderController extends Controller
             return redirect()->route('folders.show', $folder->id);
         } else {
             Session::flash('failure', 'Folder "' . $id . '" was NOT saved.');
-            return redirect()->route('folders.create')->withInput();
+            return redirect()->route('folders.edit')->withInput();
         }
     }
 
@@ -340,15 +359,15 @@ class FolderController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function delete($id) {
-        $folder = Folder::findOrFail($id);
-        $list['d'] = folderStatus();
+        $folder = Folder::find($id);
 
         if ($folder) {
-           
+            $list['d'] = folderStatus();
+            return view('manage.folders.delete', ['folder' => $folder, 'list' => $list]);
          } else {
             Session::flash('failure', 'Folder "' . $id . '" was NOT found.');
+            return redirect()->route('folders.index');
         }
-        return view('manage.folders.delete', ['folder' => $folder, 'list' => $list]);
     }
 
     /**
@@ -360,44 +379,9 @@ class FolderController extends Controller
     public function destroy(Request $request, $id) {
         $folder = Folder::findOrFail($id);
 
-        if ($folder) {
+        $myrc = $folder->delete();
 
-        /*
-        // If delete_photos was checked, delete all UNSHARED photos in this folder...
-        // ...and issue warnings for all shared photos.  
-        // If delete_photos was NOT checked and one or more photos would be left hanging...
-        // without a parent folder, then return an error. 
-        foreach ($folder->photos as $photo) {
-            if ($request->delete_photos) {
-                if ($photo->albums->count() == 1) { 
-                    $photo->tags()->detach();
-                    $photo->albums()->detach();
-                    $myrc = $photo->delete();
-                    if ($myrc) {
-                        if ($photo->image) {
-                            Storage::delete($photo->image);
-                            Storage::delete($photo->file);
-                            $msgx['info'][] = 'Image "' . $photo->image . '" was successfully deleted.';
-                            $msgx['info'][] = 'Image "' . $photo->file  . '" was successfully deleted.';
-                        }
-                        $msgx['info'][] = 'Photo "' . $photo->title . '" was successfully deleted.';
-                    } else {
-                        $msgx['warning'][] = 'Photo "' . $id . '" was NOT found.';
-                    }
-                } else {
-                    $msgx['warning'][] = 'Photo "' . $photo->title . '" is shared with another folder and will NOT be deleted!';
-                }
-            } elseif ($photo->albums->count() == 1) {
-                $msgx['failure'][] = 'Folder "' . $folder->title .
-                    '" cannot be deleted as it contains UNSHARED photos. You must choose to delete the photos along with the abum!';
-                if (isset($msgx)) { session()->flash('msgx', $msgx); }
-                return Redirect::back()->withInput();
-            }          
-        }    
-        */
-
-            // Now Delete the Folder
-            $myrc = $folder->delete();
+        if ($myrc) {
             if ($folder->status == 1) {
                 $msg = 'Public';
                 $path = public_path($folder->directory);
@@ -416,8 +400,8 @@ class FolderController extends Controller
             Session::flash('success', 'Folder "' . $folder->name . '" deleted OK.');
             return redirect()->route('folders.index');
         } else {
-            Session::flash('failure', 'Folder "' . $id . '" was NOT found.');
-            return Redirect::back()->withInput();
+            Session::flash('failure', 'Folder "' . $id . '" was NOT deleted.');
+            return redirect()->route('folders.delete', $id)->withinput();
         }
     }
 

@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Input;
 use App\Tag;
 use App\Category;
 use App\Post;
 use App\User;
 use Session;
+use Storage;
+use URL;
 
 function status($default = -1) {
     $status = [
@@ -27,6 +30,60 @@ class TestController extends Controller
     public function __construct() {
         $this->middleware('auth');
     }
+
+    public function gpx() {
+        $pos1 = ['496497', '165478'];
+        $pos2 = ['496517', '165560'];
+        $pos3 = ['497024', '162952'];
+        $pos4 = ['490000', '160000'];
+
+        $OSRefs = OSRefs([$pos1, $pos2, $pos3, $pos4], 50, true); // {{Easting, Northing}...{Easting, Northing}} [Distances] [Elevations]
+        
+        $data =  [];
+        $i = 0;
+        $d = 0;
+        foreach ($OSRefs as $OSRef) {
+            $x = isset($OSRef->d) ? $OSRef->d : 0;
+            $d = $d + $x;
+            $y = $OSRef->getH();
+            $data[] = ['x'=>round($d, 1), 'y'=>$y];
+            $minY = $i==0 ? $y : ($y<$minY ? $y : $minY);
+            $maxY = $i==0 ? $y : ($y>$maxY ? $y : $maxY);
+            ++$i;
+        }
+        $minY = $minY<=10 ? 0 : $minY - 10;
+        $minY = ceil($minY / 10) * 10;
+        $maxY = ceil(($maxY + 10) / 10) * 10;
+        $range = [0, round($d, 0), $minY, $maxY];
+
+        return ['data' => $data, 'range' => $range];        
+    }    
+
+    public function upload(Request $request, $id) {
+        $type = $request->ajax() ? 'AJAX' : 'HTTP';
+        $files = Input::file('files');
+        if ($files) {
+            $countBad = count($files);
+            $countOK  = 0;
+            foreach ($files as $file) {
+                ++$countOK;
+                --$countBad;
+                //break;
+                sleep(1);
+            }
+        } else {
+            $countBad = 0;
+        }    
+
+        if ($countBad == 0) {
+            Session::flash('success', 'All Files were successfully uploaded for "'.$id.'". Type='.$type);
+            return json_encode(['countBad' => $countBad, 'url' => route('tests.index')]);    
+        } else {
+            Session::flash('failure', 'Oops! Something went wrong.');
+            return json_encode(['countBad' => $countBad]);    
+        }
+    }
+
 
     /**
      * Display a listing of the resource.
@@ -66,7 +123,8 @@ class TestController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id) {
-        return view('tests.show',['test'=>$id]);
+        $results = $this->gpx();
+        return view('tests.show',['test' => $id, 'gdata' => $results['data'], 'grange' => $results['range']]);
     }
 
     /**

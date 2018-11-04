@@ -83,12 +83,12 @@
 
 						<div class="col-md-12 mt-2">
 							{{ Form::label('comment', 'Comment:', ['class'=>'font-bold form-spacing-top']) }}
-							{{ Form::textarea('comment', null, ['class' => 'form-control', 'rows' => '5', 'placeholder' => 'Include your comments here...', 'rows'=>'3', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'8', 'data-parsley-maxlength'=>'2048']) }}
+							{{ Form::textarea('comment', null, ['class' => 'form-control', 'rows' => '5', 'placeholder' => 'Include your comments here...', 'rows'=>'3', 'data-parsley-required'=>'', 'data-parsley-minlength'=>'8', 'data-parsley-maxlength'=>'2048', 'id'=>'textarea-comment']) }}
 	
 							{{ Form::label('', 'Are You Human?', ['class'=>'font-bold form-spacing-top']) }}
 							{{ Form::button('<h4><i class="far fa-comment-alt mr-3"></i>Add Your Comment</h4>',
 								['type'=>'submit', 'class'=>'btn btn-success float-right', 'style'=>'margin-top:54px; height:75px; width:300px;']) }}
-							<div class="g-recaptcha" data-sitekey="{!! env('CAPTCHA_SITEKEY') !!}"></div>
+							<div class="g-recaptcha" data-sitekey="{!! myConstants('CAPTCHA_SITEKEY') !!}"></div>
 						</div>
 					</div>
 				{{ Form::close() }}
@@ -103,12 +103,13 @@
 
 	<script>
 		tinymce.init ({
-			selector: 'textarea',
-			plugins: "link lists",
+			selector: '#textarea-comment',
+			plugins: "advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table contextmenu paste",
 			menubar: false,
-			toolbar: "",
+			extended_valid_elements: "iframe[src|width|height|name|align|frameborder|scrolling]",			
+			toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | alignleft aligncenter alignright alignjustify",
 			forced_root_block : 'div',
             branding: false,
- 		});
+      	});
 	</script>
 @endsection

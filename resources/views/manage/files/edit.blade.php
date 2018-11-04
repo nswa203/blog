@@ -11,13 +11,14 @@
 	<div class="row">
 		<div class="col-md-8 myWrap">
 			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-folder-open mr-4">
-				</span>Edit File{{ $folder_id?' to: '.$folders[$folder_id]:'' }}</a></h1>
+				</span>Edit File</a></h1>
 			<hr>
 
-			{!! Form::model($file,  ['route'=>['files.update', $file->id], 'method'=>'PUT', 'data-parsley-validate'=>'', 'files'=>true]) !!}
+			{!! Form::model($file, ['route'=>['files.update', $file->id], 'method'=>'PUT', 'data-parsley-validate'=>'', 'files'=>true, 'id'=>'myForm1']) !!}
 
-			<div width="100%">
-				{{ Form::label('title', 'Title:', ['class'=>'font-bold form-spacing-top']) }}
+			<div width="100%" data-toggle="tooltip" data-placement="right" data-html="true"
+			 	 title="Shortcuts:<br>%title%, %filename%, %basename%, %baseext%, %size%, %folder%, %date%, %time%">
+			 	{{ Form::label('title', 'Title:', ['class'=>'font-bold form-spacing-top']) }}
 				{{ Form::text('title', null, ['class'=>'form-control form-control-lg', 'data-parsley-maxlength'=>'191',  'placeholder'=>'Leave empty to auto generate...', $folder_id?'autofocus':'']) }}
 			</div>
 
@@ -32,10 +33,9 @@
 				{{-- Just change the data- values on the row div                                                             --}}
 				{{ Form::label('', 'Files:', ['class'=>'font-bold form-spacing-top']) }}
 				<span class="author-time">Good to drag & drop</span>
-				<div class="row ml-auto myFile-img" data-imgNew="myImgNew-1" data-imgOld="myImgOld-1" data-mime="*"
-					data-img="{{ route('private.getFile', [$file->id]) }}">
+				<div class="row ml-auto myFile-img" data-imgNew="myImgNew-1" data-imgOld="myImgOld-1" data-mime="*">
 					<div class="col-md-9 custom-file" onChange="myFiles(this)">
-						{{ Form::file('files[]', ['class'=>'form-control custom-file-input', 'accept'=>$mimes, 'data-parsley-required'=>'', 'multiple'=>'']) }} 
+						{{ Form::file('files[]', ['class'=>'form-control custom-file-input', 'accept'=>$mimes, 'multiple'=>'']) }} 
 						{{ Form::label('files', 'Select files to upload...', ['class'=>'custom-file-label']) }}
 					</div>
 					<div class="col-md-3 myFile-img-delete" style="display:none">
@@ -54,18 +54,22 @@
 					</div>
 					<div class="myFile-meta" style="display:none">
 						{{ Form::select('meta[]', [], null, ['class'=>'form-control myFile-meta-list', 'multiple'=>'']) }}
-					</div>					
-				</div>	
+					</div>
+				</div>
+
+				<div class="progress mt-2" style="background-color: white;">
+				  <div id="myPbar1" class="progress-bar" role="progressbar" style="width:0%;">0%</div>
+				</div>
+				<div id="myMsgs1"></div>
 		</div>
 
 		<div class="col-md-4">
 			<div class="card card-body bg-light">
 
-				@include('partials.__filesMeta')
-
-				<dl class="row dd-nowrap">
+	  			@include('partials.__filesMeta')
+					<dl class="row dd-nowrap">
 					@foreach ($list['f'] as $index => $status)
-						<dt class="col-sm-5 mt-1">{{ $loop->index==0 ? 'Status:' : '' }}</dt>
+						<dt class="col-sm-5 mt-1">{{ $loop->index == 0 ? 'Status:' : '' }}</dt>
 						<dt class="col-sm-7 mt-1 mb-2">
 							<label for="status-{{ $index }}" class="">
 								{{ Form::radio('status', $index, substr($status, 0, 1) == '*' ? true : null, ['class'=>'', 'hidden'=>'', 'id'=>'status-' . $index]) }}
@@ -76,22 +80,9 @@
 				</dl>
 
 				<hr class="hr-spacing-top">
-				<dl class="row dd-nowrap">
-					@foreach ($list['o'] as $index => $option)
-						<dt class="col-sm-5 mt-1">{{ $loop->index==0 ? 'Overwrite:' : '' }}</dt>
-						<dt class="col-sm-7 mt-1 mb-2">
-							<label for="option-{{ $index }}" class="">
-								{{ Form::radio('option', $index, substr($option, 0, 1) == '*' ? true : null, ['class'=>'', 'hidden'=>'', 'id'=>'option-' . $index]) }}
-								<span class="span"> {{ substr($option, 0, 1) == '*' ? substr($option, 1) : $option }}</span>
-							</label>
-						</dt>
-					@endforeach
-				</dl>
-
-				<hr class="hr-spacing-top">
 				<div class="row">
 					<div class="col-sm-6">
-						{!! Html::decode('<a href='.url()->previous().' class="btn btn-danger btn-block"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
+						{{ Form::button('<i class="fas fa-times-circle mr-2"></i>Cancel', ['class'=>'btn btn-danger btn-block', 			'onclick'=>'window.history.back()', 'id'=>'cancel']) }}
 					</div>
 					<div class="col-sm-6">
 						{{ Form::button('<i class="fas fa-plus-circle mr-2"></i>Save', ['type'=>'submit', 'class'=>'btn btn-success btn-block']) }}
@@ -104,48 +95,8 @@
 				</div>
 			</div>
 
-			<hr>
-
-<video width="320" height="240" controls poster="data:image/jpeg;base64, {{ $file->picture }}">
-    <source src="{{ route('private.getFile', [$file->id]) }}" type="video/mp4">
-</video> 
-{{--
-			<hr>
-<div>
-	<img src="data:image/jpeg;base64, {{ $file->picture }}" width="100%" alt="Cannot display image." />
-</div>
---}}
-
-			<hr>
-
 			<div class="mt-3">
-				<div id="myImgOld-1" style="display:none">
-					{{-- Used in Edit only --}}
-					<a href="{{ route('private.getFile', [$file->id]) }}"><img  src="{{ route('private.getFile', [$file->id]) }}" width="100%" /></a>
-				</div>
-	
-				<div class="Preview" id="myImgOld-2" style="display:none"> 
-					<div class="carousel-message"></div>
-					<div class="progress mb-2">
-						<div id="myProgress-2" class="progress-bar" role="progressbar"
-							 style="width: 100%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">Preview Media Files
-						</div>
-					</div>
-					<div id="carouselControls" class="carousel slide" data-ride="carousel">
-						<div class="carousel-inner image-crop-height" style="--croph:35vw">
-							{{-- Uploading images will be rendered here --}}
-						</div>
-						<a class="carousel-control-prev" href="#carouselControls" role="button" data-slide="prev">
-						    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-						    <span class="sr-only">Previous</span>
-						</a>
-						<a class="carousel-control-next" href="#carouselControls" role="button" data-slide="next">
-						    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-						    <span class="sr-only">Next</span>
-						</a>
-					</div>
-				</div>
-
+				
 				<div class="Preview" id="myImgNew-1" style="display:none"> 
 					<div class="carousel-message"></div>
 					<div class="progress mb-2">
@@ -167,6 +118,40 @@
 						</a>
 					</div>
 				</div>
+
+				<div id="myImgOld-1" style="display:block">
+					{{-- Used in Edit only --}}
+					{{-- <img src="{{ asset('images/'.$photo->image) }}" width="100%" /> --}}
+
+					@if(substr($file->mime_type, 0, 2) == 'au' or substr($file->mime_type, 0, 2) == 'vi' or $file->ext == 'mp3'
+					or $file->ext == 'm4a')
+						<a href="{{ route('files.showFile', [$file->id]) }}">
+							<video controls poster="{{
+									isset($meta->Picture) ? 'data:image/jpeg;base64,' . $meta->Picture :
+									(substr($file->mime_type, 0, 2) == 'au' ? asset('favicon.ico') : '') }}"
+								class="float-left mr-4 img-frame-lg">
+			    				<source src="{{ route('private.getFile', [$file->id]) }}" type="{{ $file->mime_type }}" />
+			    				<source src="{{ route('private.getFile', [$file->id]) }}" type="video/mp4" />
+							</video>
+						</a>
+					@elseif(substr($file->mime_type, 0, 2) == 'im')
+						<a href="{{ route('files.showFile', [$file->id]) }}">
+							<img src="{{ route('private.getFile', [$file->id, 'r=n']) }}"
+							class="float-left mr-4 img-frame-lg"
+							style="width:100%; max-height:2000px;"
+							onerror="this.onerror=null; myImgDebug(this);" 
+							xonerror="this.onerror=null; this.src='{{ asset('favicon.ico') }}';" />
+						</a> 
+					@else
+						<a href="{{ route('private.getFile', [$file->id]) }}">
+							<img src="{{ route('private.findFile', [$file->ext, 'icons']) }}" {{-- searches title no .ext --}}
+							class="float-left mr-4 img-frame-lg"
+							style="width:100%; max-height:2000px;"
+							onerror="this.onerror=null; this.src='{{ asset('favicon.ico') }}';" />
+						</a>
+					@endif	
+				</div>
+
 			</div>
 
 		{!! Form::close() !!}
@@ -188,57 +173,41 @@
 			placeholder: "Select one or more..."
 		});
 	</script>
+ 
+	<script>
+		// ========================================================================== //
+		// Load all files using Ajax to manage a progress bar
+		myUpload({
+			formID: 				'myForm1',									// OK
+			url: 					"{{ route('files.update', $file->id) }}",	// OK
+			formInputFileName: 		'files[]',
+			formMsgsID:				'myMsgs1',
+			formProgressBarID:		'myPbar1',									// OK
+		});
+	</script>	
 
 	<script>
 		myImageAll();
 
-
-
-		// ========================================================================== //
-		// Retrieve embeded mp3 image data and set it as alternative 
-		function myPoster() {
-			if (sound) {
-				jsmediatags.read(file, {
-			        onSuccess: function(tag) {
-			        	tags=tag.tags;
-						image=tags.picture;
-			          	if (image) {
-				            base64String='';
-				            for (i=0; i<image.data.length; i++) {
-				                base64String+=String.fromCharCode(image.data[i]);
-				            }
-				            base64="data:image/jpeg;base64,"+window.btoa(base64String);
-							video.poster=base64;
-			          		//console.log(tags);
-				        }    
-			        }
-			    });
-			}
-		}	
-
-
-
-
-
-
 		// ========================================================================== //
 		// Called @ page load to simulate Reset for each image unit  
 		function myImageAll() {
+			//console.log('myImageAll: ');
 			var elFiles=document.getElementsByClassName('myFile-img-reset');
 			for (i=0; i< elFiles.length; i++) {
-console.log(i+' '+elFiles);
   				myImage(elFiles[i].firstElementChild);
 			}	
 		}
 
 		// ========================================================================== //
 		// Toggle visibity of image controls and image locations
+		// NS01
 		function myImage($this, op='reset', imgNew=false, imgOld=false, img=false) {
+			//console.log('myImage: '+op+' '+imgNew+' '+imgOld+' '+img);
 			var elRow=$this.parentNode.parentNode;										// Owning DIV
-			// console.dir(elRow); alert('!1');
+			//console.dir(elRow); alert('!1');
 			if (!imgNew){ imgNew=elRow.getAttribute('data-imgNew'); } 					// data-imgNew
 			if (!imgOld){ imgOld=elRow.getAttribute('data-imgOld'); } 					// data-imgOld
-if (!img   ){ img   =elRow.getAttribute('data-img'   ); } 					// data-img
 
 			var elFile  	=elRow.getElementsByClassName('custom-file-input'	)[0];	// File Input
 			var elLabel 	=elRow.getElementsByClassName('custom-file-label'	)[0];	// File Label	
@@ -246,17 +215,13 @@ if (!img   ){ img   =elRow.getAttribute('data-img'   ); } 					// data-img
 			var elDelCheck	=elRow.getElementsByClassName('myFile-img-delCheck'	)[0];	// Delete CheckBox
 			var elReset 	=elRow.getElementsByClassName('myFile-img-reset' 	)[0];	// Reset Button
 			var elMeta 		=elRow.getElementsByClassName('myFile-meta-list' 	)[0];	// Meta List
-alert(op+' '+imgNew+' '+imgOld+' '+img)
+
 			if (op=='delete') {
 				myHideShowElement([elDelete, imgOld]);
 				myHideShowElement([elReset], 'block');
 				elLabel.innerHTML='<p class="text-danger"><i class="fas fa-trash-alt mr-2"></i>Image will be Deleted.</p>';
 			} else {
-				if (img) {
-//rendered=previewMedia(elInput.files, imgNew, elMeta);				// Load & render images/videos/audios
-//var files=[img];
-//rendered=previewMedia(files, imgNew, elMeta);				// Load & render images/videos/audios
-
+				if (img || op=='reset') {												// NS01
 					var show=[elFile, elDelete, imgOld];
 				} else {
 					var show=[elFile];
@@ -265,7 +230,7 @@ alert(op+' '+imgNew+' '+imgOld+' '+img)
 				myHideShowElement(show, 'block');
 				elDelCheck.checked=false;
 				elFile.value='';
-				elLabel.textContent="Select one or more files to upload...";
+				elLabel.textContent="Select a file to upload...";
 			}
 		}
 
@@ -274,6 +239,7 @@ alert(op+' '+imgNew+' '+imgOld+' '+img)
 		// Clear any existing preview slides. Load & render any image, video or audio
 		// files and return the counts of each type of file file processed.
 		function previewMedia(files, tagID, elMeta) {
+			//console.log('previewMedia: '+files+' '+tagID+' '+elMeta);
 			preview=document.querySelector('#'+tagID);
 			messages=preview.childNodes[1];
 			progress=preview.childNodes[3].childNodes[1];
@@ -283,6 +249,7 @@ alert(op+' '+imgNew+' '+imgOld+' '+img)
 			// ======================================================================= //
 			// Render Images
 			function doItImage(file, index) {
+				//console.log('doItImage: '+file+' '+index);
 				var reader=new FileReader();
 				reader.addEventListener("load", function () {
 					var wrapper=document.createElement("div");
@@ -316,6 +283,7 @@ alert(op+' '+imgNew+' '+imgOld+' '+img)
 			// ======================================================================= //
 			// Render Video & Audio files
 			function doItVideo(file, index, sound=false) {
+				//console.log('doItVideo: '+file+' '+index+' '+sound);
 				var reader=new FileReader();
 				elPbar=progress;
 				reader.onprogress=function(event) {
@@ -348,7 +316,7 @@ alert(op+' '+imgNew+' '+imgOld+' '+img)
 					video.alt=file.name;
 					video.src=this.result;
 					video.controls    = true;
-					video.autoplay    = !sound|(sound&&index==0);
+					video.autoplay    = !sound|(sound&&index==-1); // Change -1 to 0 for auto play
 					video.muted       = !sound;
 					video.loop        = !sound;
 					video.playsinline = true;
@@ -391,16 +359,15 @@ alert(op+' '+imgNew+' '+imgOld+' '+img)
 			}
 
 			var allowedImage = /(\.jpg|\.jpeg|\.png|\.gif|\.jpe|\.bmp|\.ico)$/i;
-			var allowedVideo = /(\.mp4|\.mov|\.avi|\.mkv|\.mpg|\.mts|\.flv)$/i;
-			var allowedAudio = /(\.mp3|\.wav|\.flac|\.wma)$/i;
+			var allowedVideo = /(\.mp4|\.mov|\.avi|\.mkv|\.mpg|\.mts|\.flv|\.webm)$/i;
+			var allowedAudio = /(\.mp3|\.wav|\.flac|\.wma|\.m4a)$/i;
 			elMeta.innerText=null;
 			slides.innerHTML='';
 
 			images=0; videos=0; audios=0; others=0;
 			for (i=0, len=files.length; i<len; i++) {
-alert(files);
+
 				var msg=files[i].name;
-alert(msg);				
 		    	var maxSize=20;
 	    		if (msg.length>maxSize+3) {										// Trim for Label
 	    			var part=parseInt(maxSize/2);
@@ -430,6 +397,7 @@ alert(msg);
 		// Hide the DELETE button and any OLD images
 		// Show the RESET  button and any NEW images 
 		function myFiles($this, imgNew=false, imgOld=false, mimes=false) {
+			//console.log('myFiles: '+this+' '+imgNew+' '+imgOld+' '+mimes);
 			var elRow=$this.parentNode;										    // Owning DIV
 			if (!imgNew){ imgNew=elRow.getAttribute('data-imgNew'); } 			// data-imgNew
 			if (!imgOld){ imgOld=elRow.getAttribute('data-imgOld'); } 			// data-imgOld
@@ -464,6 +432,7 @@ alert(msg);
 		// ========================================================================== //
 		// Retrieve EXIF & IPTC metadata from image file and append to output element  
 		function myGetExif(file, elOut) {
+			//console.log('myGetExif: '+file+' '+elOut);
 			EXIF.getData(file, function() {
 		        var newMetaData=EXIF.getAllTags(this);
 		        newMetaData.filename=file.name;
@@ -476,6 +445,8 @@ alert(msg);
 		// ========================================================================== //
 		// Hide / Show elements - input is a list of ids OR element objects
 		function myHideShowElement(tagIDs={}, op='none') {
+			//console.log('myHideShowElement: '+op);
+			//console.log(tagIDs);
 			for (var i=0; i<tagIDs.length; i++){
 				var el=tagIDs[i];
 				if (typeof el === 'string') {

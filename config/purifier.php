@@ -14,6 +14,8 @@
  * anything in settings should be compacted with params that needed to instance HTMLPurifier_Config.
  *
  * @link http://htmlpurifier.org/live/configdoc/plain.html
+ *
+ * NS01   'URI.AllowedSchemes' => ['data' => true, 'http' => true, 'https' => true], //This allows inline d64 data for <img src=...>
  */
 
 return [
@@ -24,10 +26,12 @@ return [
     'settings'      => [
         'default' => [
             'HTML.Doctype'             => 'HTML 4.01 Transitional',
-            'HTML.Allowed'             => 'div,b,strong,i,em,u,a[href|title],ul,ol,li,p[style],br,span[style],img[width|height|alt|src],h1,h2,h3,h4,h5,h6',
+            'HTML.Allowed'             => 'div,b,strong,i,em,u,a[href|title],ul,ol,li,p[style],br,span[style],
+                img[style|src|alt|width|height],h1,h2,h3,h4,h5,h6',
             'CSS.AllowedProperties'    => 'font,font-size,font-weight,font-style,font-family,text-decoration,padding-left,color,background-color,text-align',
             'AutoFormat.AutoParagraph' => false,
             'AutoFormat.RemoveEmpty'   => true,
+            'URI.AllowedSchemes'       => ['data' => true, 'http' => true, 'https' => true, 'ftp' => true],      // NS01
         ],
         'test'    => [
             'Attr.EnableID' => 'true',

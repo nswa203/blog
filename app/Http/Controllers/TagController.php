@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use App\Tag;
 use Session;
+use Validator;
 
 class TagController extends Controller
 {
@@ -18,15 +19,22 @@ class TagController extends Controller
     }
 
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
-    // It requires the custom search_helper() function in Helpers.php.
-    // If you change Helpers.php you should do "dump-autoload". 
-    public function searchQuery($search = '') {
+    // The table is sorted (ascending or descending) and finally filtered.
+    // It requires the custom queryHelper() function in Helpers.php.
+    public function searchSortQuery($request) {
         $query = [
             'model'         => 'Tag',
             'searchModel'   => ['name'],
-            'searchRelated' => []
+            'searchRelated' => [],
+            'sortModel'   => [
+                'i'       => 'd,id',                                                      
+                'n'       => 'a,name',
+                'c'       => 'd,created_at',
+                'u'       => 'd,updated_at',
+                'default' => 'n'                       
+            ],                              
         ];
-        return search_helper($search, $query);
+        return queryHelper($query, $request);
     }
 
     /**
@@ -35,13 +43,16 @@ class TagController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        $tags = $this->searchQuery($request->search)->orderBy('name', 'asc')->paginate(10);
+        $pager = pageSize($request, 'tagsIndex', 12, 4, 192, 4);    // size($request->pp), sessionTag, default, min, max, step
+        $tags = $this->searchSortQuery($request)->paginate($pager['size']);
+        $tags->pager = $pager;
+
         if ($tags && $tags->count() > 0) {
 
         } else {
             Session::flash('failure', 'No Tags were found.');
         }
-        return view('manage.tags.index', ['tags' => $tags, 'search' => $request->search]);
+        return view('manage.tags.index', ['tags' => $tags, 'search' => $request->search, 'sort' => $request->sort]);
     }
     
     /**
@@ -51,9 +62,13 @@ class TagController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request) {
-        $this->validate($request, [
+        // We use our own validator here as auto validation cannot handle error return from a POST method 
+        $validator = Validator::make($request->all(), [
             'name' => 'required|min:3|max:191|unique:tags,name',
         ]);
+        if ($validator->fails()) {
+            return redirect()->route('tags.index')->withErrors($validator)->withInput();
+        }
 
         $tag = new Tag;
         $tag->name = $request->name;
@@ -75,35 +90,34 @@ class TagController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id, $zone = '*') {
-        $tag=Tag::findOrFail($id);
-
-        $albums = false;
-        $files  = false;
-        $photos = false;
-        $posts  = false;
-        $list   = false;
-        if ($zone == 'Albums' or $zone == 'Photos' or $zone == '*' or $zone == 'Tags') {
-            $albums = $tag->albums()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageA');
-        }
-        if ($zone == 'Files' or $zone == '*' or $zone == 'Tags') {
-            $list['d'] = folderStatus();
-            $list['f'] = fileStatus();
-            $files  = $tag->files() ->orderBy('id', 'desc')->paginate(5, ['*'], 'pageFi');
-        }
-        if ($zone == 'Photos' or $zone == '*' or $zone == 'Tags') {
-            $photos = $tag->photos()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageI');
-        }
-        if ($zone == 'Posts'  or $zone == '*' or $zone == 'Tags') {
-            $list['p'] = postStatus();
-            $posts  = $tag->posts() ->orderBy('id', 'desc')->paginate(5, ['*'], 'pageP');
-        }
+        $tag=Tag::find($id);
 
         if ($tag) {
+            $albums = false;
+            $files  = false;
+            $photos = false;
+            $posts  = false;
+            $list   = false;
+            if ($zone == 'Albums' or $zone == 'Photos' or $zone == '*' or $zone == 'Tags') {
+                $albums = $tag->albums()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageA');
+            }
+            if ($zone == 'Files' or $zone == '*' or $zone == 'Tags') {
+                $list['d'] = folderStatus();
+                $list['f'] = fileStatus();
+                $files  = $tag->files() ->orderBy('id', 'desc')->paginate(5, ['*'], 'pageFi');
+            }
+            if ($zone == 'Photos' or $zone == '*' or $zone == 'Tags') {
+                $photos = $tag->photos()->orderBy('id', 'desc')->paginate(5, ['*'], 'pageI');
+            }
+            if ($zone == 'Posts'  or $zone == '*' or $zone == 'Tags') {
+                $list['p'] = postStatus();
+                $posts  = $tag->posts() ->orderBy('id', 'desc')->paginate(5, ['*'], 'pageP');
+            }
             return view('manage.tags.show', ['tag' => $tag, 'albums' => $albums, 'files' => $files, 'photos' => $photos,
                 'posts' => $posts, 'list' => $list]);
         } else {
             Session::flash('failure', 'Tag "' . $id . '" was NOT found.');
-            return Redirect::back();
+            return redirect()->route('tags.index');
         }
     }
 
@@ -127,9 +141,13 @@ class TagController extends Controller
     public function update(Request $request, $id) {
         $tag = Tag::findOrFail($id);
 
-        $this->validate($request, [
+        // We use our own validator here as auto validation cannot handle error return from a POST method 
+        $validator = Validator::make($request->all(), [
             'name' => 'required|min:3|max:191|unique:tags,name,' . $id,
         ]);
+        if ($validator->fails()) {
+            return redirect()->route('tags.index', ['edit' => $id])->withErrors($validator)->withInput();
+        }
 
         $tag->name = $request->name;
         $myrc = $tag->save();
@@ -149,13 +167,13 @@ class TagController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function delete($id) {
-        $tag = Tag::findOrFail($id);
+        $tag = Tag::find($id);
 
-       if ($tag) {
+        if ($tag) {
             return view('manage.tags.delete', ['tag' => $tag]);
         } else {
             Session::flash('failure', 'Tag "' . $id . '" was NOT found.');
-            return Redirect::back();            
+            return redirect()->route('tags.index');
         }
     }
 
@@ -167,13 +185,15 @@ class TagController extends Controller
      */
     public function destroy(Request $request, $id) {
         $tag = Tag::findOrFail($id);
-        if ($tag){
-            $myrc = $tag->delete();
+ 
+        $myrc = $tag->delete();
+        
+        if ($myrc){
             Session::flash('success', 'The "' . $tag->name . '" Tag was successfully deleted.');
-            return Redirect::to($request->url);            
+            return redirect()->route('tags.index');            
         } else {
             Session::flash('failure', 'Tag "' . $id . '"was NOT deleted.');
-            return Redirect::back();            
+            return redirect()->route('tags.delete', $id)->withinput();
         }        
     }
 

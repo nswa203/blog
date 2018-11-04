@@ -557,3 +557,135 @@ video {
   padding-right: 2px;
   text-align: center;
 }
+
+/* *********************************************************** */
+/* Custom Range slider                                         */
+/* *********************************************************** */
+input[type=range] {
+  -webkit-appearance: none;
+  margin-top: 0rem;
+  margin-bottom: -1.0rem;
+  width: 100%;
+  border: none !important;
+  background: transparent;
+  padding: 0; }
+  input[type=range]:focus {
+    outline: none; }
+  input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 0.3rem;
+    cursor: pointer;
+    animate: 0.2s;
+    background: #eee;
+    border-radius: 5px; }
+  input[type=range]::-webkit-slider-thumb {
+    height: 1rem;
+    width: 1rem;
+    border-radius: 0.5rem;
+    background: #0275d8;
+    cursor: pointer;
+    -webkit-appearance: none;
+    margin-top: -0.35rem; }
+  input[type=range]::-moz-range-track {
+    width: 100%;
+    height: 1px;
+    cursor: pointer;
+    animate: 0.2s;
+    background: #6c757d;
+    border-radius: 5px; }
+  input[type=range]::-moz-range-thumb {
+    height: 0.6rem;
+    width: 1.2rem;
+    border-radius: 0.5rem;
+    background: #6c757d;
+    cursor: pointer; }
+  input[type=range]::-ms-track {
+    width: 100%;
+    height: 0.3rem;
+    cursor: pointer;
+    animate: 0.2s;
+    background: transparent;
+    color: transparent; }
+  input[type=range]::-ms-fill-lower {
+    background: #e1e1e1;
+    border-radius: 10px; }
+  input[type=range]::-ms-fill-upper {
+    background: #eee;
+    border-radius: 10px; }
+  input[type=range]::-ms-thumb {
+    height: 1rem;
+    width: 1rem;
+    border-radius: 0.5rem;
+    background: #0275d8;
+    cursor: pointer; }
+  input[type=range]:focus::-ms-fill-lower {
+    background: #eee; }
+
+datalist {
+  display: flex;
+  justify-content: space-between;
+  height: 6px;
+  overflow: hidden;
+  margin-top: -6px; }
+  datalist option::before {
+    content: '';
+    display: block;
+    width: 0;
+    border-right: 1px solid #DDD;
+    height: 10px;
+    padding-left: 3px;
+    text-indent: 0; }
+
+/* reduce table spacing */
+.thleft { 
+  padding: 0px 0px 12px 0px !important;
+}
+.tdleft { 
+  padding: 10px 8px 0px 0px !important;
+}
+.tdright { 
+  padding: 10px 0px 0px 0px !important;
+} 
+
+/* remove default link attributes if in table header */
+th a, th a:visited, th a:active {
+  color: white;
+  text-decoration: none;
+}
+th a:hover {
+  color: #80bdff;
+  text-decoration: none;
+}
+
+/* remove annoying OS logo & copyright from OpenSpace Maps */
+/* and some styling                                        */ 
+#OpenSpaceControlPoweredBy {
+  display: none !important;
+}
+.OpenSpaceControlCopyrightCollection {
+  display: none !important;
+}
+#searchArea {
+  margin-top: 4px;
+  border-style: solid;
+  border-color: grey;
+  border-width: 3px;
+  background-color: #e6e6e6;
+  width: 150px;
+  padding-left: 2px;
+}
+#div1 input[value="Find"] {
+  margin-left: 2px;
+  border-style: solid;
+  border-color: grey;
+  border-width: 3px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  background-color: #e6e6e6;
+}
+#OpenSpace\.Layer\.ScreenOverlay_65 {
+  margin-top: -3px;
+  border-style: solid;
+  border-color: grey;
+  border-width: 3px;
+}

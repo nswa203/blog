@@ -27,10 +27,22 @@
 		<div class="row mt-3">
 			<div class="col-md-12">
 				<table class="table table-hover table-responsive-lg">
-					<thead class="thead-dark">
-						<th width="20px"><i class="fas fa-hashtag mb-1 ml-2"></i></th>
-						<th>Title</th>
-						<th>Excerpt</th>
+					<thead class="thead-dark" style="color:inherit;">
+						<th class="thleft">
+							<a href="{{ route('posts.index', ['sort'=>'i'.$sort, 'search'=>$search]) }}">
+								<i id="sort-i" class="ml-2"></i><i class="fas fa-hashtag mb-1"></i>
+							</a>	
+						</th>
+						<th class="thleft">
+							<a href="{{ route('posts.index', ['sort'=>'t'.$sort, 'search'=>$search]) }}">
+								<i id="sort-t" class="ml-3"></i>Title
+							</a>	
+						</th>
+						<th class="thleft">
+							<a href="{{ route('posts.index', ['sort'=>'e'.$sort, 'search'=>$search]) }}">
+								<i id="sort-e" class="ml-3"></i>Excerpt
+							</a>	
+						</th>
 						<th>Category</th>
 						<th>Author</th>
 						<th width="120px">Published</th>
@@ -68,7 +80,7 @@
 					</tbody>
 				</table>
 				<div class="d-flex justify-content-center">
-					{{ $posts->appends(Request::only(['search']))->render() }} 
+					{{ $posts->appends(Request::only(['search', 'sort']))->render() }} 
 				</div>
 			</div>
 		</div>
@@ -76,4 +88,10 @@
 @endsection
 
 @section('scripts')
+	{!! Html::script('js/app.js')     !!}
+	{!! Html::script('js/helpers.js') !!}
+
+	<script>
+		mySortArrow({!! json_encode($sort) !!});
+	</script>
 @endsection

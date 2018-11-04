@@ -30,6 +30,7 @@
 				{{-- Select and preview an image file ---------------------------------------------------------------------- --}}
 				{{-- Just change the data- values on the row div                                                             --}}
 				{{ Form::label('', 'Image:', ['class'=>'font-bold form-spacing-top']) }}
+				<span class="author-time">Good to drag & drop</span>
 				<div class="row ml-auto myFile-img" data-imgNew="myImgNew-1" data-imgOld="myImgOld-1" data-img="{{ $profile->image }}">
 					<div class="col-md-9 custom-file" onChange="myFile(this)">
 						{{ Form::file('image', ['class'=>'form-control custom-file-input', 'accept'=>'image/*' ]) }} 
@@ -54,6 +55,7 @@
 				{{-- Select and preview an image file ---------------------------------------------------------------------- --}}
 				{{-- Just change the data- values on the row div                                                             --}}
 				{{ Form::label('', 'Banner:', ['class'=>'font-bold form-spacing-top']) }}
+				<span class="author-time">Good to drag & drop</span>
 				<div class="row ml-auto myFile-img" data-imgNew="myImgNew-2" data-imgOld="myImgOld-2" data-img="{{ $profile->banner }}">
 					<div class="col-md-9 custom-file" onChange="myFile(this)">
 						{{ Form::file('banner', ['class'=>'form-control custom-file-input', 'accept'=>'image/*' ]) }} 
@@ -98,7 +100,7 @@
 				<hr class="hr-spacing-top">
 				<div class="row">
 					<div class="col-sm-6">
-						{!! Html::decode('<a href='.url()->previous().' class="btn btn-danger btn-block"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
+						{!! Html::decode('<a href="Return" class="btn btn-danger btn-block" onclick="window.history.back()"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
 					</div>
 					<div class="col-sm-6">
 						{{ Form::button('<i class="fas fa-plus-circle mr-2"></i>Create', ['type'=>'submit', 'class'=>'btn btn-success btn-block']) }}
