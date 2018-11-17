@@ -4,7 +4,7 @@
 
 <dl class="row dd-nowrap">
 	<dt class="col-sm-5">URL:</dt>
-	<dd class="col-sm-7"><a href="{{ url('blog?pc='.$category->name) }}">{{ url('blog?pc='.$category->name) }}</a></dd>
+	<dd class="col-sm-7"><a href="{{ url('blog?pca='.$category->name) }}">{{ url('blog?pca='.$category->name) }}</a></dd>
 	<dt class="col-sm-5">Category ID:</dt>
 	<dd class="col-sm-7"><a href="{{ route('categories.show', $category->id) }}">{{ $category->id }}</a></dd>
 	<dt class="col-sm-5">Created:</dt>

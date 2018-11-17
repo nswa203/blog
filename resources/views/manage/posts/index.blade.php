@@ -43,9 +43,21 @@
 								<i id="sort-e" class="ml-3"></i>Excerpt
 							</a>	
 						</th>
-						<th>Category</th>
-						<th>Author</th>
-						<th width="120px">Published</th>
+						<th class="thleft">
+							<a href="{{ route('posts.index', ['sort'=>'g'.$sort, 'search'=>$search]) }}">
+								<i id="sort-g" class="ml-3"></i>Category
+							</a>	
+						</th>
+						<th class="thleft">
+							<a href="{{ route('posts.index', ['sort'=>'a'.$sort, 'search'=>$search]) }}">
+								<i id="sort-a" class="ml-3"></i>Author
+							</a>	
+						</th>
+						<th class="thleft" width="120px">
+							<a href="{{ route('posts.index', ['sort'=>'p'.$sort, 'search'=>$search]) }}">
+								<i id="sort-p" class="ml-3"></i>Published
+							</a>	
+						</th>
 						<th width="130px">Page {{$posts->currentPage()}} of {{$posts->lastPage()}}</th>
 					</thead>
 					<tbody>

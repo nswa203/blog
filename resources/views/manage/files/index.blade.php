@@ -145,8 +145,10 @@
 												isset(json_decode($file->meta)->Picture) ? 'data:image/jpeg;base64,' . json_decode($file->meta)->Picture :
 												(substr($file->mime_type, 0, 2) == 'au' ? asset('favicon.ico') : '') }}"
 											class="img-frame-lg" onLoadedData="myVolume('session')">
+											
 						    				<source src="{{ route('private.getFile', [$file->id]) }}" type="{{ $file->mime_type }}" />
 						    				<source src="{{ route('private.getFile', [$file->id]) }}" type="video/mp4" />
+										
 										</video>
 									</a>
 								@elseif(substr($file->mime_type, 0, 2) == 'im')
@@ -185,7 +187,7 @@
 
 @section('scripts')
 	{!! Html::script('js/app.js')     !!}
-	{!! Html::script('js/helpers.js') !!} 	// Added for Fast load 
+	{!! Html::script('js/helpers.js') !!} 
 
 	<script>
 		mySortArrow({!! json_encode($sort) !!});

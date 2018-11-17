@@ -21,6 +21,15 @@
 							onerror="this.onerror=null; this.src='{{ asset('favicon.ico') }}';"
 						/>
 					</a>
+
+					<a href="{{ route('files.showFile', [$file->id]) }}">
+						<img src="{{ route('private.getFile', [$file->id, 'r=n&t=500']) }}"
+						class="float-left mr-4 img-frame-lg"
+						style="width:100%; max-height:2000px;"
+						onerror="this.onerror=null; this.src='{{ asset('favicon.ico') }}';"
+						/> 
+					</a>  
+
 				<h1>File: {{ $file->title }}</h1>
 				<p>{!! $file->file !!}</p>
 				<div style="clear:both;">
@@ -29,12 +38,11 @@
 						@foreach ($file->tags as $tag)
 							<span class="badge badge-info">{{ $tag->name }}</span>
 						@endforeach
-					</p>		
+					</p>
 					<p>
-						Posted In: {{ $file->folder->name }}
+						Posted In Folder <a href="{{ url('blog?pfo='.$file->folder->name) }}"><span class="badge badge-success">{{ $file->folder->name }}</span></a>
 						<span class="float-right">Published: {{ date('j M Y, h:i a', strtotime($file->published_at)) }}</span>
 					</p>
-		
 				</div>
 			</div>
 		</div>

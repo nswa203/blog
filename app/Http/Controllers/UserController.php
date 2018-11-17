@@ -29,7 +29,7 @@ class UserController extends Controller
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
     // The table is sorted (ascending or descending) and finally filtered.
     // It requires the custom queryHelper() function in Helpers.php.
-    public function searchSortQuery($request) {
+    public function query() {
         $query = [
             'model'         => 'User',
             'searchModel'   => ['name', 'email'],
@@ -39,16 +39,17 @@ class UserController extends Controller
                 'profile'     => ['username', 'about_me', 'phone', 'address'],
                 'roles'       => ['name', 'display_name', 'description']
             ],
-            'sortModel'   => [
+            'sort'        => [
                 'i'       => 'd,id',                                                      
                 'n'       => 'a,name',
                 'e'       => 'a,email',
                 'c'       => 'd,created_at',
                 'u'       => 'd,updated_at',
+                'p'       => 'a,username,profile',
                 'default' => 'n'                       
             ],                   
         ];
-        return queryHelper($query, $request);
+        return $query;
     }
 
     /**
@@ -57,9 +58,7 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        $pager = pageSize($request, 'usersIndex', 12, 4, 192, 4);    // size($request->pp), sessionTag, default, min, max, step
-        $users = $this->searchSortQuery($request)->paginate($pager['size']);
-        $users->pager = $pager;
+        $users = paginateHelper($this->query(), $request, 12, 4, 192, 4); // size($request->pp), default, min, max, step
 
         if ($users && $users->count() > 0) {
 

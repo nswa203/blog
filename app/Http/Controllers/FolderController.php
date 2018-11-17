@@ -30,7 +30,7 @@ class FolderController extends Controller
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
     // The table is sorted (ascending or descending) and finally filtered.
     // It requires the custom queryHelper() function in Helpers.php.
-    public function searchSortQuery($request) {
+    public function query() {
         $query = [
             'model'         => 'Folder',
             'searchModel'   => ['name', 'slug', 'directory', 'description', 'image'],
@@ -40,17 +40,20 @@ class FolderController extends Controller
                 'profiles' => ['username', 'about_me', 'phone', 'address'],
                 'user'     => ['name', 'email']
             ],
-            'sortModel'   => [
+            'sort'   => [
                 'i'       => 'd,id',                                                      
                 'n'       => 'a,name',
                 's'       => 'a,slug',                                           
                 'd'       => 'a,description',                                            
                 'm'       => 'd,max_size',
                 'u'       => 'd,updated_at',
-                'default' => 'n'                       
+                'f'       => 'a,status',
+                'c'       => 'a,name,category',
+                'o'       => 'a,name,user',
+                'default' => 'i'                       
             ]                                    
         ];
-        return queryHelper($query, $request);
+        return $query;
     }
 
     /**
@@ -60,9 +63,7 @@ class FolderController extends Controller
      */
     public function index(Request $request)
     {
-        $pager = pageSize($request, 'foldersIndex', 12, 4, 192, 4);    // size($request->pp), sessionTag, default, min, max, step
-        $folders = $this->searchSortQuery($request)->paginate($pager['size']);
-        $folders->pager = $pager;
+        $folders = paginateHelper($this->query(), $request, 12, 4, 192, 4); // size($request->pp), default, min, max, step
 
         if ($folders && $folders->count() > 0) {
 

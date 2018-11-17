@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use App\User;
+use App\Profile;
+use Session;
 
 class RegisterController extends Controller {
 	/*
@@ -46,8 +48,9 @@ class RegisterController extends Controller {
 	 */
 	protected function validator(array $data) {
 		return Validator::make($data, [
-			'name' => 'required|string|max:191',
-			'email' => 'required|string|email|max:191|unique:users',
+			'name'     => 'required|string|max:191',
+			'email'    => 'required|string|email|max:191|unique:users',
+            'username' => 'required|string|min:3|max:191|unique:profiles,username',
 			'password' => 'required|string|min:6|confirmed',
 		]);
 	}
@@ -59,10 +62,29 @@ class RegisterController extends Controller {
 	 * @return \App\User
 	 */
 	protected function create(array $data) {
-		return User::create([
-			'name' => $data['name'],
-			'email' => $data['email'],
+		$user = User::create([
+			'name'     => $data['name'],
+			'email'    => $data['email'],
 			'password' => Hash::make($data['password']),
 		]);
+
+		if ($user) {
+			$user->syncRoles(['Subscriber']); 		// provide a default Role
+
+     		$profile = new Profile;					// Attach a new User Profile
+        	$profile->user_id = $user->id;
+   	        $profile->username = $data['username'];
+          	$profile->save();
+
+            $msg = 'User "' . $user->name . '" was successfully saved and enrolled as a Subscriber.';
+            msgx(['success' => [$msg, true]]);
+            $msg = 'Please contact <a href="/contact">The Administrator</a> to request additional Roles and Privileges.';
+            msgx(['info' => [$msg, true]]);
+        } else {
+            $msg = 'User "' . $data['name'] . '" was NOT saved.';
+            msgx(['failure' => [$msg, true]]);
+        }
+
+		return $user;
 	}
 }

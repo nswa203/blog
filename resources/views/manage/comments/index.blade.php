@@ -27,9 +27,16 @@
 								<i id="sort-i" class="ml-2"></i><i class="fas fa-hashtag mb-1"></i>
 							</a>	
 						</th>
-						<th>Post</th>						
-						<th>OK</th>
 						<th class="thleft">
+							<a href="{{ route('comments.index', ['sort'=>'p'.$sort, 'search'=>$search]) }}">
+								<i id="sort-p" class="ml-2"></i>Post
+							</a>	
+						</th>
+						<th class="thleft">
+							<a href="{{ route('comments.index', ['sort'=>'a'.$sort, 'search'=>$search]) }}">
+								<i id="sort-a" class="ml-2"></i>OK
+							</a>	
+						</th>						<th class="thleft">
 							<a href="{{ route('comments.index', ['sort'=>'n'.$sort, 'search'=>$search]) }}">
 								<i id="sort-n" class="ml-2"></i>Name
 							</a>	

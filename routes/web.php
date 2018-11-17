@@ -1,4 +1,39 @@
 <?php
+// Manage Administration
+Route::prefix('manage')->middleware('role:superadministrator|administrator')->group(function () {
+	// Users
+	Route::resource('/users', 'UserController');
+	Route::get('users/{id}/delete',	'UserController@delete')->name('users.delete');
+	// Roles
+	Route::resource('/roles', 'RoleController');
+	Route::get('roles/{id}/delete',	'RoleController@delete')->name('roles.delete');
+	// Permissions
+	Route::resource('/permissions', 'PermissionController');
+	Route::get('permissions/{id}/delete', 'PermissionController@delete')->name('permissions.delete');
+
+
+
+	// Categories
+	Route::resource('categories', 'CategoryController')->except(['create']);
+	Route::get('categories/{id}/delete',        'CategoryController@delete')->name('categories.delete');
+	Route::get('categories/{category}/{zone?}', 'CategoryController@show'  )->name('categories.show');
+	// Tags
+	Route::resource('tags', 'TagController')->except(['create']);
+	Route::get('tags/{id}/delete',   'TagController@delete')->name('tags.delete');
+	Route::get('tags/{tag}/{zone?}', 'TagController@show'  )->name('tags.show');
+
+	// Profiles
+	Route::resource('/profiles', 'ProfileController')->except('create');
+	Route::get('profiles/{id}/create', 'ProfileController@create')->name('profiles.create');
+	Route::get('profiles/{id}/delete', 'ProfileController@delete')->name('profiles.delete');	
+
+
+	// User's Posts
+	Route::get('/pu/{name}', 'PageController@getIndexUserPost')->name('blog.getIndexUserPost');
+
+});
+
+
 
 // Manage
 Route::prefix('manage')->middleware('role:superadministrator|administrator|editor|author|contributor')->group(function () {
@@ -60,34 +95,10 @@ Route::prefix('manage')->middleware('role:superadministrator|administrator|edito
 	Route::get('private/{id}', 			               'FileController@getFile'        )->name('private.getFile');
 	Route::get('private/find/{filename}/{foldername}', 'FileController@findFile'       )->name('private.findFile');
 });
-Route::prefix('manage')->middleware('role:superadministrator|administrator')->group(function () {
-	// Categories
-	Route::resource('categories', 'CategoryController')->except(['create']);
-	Route::get('categories/{id}/delete',        'CategoryController@delete')->name('categories.delete');
-	Route::get('categories/{category}/{zone?}', 'CategoryController@show'  )->name('categories.show');
-	// Tags
-	Route::resource('tags', 'TagController')->except(['create']);
-	Route::get('tags/{id}/delete',   'TagController@delete')->name('tags.delete');
-	Route::get('tags/{tag}/{zone?}', 'TagController@show'  )->name('tags.show');
-	// Users
-	Route::resource('/users', 'UserController');
-	Route::get('users/{id}/delete',	'UserController@delete')->name('users.delete');
-	// Roles
-	Route::resource('/roles', 'RoleController');
-	Route::get('roles/{id}/delete',	'RoleController@delete')->name('roles.delete');
-	// Permissions
-	Route::resource('/permissions', 'PermissionController');
-	Route::get('permissions/{id}/delete', 'PermissionController@delete')->name('permissions.delete');
-	// Profiles
-	Route::resource('/profiles', 'ProfileController')->except('create');
-	Route::get('profiles/{id}/create', 'ProfileController@create')->name('profiles.create');
-	Route::get('profiles/{id}/delete', 'ProfileController@delete')->name('profiles.delete');	
 
-
-	// User's Posts
-	Route::get('/pu/{name}', 'PageController@getIndexUserPost')->name('blog.getIndexUserPost');
-
-});
+// Auth
+// This adds login, logout, register and password reset routes
+Auth::routes();
 
 // Tests
 Route::resource('tests', 'TestController');
@@ -96,29 +107,27 @@ Route::put('upload/{id}', 'TestController@upload')->name('tests.upload');
 // Comments
 Route::post('comments/{post_id}', 'CommentController@store')->name('comments.store');
 
-// Auth
-Auth::routes();
 /* "home" is used as a default return URL within Laravel's built-in authentification 			*/
 /* controllers. We don't have a "home", but rather than change multiple controllers we'll just 	*/
 /* create a Route to handle it here by routing any "home" requests to to the same target as "/"	*/
 // Route::get('home', 'PageController@getIndex');
-Route::get('/home', 'PageController@getHomePost')->name('home');
+Route::get('/home', 'PageController@showHome')->name('home');
 
 // Pages (Public routes)
-Route::get ('contact',  'PageController@getContact'  	)->name('blog.contact');
-Route::post('contact',  'PageController@postContact' 	)->name('blog.email'  );
-Route::get ('about',    'PageController@getAbout'    	)->name('blog.about'  );
-Route::get ('blog',	    'PageController@getIndexPost'	)->name('blog.index'  );
+Route::get ('contact', 'PageController@showContact')->name('blog.contact');
+Route::post('contact', 'PageController@postContact')->name('blog.email'  );
+Route::get ('about',   'PageController@showAbout'  )->name('blog.about'  );
+Route::get ('blog',	   'PageController@indexPost'  )->name('blog.index'  );
 
-Route::get ('al/{id}',  'PageController@getSingleAlbum' )->name('blog.singleAlbum' );
-Route::get ('fi/{id}',  'PageController@getSingleFile'  )->name('blog.singleFile'  );
-Route::get ('fo/{id}',  'PageController@getSingleFolder')->name('blog.singleFolder');
-Route::get ('ph/{id}', 	'PageController@getSinglePhoto' )->name('blog.singlePhoto' );
-Route::get ('po/{id}',  'PageController@getSinglePost'  )->name('blog.singlePost'  );
+Route::get ('fo/{id}', 'PageController@showFolder' )->name('blog.folder' );
+Route::get ('po/{id}', 'PageController@showPost'   )->name('blog.post'   );
+Route::get ('al/{id}', 'PageController@showAlbum'  )->name('blog.album'  );
+Route::get ('fi/{id}', 'PageController@showFile'   )->name('blog.file'   );
+Route::get ('ph/{id}', 'PageController@showPhoto'  )->name('blog.photo'  );
 
+Route::get ('/{slug}', 'PageController@showPost'   )->name('blog.post'   )->where('slug', '[\w\d\-\_]+');
 /* LAST LAST LAST LAST LAST LAST LAST LAST LAST LASTLAST LAST LAST LAST LASTLAST LAST LAST LAST */
 /* Since we are not using any prefix, this route will intercept any routes placed after it. 	*/
 /* So make it the LAST in your route list.														*/
 /* We are also limiting what characters may be used in our slug to "a-z A-Z 0-9 - _ "       	*/
-Route::get('/{slug}', 'PageController@getSinglePostBySlug')->name('blog.single')->where('slug', '[\w\d\-\_]+');
-Route::get('/',	      'PageController@getHomePost'        )->name('blog.home');
+Route::get('/',	       'PageController@showHome'    )->name('blog.home');

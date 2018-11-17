@@ -28,8 +28,10 @@ class PostController extends Controller
 
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
     // The table is sorted (ascending or descending) and finally filtered.
+    // Looses searches are performed unless the search string is enclosed in '^'
     // It requires the custom queryHelper() function in Helpers.php.
-    public function searchSortQuery($request) {
+    // $posts = paginateHelper($this->query(), $request, 12, 4, 192, 4);
+    public function query() {
         $query = [
             'model'         => 'Post',
             'searchModel'   => ['title', 'slug', 'image', 'body', 'excerpt'],
@@ -41,17 +43,18 @@ class PostController extends Controller
 				'folders'	=> ['name', 'slug', 'description'],
 				'albums'	=> ['title', 'slug', 'description']
             ],
-            'sortModel'   => [
+            'sort' 		  => [
                 'i'       => 'd,id',                                                      
                 't'       => 'a,title',
                 'e'       => 'a,excerpt',
-                'c'       => 'd,created_at',
-                'u'       => 'd,updated_at',
+                'p'       => 'd,published_at',
+                'g'	  	  => 'a,name,category', 		// Associated search
+                'a'		  => 'a,name,user',				// Associated search
                 'default' => 'i'                       
             ],
             //'filter'		=>['status', '>=', '4']
         ];
-        return queryHelper($query, $request);
+        return $query;
     }
 
     // $status_list
@@ -73,9 +76,7 @@ class PostController extends Controller
 	 * @return \Illuminate\Http\Response
 	 */
 	public function index(Request $request) {
-        $pager = pageSize($request, 'postsIndex', 12, 4, 192, 4);    // size($request->pp), sessionTag, default, min, max, step
-        $posts = $this->searchSortQuery($request)->paginate($pager['size']);
-        $posts->pager = $pager;
+        $posts = paginateHelper($this->query(), $request, 12, 4, 192, 4); // size($request->pp), default, min, max, step
 
 		if ($posts && $posts->count() > 0) {
 
@@ -167,8 +168,22 @@ class PostController extends Controller
         if (isset($msgs)) { session()->flash('msgs', $msgs); }
 
 		if ($myrc) {
+			// Posts inherit all tags from the files in any attached folders
+			if (!$request->tags) { $request->tags = [];}
+			if ($request->folders) {
+				foreach($request->folders as $item) {
+					$folder = Folder::find($item);
+					if ($folder) {
+						foreach ($folder->files as $file) {
+							$request->tags = array_merge($request->tags, $file->tags->pluck('id')->toArray());
+						}
+					}
+				}
+			}	
+			$request->tags = array_unique($request->tags);
+	
 			$myrc = $post->folders()->sync($request->folders, false);
-			$myrc = $post->tags()   ->sync($request->tags,    false);
+			$myrc = $post->tags()   ->sync([$request->tags],  false);
 			Session::flash('success', 'Post "' . $post->slug . '" was successfully saved.');
 			return redirect()->route('posts.show', $post->id);
 		} else {
@@ -303,6 +318,20 @@ class PostController extends Controller
         if (isset($msgs)) { session()->flash('msgs', $msgs); }
 
 		if ($myrc) {
+			// Posts inherit all tags from the files in any attached folders
+			if (!$request->tags) { $request->tags = [];}
+			if ($request->folders) {
+				foreach($request->folders as $item) {
+					$folder = Folder::find($item);
+					if ($folder) {
+						foreach ($folder->files as $file) {
+							$request->tags = array_merge($request->tags, $file->tags->pluck('id')->toArray());
+						}
+					}
+				}
+			}	
+			$request->tags = array_unique($request->tags);
+
 			$myrc = $post->folders()->sync($request->folders, true);
 			$myrc = $post->tags()   ->sync($request->tags,    true);
             if (isset($oldFiles)) { Storage::delete($oldFiles); }

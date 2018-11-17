@@ -24,7 +24,7 @@
 					<a href="{{ route('private.getFolderFile', [$folder->id, 'Folder.jpg']) }}">{{ route('private.getFolderFile', [$folder->id, 'Folder.jpg']) }}</a>
 				</p>
 				<p>URL:
-					<a href="{{ url('f/'.$folder->slug) }}">{{ url('f/'.$folder->slug) }}</a>
+					<a href="{{ url('fo/'.$folder->slug) }}">{{ url('fo/'.$folder->slug) }}</a>
 				</p>
 				<p>Posts:
 					<a href="{{ url('blog?pf='.$folder->slug) }}">{{ url('blog?pf='.$folder->slug) }}</a>

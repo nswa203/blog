@@ -33,11 +33,19 @@
 								<i id="sort-i" class="ml-2"></i><i class="fas fa-hashtag mb-1"></i>
 							</a>	
 						</th>
-						<th>Name</th>
-						<th>eMail</th>
 						<th class="thleft">
 							<a href="{{ route('profiles.index', ['sort'=>'n'.$sort, 'search'=>$search]) }}">
-								<i id="sort-n" class="ml-3"></i>Username
+								<i id="sort-n" class="ml-3"></i>Name
+							</a>	
+						</th>
+						<th class="thleft">
+							<a href="{{ route('profiles.index', ['sort'=>'e'.$sort, 'search'=>$search]) }}">
+								<i id="sort-e" class="ml-3"></i>eMail
+							</a>	
+						</th>
+						<th class="thleft">
+							<a href="{{ route('profiles.index', ['sort'=>'p'.$sort, 'search'=>$search]) }}">
+								<i id="sort-p" class="ml-3"></i>Username
 							</a>	
 						</th>
 						<th class="thleft" width="120px">

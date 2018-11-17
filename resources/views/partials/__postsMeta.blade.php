@@ -6,7 +6,7 @@
 <dl class="row dd-nowrap">
 	<dt class="col-sm-5">URL:</dt>
 	
-	<dd class="col-sm-7"><a href="{{ route('blog.single', $post->slug) }}">{{ url($post->slug) }}</a></dd>
+	<dd class="col-sm-7"><a href="{{ route('blog.post', $post->slug) }}">{{ url($post->slug) }}</a></dd>
 
 	<dt class="col-sm-5">Post ID:</dt>
 	<dd class="col-sm-7"><a href="{{ route('posts.show', $post->id) }}">{{ $post->id }}</a></dd>

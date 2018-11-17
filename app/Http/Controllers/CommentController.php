@@ -26,23 +26,25 @@ class CommentController extends Controller
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
     // The table is sorted (ascending or descending) and finally filtered.
     // It requires the custom queryHelper() function in Helpers.php.
-    public function searchSortQuery($request) {
+    public function query() {
         $query = [
             'model'         => 'Comment',
             'searchModel'   => ['name', 'email', 'comment'],
             'searchRelated' => [
                 'post' => ['title', 'slug', 'body', 'excerpt']
             ],
-            'sortModel'   => [
-                'i'       => 'd,id',                                                      
+            'sort'        => [
+                'i'       => 'd,id',
+                'a'       => 'a,approved',                                                      
                 'n'       => 'a,name',
                 'e'       => 'a,email',
                 't'       => 'a,comment',
                 'c'       => 'd,created_at',
+                'p'       => 'd,id,post',
                 'default' => 'i'                       
             ],            
         ];
-        return queryHelper($query, $request);
+        return $query;
     }
 
     /**
@@ -51,9 +53,7 @@ class CommentController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        $pager = pageSize($request, 'commentsIndex', 12, 4, 192, 4);    // size($request->pp), sessionTag, default, min, max, step
-        $comments = $this->searchSortQuery($request)->paginate($pager['size']);
-        $comments->pager = $pager;
+        $comments = paginateHelper($this->query(), $request, 12, 4, 192, 4); // size($request->pp), default, min, max, step
 
         if ($comments && $comments->count() > 0) {
 
@@ -80,7 +80,7 @@ class CommentController extends Controller
             'comment' => 'required|min:8|max:10240',
         ]);
         if ($validator->fails()) {
-            return redirect()->route('blog.single', $post->slug)->withErrors($validator)->withInput();
+            return redirect()->route('blog.post', $post->slug)->withErrors($validator)->withInput();
         }
 
         // We protect this public Form with a Captcha which protects us from Bots etc.
@@ -103,7 +103,7 @@ class CommentController extends Controller
         } else { $myrc = false; }
         if (!$myrc) {
             Session::flash('failure', "You're probably not human!");
-            return redirect()->route('blog.single', $post->slug)->withInput();
+            return redirect()->route('blog.post', $post->slug)->withInput();
         }
 
         // OK we are talking to a human.
@@ -119,10 +119,10 @@ class CommentController extends Controller
         if ($myrc) {
             $nick = explode(' ', $request->name);
             Session::flash('success', $nick[0] . ', your Comment for "' . $post->slug . '" was successfully saved.');
-            return redirect()->route('blog.single', $post->slug);
+            return redirect()->route('blog.post', $post->slug);
         } else {
             Session::flash('failure', 'Your Comment for Post "' . $post_id . '" was NOT saved.');
-            return redirect()->route('blog.single', $post->slug)->withInput();
+            return redirect()->route('blog.post', $post->slug)->withInput();
         }
     }    
 

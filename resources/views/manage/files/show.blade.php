@@ -25,6 +25,7 @@
 							</video>
 						</a>
 					@elseif(substr($file->mime_type, 0, 2) == 'im')
+						{{-- r=n no_auto_rotate t=500 load_with_thumbnail_size --}}
 						<a href="{{ route('files.showFile', [$file->id]) }}">
 							<img src="{{ route('private.getFile', [$file->id, 'r=n&t=500']) }}"
 							class="float-left mr-4 img-frame-lg"
@@ -50,7 +51,7 @@
 					@endif	
 				</div>
 
-				<h5><a href="{{ route('files.showFile', [$file->id, 'r=y']) }}">
+				<h5><a href="{{ route('files.showFile', [$file->id, substr($file->mime_type, 0, 2) == 'im' ? 'r=y' : '']) }}">
 					<span class="float-left fas fa-expand" data-toggle="tooltip" data-placement="right" title="Zoom in" style="margin-top:-24px;"></span>
 				</a></h5>
 

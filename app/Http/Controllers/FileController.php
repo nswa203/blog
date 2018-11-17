@@ -32,7 +32,7 @@ class FileController extends Controller
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
     // The table is sorted (ascending or descending) and finally filtered.
     // It requires the custom queryHelper() function in Helpers.php.
-    public function searchSortQuery($request) {
+    public function query() {
         $query = [
             'model'         => 'File',
             'searchModel'   => ['title', 'file', 'mime_type', 'meta'],
@@ -40,34 +40,31 @@ class FileController extends Controller
                 'folder'  => ['name', 'slug', 'description'],
                 'tags'    => ['name'],
             ],    
-            'sortModel'   => [
+            'sort'        => [
                 'i'       => 'd,id',                                                      
                 't'       => 'a,title',                                           
                 's'       => 'd,size',                                            
                 'p'       => 'd,status',
+                'f'       => 'a,name,folder',
                 'default' => 'i'                       
             ]
         ];
-        return queryHelper($query, $request);
+        return $query;
     }
 
     /* **************************************************************************************************************** 
     *  Index                                                                                                          *
     **************************************************************************************************************** */
     public function index(Request $request) {
-        $pager = pageSize($request, 'filesIndex', 12, 4, 192, 4);    // size($request->pp), sessionTag, default, min, max, step
-        $files = $this->searchSortQuery($request)->paginate($pager['size']);
-        $files->pager = $pager;
-
+        $files = paginateHelper($this->query(), $request, 12, 4, 192, 4); // size($request->pp), default, min, max, step
 // Test code remove ****************************************************************************************
 
 // Test code remove ****************************************************************************************
-
         $list['f'] = fileStatus();
         $list['d'] = folderStatus();
 
         if ($files && $files->count() > 0) {
-            $x = $this->searchSortQuery($request)->pluck('id')->toArray();
+            $x = queryHelperTest($this->query(), $request)->pluck('id')->toArray();
             mySession('filesIndex', 'index', $x);
             mySession('filesShow', 'indexURL', $request->url().'?'.$request->getQueryString());
         } else {
@@ -80,15 +77,13 @@ class FileController extends Controller
     *  IndexOf                                                                                                        *
     **************************************************************************************************************** */     
     public function indexOf(Request $request, $folder_id) {
-        $pager = pageSize($request, 'filesIndexOf', 12, 4, 192, 8);    // model, size($request->pp), min, max, step
-        $files = $this->searchSortQuery($request)->where('folder_id', $folder_id)->paginate($pager['size']);
-        $files->pager = $pager;
+        $files = paginateHelper($this->query(), $request, 12, 4, 192, 4); // size($request->pp), default, min, max, step
 
         $list['f'] = fileStatus();
         $list['d'] = folderStatus();   
         
         if ($files && $files->count() > 0) {
-            $x = $this->searchSortQuery($request)->where('folder_id', $folder_id)->pluck('id')->toArray();
+            $x = queryHelperTest($this->query(), $request)->where('folder_id', $folder_id)->pluck('id')->toArray();
             mySession('filesIndex', 'index', $x);
             mySession('filesShow', 'indexURL', $request->url().'?'.$request->getQueryString());
         } else {
@@ -281,31 +276,31 @@ class FileController extends Controller
     /* **************************************************************************************************************** 
     *  GetFile                                                                                                        *
     *  Hint: debug with http://blog/manage/private/nnn?r=angle       (where nnn = file number)                        *
-    *  NS01 NS02                                                                                                      *
+    *  NS01 NS02 NS03 NS04                                                                                                     *
     **************************************************************************************************************** */ 
     public function getFile(Request $request, $id) {
         $myrc = false;
-        $file = File::findOrFail($id);
-        $path = filePath($file);
-
-        if (File::exists($path)) {
-            $type = FileSys::mimeType($path);
-            
-            if ($request->t == 'y' or is_numeric($request->t)) {                // NS02
-                $path = myThumb($path, $request->t);
-                $file = FileSys::get($path);
-            }            
-            else if ($request->r == 'y' or is_numeric($request->r)) {           // NS01 NS02
-                $file = myRotate($file, $request->r);
+        $file = File::find($id);
+        if ($file) {
+            $path = filePath($file);
+            if (File::exists($path)) {
+                $type = FileSys::mimeType($path);
+                if ($request->t == 'y' or is_numeric($request->t)) {                // NS02
+                    //$path = myThumb($path, $request->t);
+                    //$file = FileSys::get($path);
+                    $file = myThumb2($path, $request->t);                           // NS03
+                }            
+                else if ($request->r == 'y' or is_numeric($request->r)) {           // NS01 NS02
+                    $file = myRotate($file, $request->r);
+                } else {
+                    $file = false;                                                  // NS04
+                }
+                if (!$file) { $file = FileSys::get($path); }
+                $response = Response::make($file, 200);
+                $response->header("Content-Type", $type);
+                $myrc = true;
             }
-            else { $file = false; }
-
-            if (!$file) { $file = FileSys::get($path); }
-            $response = Response::make($file, 200);
-            $response->header("Content-Type", $type);
-            $myrc = true;
-        }
-
+        }    
         if ($myrc) { return $response; }
         else { abort(404); }
     }
@@ -316,10 +311,8 @@ class FileController extends Controller
     public function findFile($fileTitle, $folderSlug) {
         $myrc   = false;
         $folder = Folder::where('slug', $folderSlug)->first();
-
         if ($folder) {
             $file = File::where('title', $fileTitle)->where('folder_id', $folder->id)->first();
-           
             if ($file) {
                 $path = filePath($file, $folder);
                 if (File::exists($path)) {
@@ -333,7 +326,7 @@ class FileController extends Controller
         }
 
         if ($myrc) { return $response; }
-        else { abort(404); } 
+        else { return 'FileController@findFile: "'.$fileTitle.'" not found in folder "'.$folderSlug.'".'; abort(404); } 
     }
 
     /* **************************************************************************************************************** 
@@ -470,8 +463,9 @@ class FileController extends Controller
     *   CopyMultiple                                                                                                  *
     **************************************************************************************************************** */ 
         if ($choice[0] == 'copy') {
-//            $files = $this->searchQuery($ids)->with('folder')->orderBy('id', 'desc')->get();
-            $files = $this->searchSortQuery($ids)->get();
+          $files = $this->searchSortQuery($ids)->get();
+            $files = queryHelperTest($this->query(), $ids)->get();
+
             $folders = Folder::orderBy('slug', 'asc')->pluck('slug', 'id');
 
             $list['f'] = fileStatus();
@@ -482,8 +476,8 @@ class FileController extends Controller
     *   DeleteMultiple                                                                                                *
     **************************************************************************************************************** */
         else if ($choice[0] == 'delete') {
-//          $files = $this->searchQuery($ids)->with('folder')->orderBy('id', 'desc')->get();
-            $files = $this->searchSortQuery($ids)->get();
+       $files = $this->searchSortQuery($ids)->get();
+            $files = queryHelperTest($this->query(), $ids)->get();
 
             $list['f'] = fileStatus();
             $list['d'] = folderStatus();
@@ -493,8 +487,9 @@ class FileController extends Controller
     *   EditMultiple                                                                                                  *
     **************************************************************************************************************** */
         else if ($choice[0] == 'edit') {
-//          $files = $this->searchQuery($ids)->with('folder')->orderBy('id', 'desc')->get();
-            $files = $this->searchSortQuery($ids)->get();
+        $files = $this->searchSortQuery($ids)->get();
+            $files = queryHelperTest($this->query(), $ids)->get();
+
             $tags = Tag::orderBy('name', 'asc')->pluck('name', 'id');
             
             $list['f'] = fileStatus();
@@ -504,8 +499,9 @@ class FileController extends Controller
     *   MoveMultiple                                                                                                  *
     **************************************************************************************************************** */    
         else if ($choice[0] == 'move') {
-//          $files = $this->searchQuery($ids)->with('folder')->orderBy('id', 'desc')->get();
-            $files = $this->searchSortQuery($ids)->get();
+      $files = $this->searchSortQuery($ids)->get();
+            $files = queryHelperTest($this->query(), $ids)->get();
+
             $folders = Folder::orderBy('slug', 'asc')->pluck('slug', 'id');
 
             $list['f'] = fileStatus();

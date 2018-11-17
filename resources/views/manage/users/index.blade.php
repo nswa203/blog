@@ -43,7 +43,11 @@
 								<i id="sort-e" class="ml-2"></i>eMail
 							</a>	
 						</th>
-						<th>Username</th>
+						<th class="thleft">
+							<a href="{{ route('users.index', ['sort'=>'p'.$sort, 'search'=>$search]) }}">
+								<i id="sort-p" class="ml-2"></i>Username
+							</a>	
+						</th>
 						<th class="thleft" width="120px">
 							<a href="{{ route('users.index', ['sort'=>'c'.$sort, 'search'=>$search]) }}">
 								<i id="sort-c" class="ml-2"></i>Created

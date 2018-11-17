@@ -21,36 +21,43 @@ class BlogController extends Controller
 	}
 
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
-    // It requires the custom search_helper() function in Helpers.php.
-    // If you change Helpers.php you should do "dump-autoload". 
-    public function searchQuery($search = '') {
+    // The table is sorted (ascending or descending) and finally filtered.
+    // It requires the custom queryHelper() function in Helpers.php.
+    public function searchSortQuery($request) {
         $query = [
             'model'         => 'Post',
             'searchModel'   => ['title', 'slug', 'image', 'body', 'excerpt'],
             'searchRelated' => [
-				'user' 		=> ['name'],
-				'category'  => ['name'],
-				'tags' 		=> ['name'],
-				'comments' 	=> ['email', 'name', 'comment' ],
-				'folders'	=> ['name', 'slug', 'description'],
-				'albums'	=> ['title', 'slug', 'description']
+                'user'      => ['name'],
+                'category'  => ['name'],
+                'tags'      => ['name'],
+                'comments'  => ['email', 'name', 'comment' ],
+                'folders'   => ['name', 'slug', 'description'],
+                'albums'    => ['title', 'slug', 'description']
             ],
-            'filter'		=>['status', '>=', '4']
+            'sortModel'   => [
+                'i'       => 'd,id',
+                'u'       => 'd,updated_at',
+                'default' => 'u'                       
+            ],
+            'filter'      =>['status', '>=', '4']
         ];
-        return search_helper($search, $query);
+        return queryHelper($query, $request);
     }
-
 
 	// We only include "Published" Posts in this public view.
 	// The "public" filter is set in the above searchQuery
 	public function index(Request $request) {
-        $posts = $this->searchQuery($request->search)->orderBy('updated_at', 'desc')->paginate(4, ['*'], 'pageP');
+        $pager = pageSize($request, 'blogIndex', 4, 4, 48, 4);    // size($request->pp), sessionTag, default, min, max, step
+        $posts = $this->searchSortQuery($request)->paginate($pager['size']);
+        $posts->pager = $pager;
+
 		if ($posts && $posts->count() > 0) {
 
 		} else {
 			Session::flash('failure', 'No blog Posts were found.');
 		}
-		return view('pages.welcome', ['posts' => $posts, 'search' => $request->search]);
+		return view('pages.welcome', ['posts' => $posts, 'search' => $request->search, 'sort' => $request->sort]);
 	}
 
 }

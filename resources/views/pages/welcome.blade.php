@@ -15,7 +15,7 @@
 					</div>
 
 					<div class="col-md-10 mb-5">
-						<h1 class="display-4">Welcome to {{ env('APP_NAME') }}!</h1>
+						<h1 class="display-4">Welcome to {{ $data['name'] }}!</h1>
 					</div>
 				</div>	
 				<p class="lead">Thank you so much for visiting. This is my test website built with Laravel. Please read my latest post!</p>
@@ -45,18 +45,18 @@
 			<p>Use our Tag Table to find a subject of interest.</p>
 			@if (Auth::check())
 				<p>
-					<a href="{{ url('blog?pu=Y') }}">
-					<span class="badge badge-info">{{ Auth::user()->name }}</span></a>
+					<a href="{{ url('blog?pus=Y') }}">
+					<span class="badge badge-dark">{{ Auth::user()->name }}</span></a>
 				</p>
 			@endif			
 			<p>
 				@foreach ($categories as $category)
-					<a href="{{ url('blog?pc='.$category->name) }}""><span class="badge badge-info">{{ $category->name }}</span></a>
+					<a href="{{ url('blog?pca='.$category->name) }}""><span class="badge badge-secondary">{{ $category->name }}</span></a>
 				@endforeach 				
 			</p>
 			<p>
 				@foreach ($tags as $tag)
-					<a href="{{ url('blog?pt='.$tag->name) }}""><span class="badge badge-info">{{ $tag->name }}</span></a>
+					<a href="{{ url('blog?pta='.$tag->name) }}""><span class="badge badge-info">{{ $tag->name }}</span></a>
 				@endforeach 				
 			</p>
 		</div>

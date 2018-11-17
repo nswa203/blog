@@ -10,7 +10,7 @@
 	<div class="row">
 		<div class="col-md-12 myWrap">
 			<div class="jumbotron" style="padding-top:32px; padding-bottom:32px;">
-				<h1><span class="fas fa-envelope mr-4"></span>Contact {{ $data['name'] }}</h1>
+				<h1><span class="fas fa-envelope mr-4"></span>Contact {{ $data['owner'] }}</h1>
 				<hr>
 				{{ Form::open([url('contact'), 'method'=>'POST', 'data-parsley-validate'=>'']) }}
 					<div class="row">
@@ -32,7 +32,7 @@
 							{{ Form::label(null, 'Are You Human?', ['class'=>'font-bold form-spacing-top mr-5']) }}
 							{{ Form::button('<h4><i class="far fa-envelope mr-3"></i>Send Your Message</h4>',
 								['type'=>'submit', 'class'=>'form-control form-spacing-top btn btn-success float-lg-right float-none mb-3', 'style'=>'margin-top:54px; height:75px; width:300px;']) }}
-							<div class="g-recaptcha" data-sitekey="{!! myConstants('CAPTCHA_SITEKEY') !!}"></div>
+							<div class="g-recaptcha" data-sitekey="{{ $data['key'] }}"></div>
 						</div>
 					</div>
 				{!! Form::close() !!}

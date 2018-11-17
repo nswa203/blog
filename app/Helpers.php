@@ -178,20 +178,34 @@ if (! function_exists('getRotation')) {
 
 // If you change Helpers.php you should do "composer dump-autoload".
 // Provides a thumnbnail of an image file
-// Returns a binary string of the thumbnail or boolean
-// NS01 NS02 NS03  
+// Returns a new file of the thumbnail or boolean
+// NS01 NS02 NS03 NS04
 if (! function_exists('myThumb')) {
     function myThumb($path, $size='') {
-        //dd($path, $size);
         $myrc = false;
+        if (!in_array(pathinfo($path, PATHINFO_EXTENSION), ['jpg', 'png', 'gif', 'webp'])) { return false; } // NS04
         if (!is_numeric($size)) { $size = 100; }
         $tFile = 'thumb.jpg';
         $myrc = Image::make($path)->widen($size, function ($constraint) {
             $constraint->upsize();
         })->save($tFile);
-
         if ($myrc) { $myrc = $tFile; }
         return $myrc; 
+    }
+}    
+
+// If you change Helpers.php you should do "composer dump-autoload".
+// Uses the "Intervention Image" PHP image handling and manipulation library
+// Provides a thumnbnail of an image file (Only supports jpg, png, hif & webp)
+// Returns a binary stream of the thumbnail or boolean
+// NS01
+if (! function_exists('myThumb2')) {
+    function myThumb2($path, $size='') {
+        if (!in_array(pathinfo($path, PATHINFO_EXTENSION), ['jpg', 'png', 'gif', 'webp'])) { return false; } // NS01
+        if (!is_numeric($size)) { $size = 100; }
+        return Image::make($path)->widen($size, function ($constraint) {
+            $constraint->upsize();
+        })->stream();
     }
 }    
 
@@ -250,13 +264,13 @@ if (! function_exists('mySession')) {
 // If you change Helpers.php you should do "composer dump-autoload".
 // Supports dynamically adjustable paginator - per page size
 if (! function_exists('pageSize')) {
-    function pageSize($request, $tag, $default, $pageMin=false, $pageMax=false, $pageStep=false) {
+    function pageSize($request, $tag, $default, $pageMin=false, $pageMax=false, $pageStep=false, $force=false) {
         $pageMin  = $pageMin  ?:  5;
         $pageMax  = $pageMax  ?: 50;
         $pageStep = $pageStep ?:  5;
 
         $t = session($tag);
-        if ($t) { $pageSize = array_key_exists('pageSize', $t) ? $t['pageSize'] : $default; }
+        if ($t && !$force) { $pageSize = array_key_exists('pageSize', $t) ? $t['pageSize'] : $default; }
         else { $pageSize = $default; } 
         $pageSize = $request->pp ? $request->pp : $pageSize;
         $pageSize = $pageSize < $pageMin ? $pageMin : $pageSize;
@@ -760,6 +774,164 @@ if (! function_exists('queryHelper')) {
                 $qq->where($q['filter'][0], $q['filter'][1], $q['filter'][2]);
             });
         } 
+        return $query;
+    }
+}
+
+// Front-ends the query helper to add pagination support
+// Add this to your index view {{ $posts->appends(Request::only(['search', 'sort']))->render() }} 
+if (! function_exists('paginateHelper')) {
+    function paginateHelper($q, $request, $default=false, $min=false, $max=false, $step=false, $force=false) {
+        //dd(app('request')->route()->getAction());
+        $context = app('request')->route()->getAction('as');
+        $pager = pageSize($request, $context, $default, $min, $max, $step, $force);    // size($request->pp), sessionTag, default, min, max, step, ignore_session_size
+        $model = queryHelperTest($q, $request)->paginate($pager['size']);
+        $model->pager = $pager;
+        return $model;
+    }        
+}
+
+// This routine builds the db query with search and sort support for both the primary model
+// and its relationships. It supports search for phrases embeded in double quotes. It also
+// supports boolean "and" searches.
+// Warning: the search in the $q query is overidden by the search in the $data request !!!  
+// NS01 Adds exact search support using '^' delimiters 
+if (! function_exists('queryHelperTest')) {
+    function queryHelperTest($q, $data=false, $trace=false) {
+        // $data can be a Request containing ->search and/or ->sort data
+        // $data can also be an array of ->id data         
+        $model = 'App\\' . $q['model'];
+        $query = $model::select('*');
+
+        // Handle the array of ->id data ***************************************************************
+        if (gettype($data) == 'array') {
+            $query->whereIn('id', $data);
+        }
+
+        // Handle the ->search data ********************************************************************
+        if (is_object($data)) {
+            // Build an array of search terms where phrases bounded by "" are treated as a single term
+            // Also isolate the OR and AND search terms
+            $search = $data->search;
+            $search_listOr  = [];
+            $search_listAnd = [];                  
+            preg_match_all('/"(?:\\\\.|[^\\\\"])*"|\S+/', $search, $words);
+            $and = false;
+            foreach ($words[0] as $word) {
+                $word = trim($word, '"');
+                if (!strcasecmp($word, 'and')) { $and = true; continue; }
+                else if ($and)                 { $and = false; $search_listAnd[] = $word; }
+                else                           { $search_listOr[] = $word; }   
+            }
+
+            // Search each column in our model
+            $search_list = $search_listOr;
+            foreach ($q['searchModel'] as $column) {
+                $eColumn = trim($column, '^');
+                $exactSearch = ($column=='^' . $eColumn . '^');
+                foreach ($search_list as $word) {
+                    if ($exactSearch) {
+                        $w = [[$eColumn, '=', $word]];                      // Exact match
+                    } else {
+                        $w = [[$column, 'LIKE', '%' . $word . '%']];        // Loose match
+                    }
+                    if (array_key_exists('filter', $q)) {                   // Filter
+                        $w[] = [$q['filter'][0], $q['filter'][1], $q['filter'][2]];
+                    } 
+                    $query->orWhere($w);
+                }    
+            }
+
+            // Search each column in related models
+            foreach ($q['searchRelated'] as $table => $columns) {
+                foreach ($columns as $column) {
+                    $eColumn = trim($column, '^');
+                    $exactSearch = ($column=='^' . $eColumn . '^');
+                    foreach ($search_list as $word) {
+                        $query->orWhereHas($table, function($qq) use ($column, $word, $q, $exactSearch, $eColumn) {
+                            if ($exactSearch) {
+                                $w = [[$eColumn, '=', $word]];                   // Exact match
+                            } else {    
+                                $w = [[$column, 'LIKE', '%' . $word . '%']];     // Loose match
+                            }
+                            if (array_key_exists('filter', $q)) {                // Filter
+                                $w[] = [$q['filter'][0], $q['filter'][1], $q['filter'][2]];
+                            }
+                            $qq->where($w);
+                        }); 
+                    }
+                }
+            }
+
+            // We are doing a complex search !!
+            // Do it all again and use the intersect of the OR and AND queries 
+            if (count($search_listAnd) > 0) {
+                $search_list = $search_listAnd;
+                $query2 = $model::select('*');
+                // Search each column in our model
+                foreach ($q['searchModel'] as $column) {
+                    foreach ($search_list as $word) {
+                        $query2->orWhere($column, 'LIKE', '%' . $word . '%');
+                    }    
+                }
+                // Search each column in related models
+                foreach ($q['searchRelated'] as $table => $columns) {
+                    foreach ($columns as $column) {
+                        foreach ($search_list as $word) {
+                            $query2->orWhereHas($table, function($qq) use ($column, $search, $word, $q){
+                                $qq->where($column, 'LIKE', '%' . $word . '%');
+                            }); 
+                        }
+                    }
+                }
+
+                $q1 = $query ->get()->pluck('id')->toarray();
+                $q2 = $query2->get()->pluck('id')->toarray();
+                $query = $model::select('*')->whereIn('id', array_intersect($q1, $q2));
+            } // End complex search
+
+            // Eager load each related model
+            foreach ($q['searchRelated'] as $table => $columns) {
+                $query = $query->with($table);
+            }
+        }    
+
+        // Filter everything - needed here for No Search case ********************************************
+        if (array_key_exists('filter', $q)) {
+            $query->where(function ($qq) use ($q) {
+                $qq->where($q['filter'][0], $q['filter'][1], $q['filter'][2]);
+            });
+        }
+
+        // Handle the ->sort data ************************************************************************
+        if (array_key_exists('sort', $q)) {
+            $sort = is_object($data) ? $data->sort : false;
+            $sort = $sort ?: $q['sort']['default'];
+            if (strlen($sort) == 3) {
+                $sort = substr($sort, 0, 1) . (substr($sort, 2, 1) == 'a' ? 'd' : 'a');
+            }
+            $sortKey = substr($sort, 0, 1);
+            if (array_key_exists($sortKey, $q['sort'])) {
+                $s = explode(',', $q['sort'][$sortKey]);
+                $sortDir = strlen($sort) > 1 ? substr($sort, 1, 1) : $s[0];
+                $sortDir = $sortDir == 'a' ? 'asc' : 'desc';
+
+                if (is_object($data)) {
+                    $data->sort = $sortKey . substr($sortDir, 0, 1);
+                }    
+                if (count($s) == 2) {                                                      // Simple column sort
+                    $query->orderBy($s[1], $sortDir);
+                } else {                                                                   // Sort on Relationship
+                    // This rather complex routine is required to build a "Sort on Relationship"
+                    // that can be embeded into the query builder
+                    $query->withCount([$s[2] . ' as ' . $s[1] => function ($qq) use ($s) {
+                        $qq->select($s[1]);
+                    }])->orderBy($s[1], $sortDir);
+                }
+            } 
+        }
+
+        //dd($query);
         return $query;
     }
 }

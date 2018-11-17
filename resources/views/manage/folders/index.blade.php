@@ -36,11 +36,10 @@
 
 		<div class="row mt-3" id="accordionf">
 			<div class="col-md-12 myWrap">
-
 				<div id="accordionf1" class="collapse collapsef show" data-parent="#accordionf">
 					<table class="table table-hover table-responsive-lg wrap-string">
 						<thead class="thead-dark" style="color:inherit;">
-							<th class="thleft">
+							<th class="thleft" width="40">
 								<a href="{{ route('folders.index', ['sort'=>'i'.$sort, 'search'=>$search]) }}">
 									<i id="sort-i" class="ml-2"></i><i class="fas fa-hashtag mb-1"></i>
 								</a>	
@@ -55,15 +54,27 @@
 									<i id="sort-s" class="ml-2"></i>Slug
 								</a>	
 							</th>
-							<th>Category</th>
-							<th>Owner</th>
 							<th class="thleft">
+								<a href="{{ route('folders.index', ['sort'=>'c'.$sort, 'search'=>$search]) }}">
+									<i id="sort-c" class="ml-2"></i>Category
+								</a>	
+							</th>
+							<th class="thleft">
+								<a href="{{ route('folders.index', ['sort'=>'o'.$sort, 'search'=>$search]) }}">
+									<i id="sort-o" class="ml-2"></i>Owner
+								</a>	
+							</th>
+							<th class="thleft" width="80px">
 								<a href="{{ route('folders.index', ['sort'=>'m'.$sort, 'search'=>$search]) }}">
 									<i id="sort-m" class="ml-2"></i>Size
 								</a>	
 							</th>
 							<th>Used</th>
-							<th>Status</th>
+							<th class="thleft" width="80px">
+								<a href="{{ route('folders.index', ['sort'=>'f'.$sort, 'search'=>$search]) }}">
+									<i id="sort-f" class="ml-2"></i>Status
+								</a>	
+							</th>
 							<th class="thleft" width="120px">
 								<a href="{{ route('folders.index', ['sort'=>'u'.$sort, 'search'=>$search]) }}">
 									<i id="sort-u" class="ml-2"></i>Updated

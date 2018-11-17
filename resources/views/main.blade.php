@@ -21,9 +21,10 @@
                         @yield('contentLarge')
             		</div>
                 </div>
+                @include('partials._footer')
             </div>
         </div>
-        @include('partials._footer')
+        {{-- @include('partials._footer') NS01 Moved to fix browser Print out of order --}}
 
         @include('partials._javascript')
         @yield('scripts')

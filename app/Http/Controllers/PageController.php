@@ -3,97 +3,135 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redirect;
 use GuzzleHttp\Client;
-use App\Category;
+use App\Post;
 use App\File;
 use App\Folder;
-use App\Post;
-use App\Tag;
 use Auth;
 use Mail;
 use Purifier;
 use Session;
+use Validator;
+
+use DB;
 
 class PageController extends Controller
  {
 
-	public function __construct(Request $request) {
+    public function __construct(Request $request) {
         $this->middleware(function ($request, $next) {
+        	DB::enableQueryLog();
             session(['zone' => 'Blog']);
             return $next($request);
         });
-	}
+    }
 
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
-    // It requires the custom search_helper() function in Helpers.php.
-    // If you change Helpers.php you should do "dump-autoload". 
-    public function searchQuery($search = '', $op=false) {
-        if ($op == 'pc') {
-        	$search = '"' . $search . '"';
+    // The table is sorted (ascending or descending) and finally filtered.
+    // Looses searches are performed unless the search string is enclosed in '^'
+    // It requires the custom queryHelper() function in Helpers.php.
+    // $posts = paginateHelper($this->query(), $request, 12, 4, 192, 4);
+    public function query($model=false) {
+        if ($model == 'pca') {									// Posts with this Category name
 	        $query = [
 	            'model'         => 'Post',
 	            'searchModel'   => [],
 	            'searchRelated' => [
-					'category' 	=> ['name'],
+					'category' 	=> ['^name^'],
 	            ],
-	            'filter' 		=> ['status', '>=', '4']
+                'sort'        => [
+	                'u'       => 'd,updated_at',
+	                'default' => 'u'                       
+	            ],
+	            'filter' 	  => ['status', '>=', '4']
         	];
-        } elseif ($op == 'f') {
-        	$search = '"' . $search . '"';
+        } elseif ($model == 'pta') {							// Posts with this Tag name
+	        $query = [
+	            'model'         => 'Post',
+	            'searchModel'   => [],
+	            'searchRelated' => [
+					'tags' 		=> ['^name^'],
+	            ],
+                'sort'        => [
+	                'u'       => 'd,updated_at',
+	                'default' => 'u'                       
+	            ],	            
+	            'filter'	  => ['status', '>=', '4']
+        	];        	
+        } elseif ($model == 'pus') {							// Posts with this User name
+	        $query = [
+	            'model'         => 'Post',
+	            'searchModel'   => [],
+	            'searchRelated' => [
+					'user' 		=> ['^name^'],
+					'comments' 	=> ['^name^'],
+	            ],
+                'sort'        => [
+	                'u'       => 'd,updated_at',
+	                'default' => 'u'                       
+	            ],	            
+	            'filter'	  => ['status', '>=', '4']
+        	];
+
+
+
+
+
+
+        } elseif ($model == 'f') {
 	        $query = [
 	            'model'         => 'Folder',
 	            'searchModel'   => ['slug'],
 	            'searchRelated' => [],
 	            'filter'		=> ['status', '>=', '1']
         	];
-        } elseif ($op == 'fi') {
-        	$search = '"' . $search . '"';
+        } elseif ($model == 'fi') {
 	        $query = [
 	            'model'         => 'File',
 	            'searchModel'   => ['id'],
 	            'searchRelated' => [],
 	            'filter'		=> ['status', '>=', '4']
         	];        	              	        	        	
-        } elseif ($op == 'pt') {
-        	$search = '"' . $search . '"';
-	        $query = [
-	            'model'         => 'Post',
-	            'searchModel'   => [],
-	            'searchRelated' => [
-					'tags' 		=> ['name'],
+        } elseif ($model == 'files') {
+        	$query = [
+	            'model'         => 'File',
+	            'searchModel'   => ['^folder_id^'],
+	            'searchRelated' => [],
+                'sort'   => [
+	                'i'       => 'd,id',
+   	                't'       => 'a,title',
+	                's'       => 'd,size',
+	                'p'       => 'd,published_at',
+	                'default' => 'i'                       
 	            ],
-	            'filter'		=>['status', '>=', '4']
-        	];        	
-        } elseif ($op == 'pu') {
-        	$search = '"' . $search . '"';
-	        $query = [
-	            'model'         => 'Post',
-	            'searchModel'   => [],
-	            'searchRelated' => [
-					'user' 		=> ['name'],
-					'comments' 	=> ['name'],
-	            ],
-	            'filter'		=> ['status', '>=', '4']
+  	            'filter'		=> ['status', '>=', '4']
         	];
-        } elseif ($op == 'category') {
+        } elseif ($model == 'category') {
         	$query = [
 	            'model'         => 'Category',
 	            'searchModel'   => [],
 	            'searchRelated' => [
-					'posts'		=> ['status'],
+					'posts'		=> ['^status^'],
 	            ],
+                'sort'   => [
+	                'n'       => 'a,name',
+	                'default' => 'n'                       
+	            ],	            	            
         	];
-        } elseif ($op == 'tag') {
+        } elseif ($model == 'tag') {
         	$query = [
 	            'model'         => 'Tag',
 	            'searchModel'   => [],
 	            'searchRelated' => [
-					'posts'		=> ['status'],
+					'posts'		=> ['^status^'],
 	            ],
+                'sort'        => [
+	                'n'       => 'a,name',
+	                'default' => 'n'                       
+	            ],	            
         	];
         } else {        	
-	        $query = [
+	        $query = [											// Any published Post with these search values
 	            'model'         => 'Post',
 	            'searchModel'   => ['title', 'slug', 'image', 'body', 'excerpt'],
 	            'searchRelated' => [
@@ -104,50 +142,47 @@ class PageController extends Controller
 					'folders'	=> ['name', 'slug', 'description'],
 					'albums'	=> ['title', 'slug', 'description']
 	            ],
-	            'filter'		=> ['status', '>=', '4']
+                'sort'        => [
+	                'u'       => 'd,updated_at',
+	                'default' => 'u'                       
+	            ],
+	            'filter'	  => ['status', '>=', '4']
 	        ];
         }
-        return search_helper2($search, $query);
+        return $query;
     }
 
 	// We only include "Published" Posts in this public view.
 	// The "public" filter is set in the above searchQuery
-	// We are only selecting Tags which have "Published" Posts.  
-	public function getHomePost(Request $request) {
-        $posts      = $this->searchQuery($request->search)->with('tags')->orderBy('updated_at', 'desc')->paginate(4, ['*'], 'pageP');
-        $tags       = $this->searchQuery('4', 'tag')     ->orderBy('name', 'asc')->get();
-        $categories = $this->searchQuery('4', 'category')->orderBy('name', 'asc')->get();
-		if ($posts && $posts->count() > 0) {
-
-		} else {
-			Session::flash('failure', 'No blog Posts were found.');
-		}
-		return view('pages.welcome', ['posts' => $posts, 'categories' => $categories, 'tags' => $tags, 'search' => $request->search]);
-	}
-
-	// We only include "Published" Posts in this public view.
-	// The "public" filter is set in the above searchQuery
-	public function getIndexPost(Request $request) {
-		if ($request->pc) {
-			$request->search = $request->pc;
-        	$posts = $this->searchQuery($request->search, 'pc')->orderBy('updated_at', 'desc')->paginate(4,  ['*'], 'pagePC');
-		} elseif ($request->pf) {
-			$request->search = $request->pf;
-        	$posts = $this->searchQuery($request->search, 'pf')->orderBy('updated_at', 'desc')->paginate(4,  ['*'], 'pagePF');
+	public function indexPost(Request $request) {
+		if ($request->pal) {								
+			$searchType = 'pal';							// Posts with these Albums
+			$request->search = $request->pal;
+		} elseif ($request->pca) {								
+			$searchType = 'pca';							// Posts with this Category
+			$request->search = '"'.$request->pca.'"';
+		} elseif ($request->pfo) {
+			$searchType = 'pfo';							// Posts with these Folders
+			$request->search = $request->pfo;
 		} elseif ($request->pfi) {
+			$searchType = 'pfi';							// Posts with these Files
 			$request->search = $request->pfi;
-        	$posts = $this->searchQuery($request->search,'pfi')->orderBy('updated_at', 'desc')->paginate(4,  ['*'], 'pagePFI');   	     	
-		} elseif ($request->pt) {
-			$request->search = $request->pt;
-        	$posts = $this->searchQuery($request->search, 'pt')->orderBy('updated_at', 'desc')->paginate(4,  ['*'], 'pagePT');
-		} elseif ($request->pu && Auth::check()) {			
-			$request->search = Auth::user()->name;
-        	$posts = $this->searchQuery($request->search, 'pu')->orderBy('updated_at', 'desc')->paginate(10, ['*'], 'pagePU');
+		} elseif ($request->pph) {
+			$searchType = 'pph';							// Posts with these Photos
+			$request->search = $request->pph;			
+		} elseif ($request->pta) {
+			$searchType = 'pta';							// Posts with this Tag
+			$request->search = '"'.$request->pta.'"';
+		} elseif ($request->pus && Auth::check()) {	
+			$searchType = 'pus';							// Posts with current User
+			$request->search = '"'.Auth::user()->name.'"';
 		} else {
-	        $posts = $this->searchQuery($request->search      )->orderBy('updated_at', 'desc')->paginate(4,  ['*'], 'pageP');
+			$searchType = false;
 		}
+        $posts = paginateHelper($this->query($searchType), $request, 4, 4, 48, 2);
+
 		if ($posts && $posts->count() > 0) {
-		
+			//dd($this->query($searchType), DB::getQueryLog(), $posts);
 		} else {
 			Session::flash('failure', 'No blog Posts were found.');
 		}
@@ -156,94 +191,59 @@ class PageController extends Controller
 
 	// We only include "Published" Posts in this public view.
 	// The "public" filter is set in the above searchQuery
-	// This in NOT a publlic method as it may be used to identify a User's name...
-	// ... so its protected behind an Administrator route.
-	// The public version of this (above) only lists the Logged in User's Posts.
-	// The Post search facility can search on User->name but is also protected. 
-	public function getIndexUserPost(Request $request, $user) {
-		$request->search = $user;
-        $posts = $this->searchQuery($request->search, 'pu')->orderBy('updated_at', 'desc')->paginate(4, ['*'], 'pagePU');
-   		if ($posts && $posts->count() > 0) {
-		
+	// We are only selecting Tags which have "Published" Posts.  
+	public function showHome(Request $request) {
+        $posts = paginateHelper($this->query(), $request, 4, 1, 48, 1, true); // size($request->pp), default, min, max, step, force
+        $request->search  = '4';
+        $request->sort    = false; 
+        $categories = queryHelperTest($this->query('category'), $request)->get();
+        $tags       = queryHelperTest($this->query('tag'     ), $request)->get();
+
+//dd($request);
+//$tagsFile   	  = queryHelperTest($this->query('tagFile'       ), $request)->get();
+//$request->search  = '1'; 										      // Public Status (Folders)
+//$categoriesFolder = queryHelperTest($this->query('categoryFolder'), $request)->get();
+//$categoriesAll = $categories->merge($categoriesFolder);
+//foreach ($categoriesAll as $category) {
+//	echo $category->name.' '.$category->posts->count().' '.$category->folders->count().'<br>';
+//}
+//dd($categories, $categoriesFolder, $categoriesAll);
+   		$data = [];
+		$data['name'] = env('APP_NAME');
+
+		if ($posts && $posts->count() > 0) {
+
 		} else {
 			Session::flash('failure', 'No blog Posts were found.');
 		}
-		return view('blog.index', ['posts' => $posts, 'search' => $request->search]);
+		return view('pages.welcome', ['posts' => $posts, 'categories' => $categories, 'tags' => $tags,
+			'search' => $request->search, 'data' => $data]);
 	}
 
-	// We only include "Published" Posts in this public view.
-	public function getSinglePostBySlug($slug) {
-		$post = Post::where('slug', $slug)->where('status', '>=', '4')->first();
-		if ($post) { 
-			// We only include "Approved" comments in this public view.
-			// Comments are automatically set Approved on creation.
-			// Comment approval status may be edited by an authorised User.  
-			$post->comments = $post->comments->where('approved', '1');
-			return view('blog.singlePost', ['post' => $post]);
-		} else {
-			Session::flash('failure', 'Blog Post "' . $slug . '" is not available.');
-			return redirect()->back();
-		}
-	}
-
-	// We only include "Published" Posts in this public view.
-	public function getSinglePost($id) {
-		$post = Post::where('id', $id)->where('status', '>=', '4')->first();
-		if ($post) { 
-			// We only include "Approved" comments in this public view.
-			// Comments are automatically set Approved on creation.
-			// Comment approval status may be edited by an authorised User.  
-			$post->comments = $post->comments->where('approved', '1');
-			return view('blog.singlePost', ['post' => $post]);
-		} else {
-			Session::flash('failure', 'Blog Post "' . $id . '" is not available.');
-			return redirect()->back();
-		}
-	}
-
-	// We only include "Public" Folders in this public view.
-	public function getSingleFolder($slug) {
-		$folder = Folder::where('slug', $slug)->where('status', '>=', '1')->first();
-		if ($folder) {
-			return view('blog.singleFolder', ['folder' => $folder]);
-		} else {
-			Session::flash('failure', 'Blog Folder "' . $slug . '" is not available.');
-			return redirect()->back();
-		}
-	}
-
-	// We only include "Published" Files within "Public" Folders in this public view.
-	public function getSingleFile($id) {
-		$file = File::where('id', $id)->with('folder')->first();
-		if ($file && $file->status >= 4 && $file->folder->status >= 1) {
-			return view('blog.singleFile', ['file' => $file]);
-		} else {
-			Session::flash('failure', 'Blog File "' . $id . '" is not available.');
-			return redirect()->back();
-		}
-	}
-
-	public function getAbout() {
+	public function showAbout() {
 		$data = [];
-		$data['name']  = env('APP_OWNER');
-		$data['email'] = env('APP_EMAIL');
+		$data['name'] = env('APP_NAME');
 		return view('pages.about')->with('data', $data);
 	}
 
-	public function getContact() {
+	public function showContact() {
 		$data = [];
-		$data['name']  = env('APP_OWNER');
-		$data['email'] = env('APP_EMAIL');		
+		$data['owner'] = env('APP_OWNER');
+		$data['key'  ] = myConstants('CAPTCHA_SITEKEY');
 		return view('pages.contact')->with('data', $data);
 	}
 
 	public function postContact(Request $request) {
-		$this->validate($request, [
+        // We use our own validator here as auto validation cannot handle error return from a POST method 
+        $validator = Validator::make($request->all(), [
 			'name' 		=> 'required|min:3|max:191',
 			'email' 	=> 'required|email|min:5|max:191',
 			'subject'	=> 'required|min:3|max:191',
 			'message' 	=> 'required|min:8|max:2048',
-		]);
+        ]);
+        if ($validator->fails()) {
+            return redirect()->route('blog.contact')->withErrors($validator)->withInput();
+        }
 
         // We protect this public Form with a Captcha which protects us from Bots etc.
         // Google recaptcha account credentials have been stored as ENV values.
@@ -264,7 +264,7 @@ class PageController extends Controller
         } else { $myrc = false; }
         if (!$myrc) {
             Session::flash('failure', "You're probably not human!");
-   			return redirect()->back()->withInput();
+            return redirect()->route('blog.contact')->withInput();
         }
 
 		$data = [
@@ -286,8 +286,76 @@ class PageController extends Controller
 			return redirect()->route('home');
 		} else {
 			Session::flash('failure', 'The eMail was NOT sent.');
-   			return redirect()->back()->withInput();
+            return redirect()->route('blog.contact')->withInput();
 		}
 	}
+
+	// We only include "Published" Posts in this public view.
+	// $select may be an id OR a slug
+	public function showPost($select) {
+		if (is_int($select)) {
+			$post = Post::where('id', $select)->where('status', '>=', '4')->first();
+		} else {
+			$post = false;
+		}
+		if (!$post) {
+			$post = Post::where('slug', $select)->where('status', '>=', '4')->first();
+		}
+
+		if ($post) { 
+			// We only include "Approved" comments in this public view.
+			// Comments are automatically set Approved on creation.
+			// Comment approval status may be edited by an authorised User. 
+			$post->comments = $post->comments->where('approved', '1')->sortByDesc('updated_at');
+			return view('blog.showPost', ['post' => $post]);
+		} else {
+			Session::flash('failure', 'Blog Post "' . $select . '" is not available.');
+			return redirect()->back();
+		}
+	}
+
+	// We only include "Public" Folders & public files in this public view.
+	public function showFolder(Request $request, $select) {
+		//dd($request, $select, $request->search);
+		if (is_int($select)) {
+			$folder = Folder::where('id', $select)->where('status', '>=', '1')->with(['files' => function ($q) {
+				$q->where('status', '>=', '4');
+			}])->first();
+		} else {
+			$folder = false;
+		}
+		if (!$folder) {
+			$folder = Folder::where('slug', $select)->where('status', '>=', '1')->with(['files' => function ($q) {
+				$q->where('status', '>=', '4');
+			}])->first();		}
+
+		$list['f'] = fileStatus();
+        $list['d'] = folderStatus();   
+
+		if ($folder) {
+			$request->search = $folder->id;
+	        $files = paginateHelper($this->query('files'), $request, 12, 4, 256, 4);
+	        $request->search = '4';
+            $tagsPost = queryHelperTest($this->query('tag'), $request)->get();
+	        $request->search = null;
+			return view('blog.showFolder', ['folder' => $folder, 'files' => $files, 'tagsPost' => '$tagsPost', 
+				'search' => $request->search, 'sort' => $request->sort, 'list' => $list]);
+		} else {
+			Session::flash('failure', 'Blog Folder "' . $select . '" is not available.');
+			return redirect()->back();
+		}
+	}
+
+	// We only include "Published" Files within "Public" Folders in this public view.
+	public function showFile($id) {
+		$file = File::where('id', $id)->with('folder')->first();
+
+		if ($file && $file->status >= 4 && $file->folder->status >= 1) {
+			return view('blog.showFile', ['file' => $file]);
+		} else {
+			Session::flash('failure', 'Blog File "' . $id . '" is not available.');
+			return redirect()->back();
+		}
+	}		
 
 }

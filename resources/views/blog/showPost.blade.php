@@ -28,16 +28,16 @@
 				<p>
 					@foreach ($post->folders as $folder)
 						@if ($folder->status=='1')
-							<a href="{{ url('f/'.$folder->slug) }}""><span class="badge badge-success">{{ $folder->name }}</span></a>
+							<a href="{{ url('fo/'.$folder->slug) }}"><span class="badge badge-success">{{ $folder->name }}</span></a>
 						@endif
 					@endforeach
 
 					@foreach ($post->tags as $tag)
-						<a href="{{ url('blog?pt='.$tag->name) }}""><span class="badge badge-info">{{ $tag->name }}</span></a>
+						<a href="{{ url('blog?pta='.$tag->name) }}"><span class="badge badge-info">{{ $tag->name }}</span></a>
 					@endforeach
 				</p>
 				<p>
-					Posted In: {{ $post->category->name }}
+					Posted In <a href="{{ url('blog?pca='.$post->category->name) }}"><span class="badge badge-secondary">{{ $post->category->name }}</span></a>
 					<span class="float-right">Published: {{ date('j M Y, h:i a', strtotime($post->published_at)) }}</span>
 				</p>
 			</div>

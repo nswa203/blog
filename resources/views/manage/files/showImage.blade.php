@@ -36,7 +36,6 @@
 	@if($file)
 		<div class="row">
 			<div class="col-md-12 myWrap">
-
 					@if(substr($file->mime_type, 0, 2) == 'au' or substr($file->mime_type, 0, 2) == 'vi' or $file->ext == 'mp3')
 						@if((substr($file->mime_type, 0, 2) == 'au' or $file->ext == 'mp3') && isset($meta))
 							<div class="text-center mb-4" >
@@ -79,11 +78,12 @@
 						</div>
 					@else
 						<div class="text-center">
+						    {{-- https://blog/manage/private/find/pdf/icons --}}
 							<a href="{{ route('private.getFile', [$file->id]) }}">
 								Click to Open {{ $file->mime_type }}
 								<img src="{{ route('private.getFile', [$file->id]) }}"
 								 style="object-fit:contain; width:100%; height:91vh;"
-								 onError="this.onerror=null; this.src='{{ asset('favicon.ico') }}';">
+								 onError="this.onerror=null; this.src='{{ asset('favicon.ico') }}';" />
 							</a>
 						</div>		
  					@endif
@@ -170,14 +170,13 @@
 				makegrid();												// Adds Cursor Tracking box		
 				addSearchBox(1);										// Adds Search Box										
 				if (fgpx) {												// Load GPX file
-
 					OpenLayers.Util.onImageLoadError = function() {console.log("error");}; 
-
 					lgpx = new OpenLayers.Layer.GML("gpx", fgpx, {
 						format: OpenLayers.Format.GPX,
-					    style: {strokeColor: "blue", strokeWidth: 5, strokeOpacity: 0.4},
+					    style: {strokeColor: "blue", strokeWidth: 6, strokeOpacity: 0.55}, 
 					    projection: new OpenLayers.Projection("EPSG:4326")
 			        });
+
 					osMap.addLayer(lgpx);
 					osMap.zoomToExtent(lgpx.getDataExtent());
 					lgpx.events.register("loadend", lgpx, function() {

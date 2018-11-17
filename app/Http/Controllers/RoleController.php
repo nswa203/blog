@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use App\Role;
 use App\Permission;
+use App\Team;
 use App\User;
 use Session;
 use Validator;

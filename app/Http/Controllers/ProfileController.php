@@ -26,7 +26,7 @@ class ProfileController extends Controller
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
     // The table is sorted (ascending or descending) and finally filtered.
     // It requires the custom queryHelper() function in Helpers.php.
-    public function searchSortQuery($request) {
+    public function query() {
         $query = [
             'model'         => 'Profile',
             'searchModel'   => ['username', 'about_me', 'phone', 'address'],
@@ -34,15 +34,17 @@ class ProfileController extends Controller
                 'folders' => ['name', 'slug', 'directory', 'description'],
                 'user'    => ['name', 'email']
             ],
-            'sortModel'   => [
+            'sort'        => [
                 'i'       => 'd,id',                                                      
-                'n'       => 'a,username',
+                'p'       => 'a,username',
                 'c'       => 'd,created_at',
                 'u'       => 'd,updated_at',
+                'n'       => 'a,name,user',
+                'e'       => 'a,email,user',
                 'default' => 'n'                       
             ]                        
         ];
-        return queryHelper($query, $request);
+        return $query;
     }
     
     /**
@@ -51,9 +53,7 @@ class ProfileController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        $pager = pageSize($request, 'profilesIndex', 12, 4, 192, 4);    // size($request->pp), sessionTag, default, min, max, step
-        $profiles = $this->searchSortQuery($request)->paginate($pager['size']);
-        $profiles->pager = $pager;
+        $profiles = paginateHelper($this->query(), $request, 12, 4, 192, 4); // size($request->pp), default, min, max, step
 
         if ($profiles && $profiles->count() > 0) {
 

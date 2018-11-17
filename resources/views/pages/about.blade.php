@@ -6,7 +6,7 @@
 	<div class="row">
 		<div class="col-md-12 myWrap">
 			<div class="jumbotron">
-				<h1 class="mb-5"><span class="fas fa-info-circle mr-4"></span>About {{ env('APP_NAME') }}</h1>
+				<h1 class="mb-5"><span class="fas fa-info-circle mr-4"></span>About {{ $data['name'] }}</h1>
 				<p>
 					This site is a blog designed for registered users to create postings for a public readership. Anyone may read published postings and add comments.
 				</p>
