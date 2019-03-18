@@ -9,10 +9,10 @@
 	@if($folder)
 		<div class="row">
 			<div class="col-md-8 myWrap">
-				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-folder mr-4"></span>Folder {{ $folder->name }}</a></h1>
+				<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-folder-open mr-4"></span>Folder {{ $folder->name }}</a></h1>
 				<hr>
-				<a href="{{ route('private.getFolderFile', [$folder->id, 'Folder.jpg']) }}">
-					<img src="{{ route('private.getFolderFile', [$folder->id, 'Folder.jpg']) }}" xwidth="150px" class="img-frame float-left mr-4" style="margin-top:0px; margin-bottom:10px;"
+				<a href="{{ route('folders.getFolderFile', [$folder->id, 'Folder.jpg']) }}">
+					<img src="{{ route('folders.getFolderFile', [$folder->id, 'Folder.jpg']) }}" xwidth="150px" class="img-frame float-left mr-4" style="margin-top:0px; margin-bottom:10px;"
 						onerror="this.onerror=null; this.src='{{ asset('favicon.ico') }}';"
 					/>
 				</a>
@@ -21,13 +21,13 @@
 					<a href="{{ route('folders.show', $folder->id) }}">{{ route('folders.show', $folder->id) }}</a>
 				</p>	
 				<p>Image:
-					<a href="{{ route('private.getFolderFile', [$folder->id, 'Folder.jpg']) }}">{{ route('private.getFolderFile', [$folder->id, 'Folder.jpg']) }}</a>
+					<a href="{{ route('folders.getFolderFile', [$folder->id, 'Folder.jpg']) }}">{{ route('folders.getFolderFile', [$folder->id, 'Folder.jpg']) }}</a>
 				</p>
 				<p>URL:
-					<a href="{{ url('fo/'.$folder->slug) }}">{{ url('fo/'.$folder->slug) }}</a>
+					<a href="{{ route('blog.folder', [$folder->slug]) }}">{{ route('blog.folder', [$folder->slug]) }}</a>
 				</p>
 				<p>Posts:
-					<a href="{{ url('blog?pf='.$folder->slug) }}">{{ url('blog?pf='.$folder->slug) }}</a>
+					<a href="{{ route('blog.index', ['pfo='.$folder->slug]) }}">{{ route('blog.index', ['pfo='.$folder->slug]) }}</a>
 				</p>				
 				<div style="clear:both;">
 					<h4>{!! $folder->description !!}</h4>
@@ -59,7 +59,7 @@
 		
 					<div class="row mt-3">
 						<div class="col-sm-12">
-						{!! Html::decode(link_to_route('folders.index', '<i class="fas fa-folder mr-2"></i>See All Folders', [], ['class'=>'btn btn-outline-dark btn-block'])) !!}
+						{!! Html::decode(link_to_route('folders.index', '<i class="fas fa-folder-open mr-2"></i>See All Folders', [], ['class'=>'btn btn-outline-dark btn-block'])) !!}
 						</div>						
 					</div>
 				</div>
@@ -70,7 +70,7 @@
 		</div>
 
 		@include('partials.__files',    ['count' => $folder->files->count(),    'zone' => 'Folder', 'page' => 'pageFi'])
-		@include('partials.__posts',    ['count' => $folder->posts->count(),    'zone' => 'Folder', 'page' => 'pageP'])
+		@include('partials.__posts',    ['count' => $folder->posts->count(),    'zone' => 'Folder', 'page' => 'pagePo'])
 		@include('partials.__profiles', ['count' => $folder->profiles->count(), 'zone' => 'Folder', 'page' => 'pagePr'])
 
 	@endif

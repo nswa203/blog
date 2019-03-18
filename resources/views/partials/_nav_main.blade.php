@@ -1,7 +1,7 @@
 <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-light">
 	<a class="navbar-brand" href="/">
-		<img src="{{ Request::secure() ? asset('favicon.ico') : asset('faviconRed.ico') }}" height="32" class="mb-2 mr-2">
-		{{ env('APP_NAME') }}
+		<img src="{{ Request::secure() ? asset('favicon.ico') : asset('faviconRed.ico') }}" height="32" class="mb-2 mr-2" data-toggle="tooltip" data-placement="bottom" title="Blue globe - you have a secure connection (SSL). If Red, reconnect with https:">
+		{{ config('app.name') }}
 	</a>
 	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 		<span class="navbar-toggler-icon"></span>
@@ -45,9 +45,17 @@
 						<a class="dropdown-item" href="{{ route('tests.create'	 	) }}"><span class="fas fa-vial			mr-2"></span>Tests Create</a>
 						<a class="dropdown-item" href="{{ route('tests.edit', '1' 	) }}"><span class="fas fa-vial			mr-2"></span>Tests Edit</a>
 							<div class="dropdown-divider"></div>
+						@if(Auth::user()->profile['id'])
+							<a class="dropdown-item" href="{{ route('profiles.edit', [Auth::user()->profile['id']]) }}"><span class="fas fa-user-circle   mr-2"></span>Update Profile</a>
+						@else
+							<a class="dropdown-item" href="{{ route('profiles.create', [Auth::user()->id]) }}"><span class="fas fa-user-circle   mr-2"></span>Create Profile</a>
+						@endif
+						<a class="dropdown-item" href="{{ route('changePassword'    ) }}"><span class="fas fa-user-secret   mr-2"></span>Change Password</a>
+
 						{!! Form::open(['route'=>['logout'],'method'=>'POST']) !!}
 						{!! Form::button('<span class="fas fa-sign-out-alt mr-2"></span>Log Out', ['type'=>'submit', 'class'=>'dropdown-item'] ) !!}
 						{!! Form::close() !!}
+
 					</div>
 				</li>
 			@else

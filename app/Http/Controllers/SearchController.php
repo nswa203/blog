@@ -11,9 +11,10 @@ class SearchController extends Controller
     /**
      * $search is routed to the appropriate controller via the Request.
      */
+    // NS01 enable special chars in search eg "chalk + cheese". 
     public function index(Request $request) {
         $zone = session('zone');
-        $search = $request->search ? 'search=' . $request->search : null;
+        $search = $request->search ? 'search=' . urlencode($request->search) : null;  //NS01
 
         if      ($zone == 'Posts')      { $route = 'posts.index'; }
         elseif  ($zone == 'Comments')   { $route = 'comments.index'; }

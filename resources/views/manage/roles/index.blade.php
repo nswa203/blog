@@ -28,7 +28,7 @@
 			<div class="col-md-12">
 				<table class="table table-hover table-responsive-lg">
 					<thead class="thead-dark" style="color:inherit;">
-						<th class="thleft">
+						<th class="thleft" width="40px">
 							<a href="{{ route('roles.index', ['sort'=>'i'.$sort, 'search'=>$search]) }}">
 								<i id="sort-i" class="ml-2"></i><i class="fas fa-hashtag mb-1"></i>
 							</a>	
@@ -38,12 +38,12 @@
 								<i id="sort-n" class="ml-2"></i>Name
 							</a>	
 						</th>
-						<th class="thleft">
+{{--						<th class="thleft">
 							<a href="{{ route('roles.index', ['sort'=>'s'.$sort, 'search'=>$search]) }}">
 								<i id="sort-s" class="ml-2"></i>Slug
 							</a>	
 						</th>
-						<th class="thleft">
+--}}					<th class="thleft">
 							<a href="{{ route('roles.index', ['sort'=>'d'.$sort, 'search'=>$search]) }}">
 								<i id="sort-d" class="ml-2"></i>Description
 							</a>	
@@ -65,8 +65,8 @@
 							<tr>
 								<th>{{ $role->id }}</th>
 								<td>{{ $role->display_name }}</td>
-								<td>{{ $role->name }}</td>
-								<td>{{ myTrim($role->description, 32) }}</td>
+{{--							<td>{{ $role->name }}</td>
+--}}							<td>{{ myTrim($role->description, 80) }}</td>
 								<td>{{ date('j M Y', strtotime($role->created_at)) }}</td>
 								<td>{{ date('j M Y', strtotime($role->updated_at)) }}</td>
 								<td class="text-right" nowrap>

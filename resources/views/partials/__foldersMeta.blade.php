@@ -18,7 +18,7 @@
 	</dd>
 	<dt class="col-sm-5">Status:</dt>						
 	<dd class="col-sm-7 {{ $folder->size / $folder->max_size / 1048576 > .85 ? 'text-danger' : 'text-success' }}">
-		{{ $folder->max_size}}M - {{ round(($folder->size / $folder->max_size / 1048576) * 100, 2) }}% Used 
+		{{ $folder->max_size }}M - {{ round(($folder->size / $folder->max_size / 1048576) * 100, 2) }}% Used 
 	</dd>								
 	<dt class="col-sm-5">Owner:</dt>
 	<dd class="col-sm-7">

@@ -15,15 +15,41 @@ class PermissionController extends Controller
 
     public function __construct(Request $request) {
         $this->middleware(function ($request, $next) {
-            session(['zone' => 'Permissions']);
+            $owner_id = $request->route('user') ?: '*';         
+
+            if (!permit($this->permits($owner_id))) {
+                Session::flash('failure', "It doesn't look like you have permission for that action!");
+                return redirect(previous());
+            }
+
+            session(['zone' => 'Permissions']);                 // Set the active zone for search()
+            previous(url($request->getPathInfo()));             // Set the previous url for redirect(previous()) 
             return $next($request);
         });
+    }
+
+    // These permits are used by permit() in the __contruct() middleware to secure the controller actions 
+    // This could be done in the Route config - but it seems to make more sense to do it in the controller.
+    // $owner_id='*' permits all Users for a permission   
+    public function permits($owner_id='^') {
+        $permits = [
+            'index'   => 'permission:permissions-read',
+            'show'    => 'permission:permissions-read',
+            'create'  => 'permission:permissions-create',
+            'store'   => 'permission:permissions-create',
+            'edit'    => 'permission:permissions-update',
+            'update'  => 'permission:permissions-update',
+            'delete'  => 'permission:permissions-delete',
+            'destroy' => 'permission:permissions-delete',
+            'default' => '' 
+        ];
+        return $permits;
     }
 
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
     // The table is sorted (ascending or descending) and finally filtered.
     // It requires the custom queryHelper() function in Helpers.php.
-    public function searchSortQuery($request) {
+    public function query() {
         $query = [
             'model'         => 'Permission',
             'searchModel'   => ['name', 'display_name', 'description'],
@@ -31,7 +57,7 @@ class PermissionController extends Controller
                 'roles' => ['name', 'display_name', 'description'],
                 'users' => ['name', 'email']
             ],
-            'sortModel'   => [
+            'sort'   => [
                 'i'       => 'd,id',                                                      
                 'n'       => 'a,display_name',
                 's'       => 'a,name',                                           
@@ -41,7 +67,7 @@ class PermissionController extends Controller
                 'default' => 'n'                       
             ]                        
         ];
-        return queryHelper($query, $request);
+        return $query;
     }
 
     /**
@@ -50,11 +76,9 @@ class PermissionController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        $pager = pageSize($request, 'permissionsIndex', 12, 4, 192, 4);    // size($request->pp), sessionTag, default, min, max, step
-        $permissions = $this->searchSortQuery($request)->paginate($pager['size']);
-        $permissions->pager = $pager;
+        $permissions = paginateHelper($this->query(), $request, 12, 4, 192, 4); // size($request->pp), default, min, max, step
 
-        if ($permissions && $permissions->count() > 0) {
+        if ($permissions && $permissions->count()>0) {
 
         } else {
             Session::flash('failure', 'No Permissions were found.');
@@ -87,7 +111,7 @@ class PermissionController extends Controller
         ];
         $rules_crud     = [
             'resource'      => 'required|min:3|max:191|alpha',
-            'crud_selected' => 'required|min:4|max:25',
+            'crud_selected' => 'required|min:4|max:191',
         ];
 
         if ($request->permission_type == 'basic') {
@@ -159,6 +183,7 @@ class PermissionController extends Controller
             return view('manage.permissions.show', ['permission' => $permission, 'roles' => $roles, 'users' => $users]);
         } else {
             Session::flash('failure', 'Permission "' . $id . '" was NOT found.');
+            return redirect(previous());
             return redirect()->route('permissions.index');
         }
     }
@@ -176,6 +201,7 @@ class PermissionController extends Controller
             return view('manage.permissions.edit', ['permission' => $permission]);
         } else {
             Session::flash('failure', 'Permission "' . $id . '" was NOT found.');
+            return redirect(previous());
             return redirect()->route('permissions.index');
         }
     }
@@ -221,6 +247,7 @@ class PermissionController extends Controller
             return view('manage.permissions.delete', ['permission' => $permission]);
         } else {
             Session::flash('failure', 'Permission "' . $id . '" was NOT found.');
+            return redirect(previous());
             return redirect()->route('permissions.index');
         }
     }

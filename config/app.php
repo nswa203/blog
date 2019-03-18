@@ -109,6 +109,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Custom Area  
+    |--------------------------------------------------------------------------
+    */
+    'contact' => env('APP_CONTACT'),
+    'owner'   => env('APP_OWNER', 'superadministrator'),
+    'guest'   => env('APP_GUEST', 'guest'),
+    'email'   => env('APP_EMAIL'),
+
+    // Google recaptcha account details used within public form submission
+    'captcha_sitekey' => myConstants('$CAPTCHA_SITEKEY'),
+    'captcha_server'  => myConstants('$CAPTCHA_SERVER'),
+    'captcha_secret'  => myConstants('$CAPTCHA_SECRET'),
+
+    // Ordnance Survey OpenSpace API key
+    'os_apikey'       => myConstants('$OS_APIKEY'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Autoloaded Service Providers
     |--------------------------------------------------------------------------
     |

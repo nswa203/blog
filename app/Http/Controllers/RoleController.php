@@ -13,25 +13,51 @@ use Validator;
 
 class RoleController extends Controller
 {
-    
+
     public function __construct(Request $request) {
         $this->middleware(function ($request, $next) {
-            session(['zone' => 'Roles']);
+            $owner_id = $request->route('user') ?: '*';         
+
+            if (! permit($this->permits($owner_id))) {
+                Session::flash('failure', "It doesn't look like you have permission for that action!");
+                return redirect(previous());
+            }
+
+            session(['zone' => 'Roles']);                       // Set the active zone for search()
+            previous(url($request->getPathInfo()));             // Set the previous url for redirect(previous()) 
             return $next($request);
         });
+    }
+
+    // These permits are used by permit() in the __contruct() middleware to secure the controller actions 
+    // This could be done in the Route config - but it seems to make more sense to do it in the controller.
+    // $owner_id='*' permits all Users for a permission   
+    public function permits($owner_id='^') {
+        $permits = [
+            'index'   => 'permission:roles-read',
+            'show'    => 'permission:roles-read',
+            'create'  => 'permission:roles-create',
+            'store'   => 'permission:roles-create',
+            'edit'    => 'permission:roles-update',
+            'update'  => 'permission:roles-update',
+            'delete'  => 'permission:roles-delete',
+            'destroy' => 'permission:roles-delete',
+            'default' => '' 
+        ];
+        return $permits;
     }
 
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
     // The table is sorted (ascending or descending) and finally filtered.
     // It requires the custom queryHelper() function in Helpers.php.
-    public function searchSortQuery($request) {
+    public function query() {
         $query = [
             'model'         => 'Role',
             'searchModel'   => ['name', 'display_name', 'description'],
             'searchRelated' => [
                 'users'       => ['name', 'email']
             ],
-            'sortModel'   => [
+            'sort'        => [
                 'i'       => 'd,id',                                                      
                 'n'       => 'a,display_name',
                 's'       => 'a,name',                                           
@@ -41,7 +67,7 @@ class RoleController extends Controller
                 'default' => 'n'                       
             ]            
         ];
-        return queryHelper($query, $request);
+        return $query;
     }
 
     /**
@@ -50,11 +76,9 @@ class RoleController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        $pager = pageSize($request, 'rolesIndex', 12, 4, 192, 4);    // size($request->pp), sessionTag, default, min, max, step
-        $roles = $this->searchSortQuery($request)->paginate($pager['size']);
-        $roles->pager = $pager;
+        $roles = paginateHelper($this->query(), $request, 12, 4, 192, 4); // size($request->pp), default, min, max, step
 
-        if ($roles && $roles->count() > 0) {
+        if ($roles && $roles->count()>0) {
 
         } else {
             Session::flash('failure', 'No Roles were found.');
@@ -68,8 +92,8 @@ class RoleController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function create() {
-        $permissions = Permission::orderBy('display_name', 'asc')->paginate(999);
-        return view('manage.roles.create', ['permissions' => $permissions]);
+       $permissions = Permission::orderBy('display_name', 'asc')->paginate(999);
+       return view('manage.roles.create', ['permissions' => $permissions]);
     }
 
     /**
@@ -122,7 +146,6 @@ class RoleController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id) {
-        //$role = Role::where('id', $id)->with('permissions')->with('users')->first();
         $role = Role::find($id);
 
         if ($role) {
@@ -132,6 +155,7 @@ class RoleController extends Controller
             return view('manage.roles.show', ['role' => $role, 'permissions' => $permissions, 'users' => $users]);
         } else {
             Session::flash('failure', 'Role "' . $id . '" was NOT found.');
+            return redirect(previous());
             return redirect()->route('roles.index');
         }
     }
@@ -150,6 +174,7 @@ class RoleController extends Controller
             return view('manage.roles.edit', ['role' => $role, 'permissions' => $permissions]);
         } else {
             Session::flash('failure', 'Role "' . $id . '" was NOT found.');
+            return redirect(previous());
             return redirect()->route('roles.index');
         }
     }
@@ -209,6 +234,7 @@ class RoleController extends Controller
            return view('manage.roles.delete', ['role' => $role]);
         } else {
             Session::flash('failure', 'Role "' . $id . '" was NOT found.');
+            return redirect(previous());
             return redirect()->route('roles.index');
         }
     }

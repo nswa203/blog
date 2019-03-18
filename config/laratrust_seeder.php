@@ -17,15 +17,15 @@ return [
         'author' => [
             'profile' => 'r,u'
         ],
-        'contributor' => [
-            'profile' => 'r,u'
-        ],
-        'supporter' => [
+        'guest' => [
             'profile' => 'r,u'
         ],
         'subscriber' => [
             'profile' => 'r,u'
         ],
+        'contributor' => [
+            'profile' => 'r,u'
+        ],        
     ],
     'permission_structure' => [
     ],

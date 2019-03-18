@@ -8,12 +8,12 @@
 @section('content')
 	@if($files)
 		<div id="app"> <!-- Vue 2 -->
-			{!! Form::open(['route'=>'files.mixed']) !!}
+			{!! Form::open(['route'=>'files.many']) !!}
 			<div class="row">
 				<div class="col-md-9 myWrap">
 					<h1><a class="pointer" id="menu-toggle2" data-toggle="tooltip" data-placement="top" title="Toggle NavBar">
 						@if (isset($search)) <span class="fas fa-search mr-4"></span>
-						@else 				 <span class="fas fa-folder-open mr-4"></span>
+						@else 				 <span class="fas fa-folder mr-4"></span>
 						@endif 				 Manage Files 
 					</a></h1>
 				</div>
@@ -46,7 +46,7 @@
 						<table class="table table-hover table-responsive-lg wrap-string">
 							<thead class="thead-dark" style="color:inherit;">
 								<th></th>
-								<th class="thleft">
+								<th class="thleft" width="40px">
 									<a href="{{ route('files.index', ['sort'=>'i'.$sort, 'search'=>$search]) }}">
 										<i id="sort-i"></i><i class="fas fa-hashtag mb-1"></i>
 									</a>		
@@ -67,7 +67,7 @@
 									<a href="{{ route('files.index', ['sort'=>'p'.$sort, 'search'=>$search]) }}">
 										<i id="sort-p"></i>Published</th>
 									</a>	
-								<th width="180px" class="text-right">Page {{$files->currentPage()}} of {{$files->lastPage()}}</th>
+								<th width="180px" class="text-right">Page {{ $files->currentPage() }} of {{ $files->lastPage() }}</th>
 							</thead>
 							<tbody>
 								@foreach($files as $file)
@@ -139,7 +139,7 @@
 							</div>
 
 							<div class="text-center">
-								@if(substr($file->mime_type, 0, 2) == 'au' or substr($file->mime_type, 0, 2) == 'vi' or $file->ext == 'mp3')
+								@if(substr($file->mime_type, 0, 2) == 'au' or substr($file->mime_type, 0, 2) == 'vi' or pathinfo($file->file, PATHINFO_EXTENSION) == 'mp3')
 									<a href="{{ route('files.showFile', [$file->id]) }}">
 										<video controls poster="{{
 												isset(json_decode($file->meta)->Picture) ? 'data:image/jpeg;base64,' . json_decode($file->meta)->Picture :
@@ -160,10 +160,13 @@
 										onerror="this.onerror=null; this.src='{{ asset('favicon.ico') }}';" /> 
 									</a>
 								@else
+									{{-- Here we provide icons for different filetype extensions                                  --}}
+									{{-- They should be pre-loaded into the db in $folder->name=icons $file->title=file_extension --}}
+								    {{-- Debug: https://blog/manage/private/find/pdf/icons                                        --}}
 									<a href="{{ route('private.getFile', [$file->id]) }}">
-										<img src="{{ route('private.findFile', [$file->ext, 'icons']) }}" {{-- searches title no .ext --}}
-										class="img-frame-lg"
-										style="max-height:200px; max-width:100%;"
+										<img src="{{ route('private.findFile', [pathinfo($file->file, PATHINFO_EXTENSION), 'icons']) }}" 
+										class="float-left mr-4 img-frame-lg"
+										style="width:100%; max-height:2000px;"
 										onerror="this.onerror=null; this.src='{{ asset('favicon.ico') }}';" />
 									</a>
 								@endif
@@ -190,7 +193,17 @@
 	{!! Html::script('js/helpers.js') !!} 
 
 	<script>
+		// ========================================================================== //
+		// Toggles the sort direction indicator on index views   
+		// place this at the end of your view mySortArrow({!! json_encode($sort) !!});
 		mySortArrow({!! json_encode($sort) !!});
+	</script>
+
+	<script>
+		// ========================================================================== //
+		// Saves the view (list or lightbox) to session storage
+		// Retrieves the view from session storage and sets accordion elements
+		// place this at the end of your view myView(resouce_name, 'accordionf2', 'accordionf1');		
 		myView('file', 'accordionf2', 'accordionf1');
 	</script>
 

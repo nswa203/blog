@@ -34,7 +34,7 @@ class CustomResetPassword extends Notification
     {
         $this->token = $token;
         $this->newUser = $newUser;
-        $this->host = env('APP_NAME');
+        $this->host = config('app.name');
     }
 
     /**

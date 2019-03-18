@@ -80,30 +80,61 @@
 					<hr class="hr-spacing-top mt-2">
 
 					<div v-if="permissionType == 'crud'">
-						<dt>
-							<label for="crud_selected1">
-								{{ Form::checkbox('custom-value', 'create', null,['class'=>'', 'v-model'=>'crudSelected', 'hidden'=>'', 'id'=>'crud_selected1']) }}
-								<span class="span"> (C) Create</span>
-							</label>
-						</dt>
-						<dt>		
-							<label for="crud_selected2">
-								{{ Form::checkbox('custom-value', 'read', null, ['class'=>'', 'v-model'=>'crudSelected', 'hidden'=>'', 'id'=>'crud_selected2']) }}
-								<span class="span"> (R) Read</span>
-							</label>
-						</dt>
-						<dt>
-							<label for="crud_selected3">
-								{{ Form::checkbox('custom-value', 'update', null,['class'=>'', 'v-model'=>'crudSelected', 'hidden'=>'', 'id'=>'crud_selected3']) }}
-								<span class="span"> (U) Update</span>
-							</label>
-						</dt>
-						<dt>		
-							<label for="crud_selected4">
-								{{ Form::checkbox('custom-value', 'delete', null, ['class'=>'', 'v-model'=>'crudSelected', 'hidden'=>'', 'id'=>'crud_selected4']) }}
-								<span class="span"> (D) Delete</span>
-							</label>
-						</dt>
+						<div class="row">
+							<div class="col-md-6">
+								<dt>
+									<label for="crud_selected1">
+										{{ Form::checkbox('custom-value', 'create', null,['class'=>'', 'v-model'=>'crudSelected', 'hidden'=>'', 'id'=>'crud_selected1']) }}
+										<span class="span"> (C) Create</span>
+									</label>
+								</dt>
+								<dt>		
+									<label for="crud_selected2">
+										{{ Form::checkbox('custom-value', 'read', null, ['class'=>'', 'v-model'=>'crudSelected', 'hidden'=>'', 'id'=>'crud_selected2']) }}
+										<span class="span"> (R) Read</span>
+									</label>
+								</dt>
+								<dt>
+									<label for="crud_selected3">
+										{{ Form::checkbox('custom-value', 'update', null,['class'=>'', 'v-model'=>'crudSelected', 'hidden'=>'', 'id'=>'crud_selected3']) }}
+										<span class="span"> (U) Update</span>
+									</label>
+								</dt>
+								<dt>		
+									<label for="crud_selected4">
+										{{ Form::checkbox('custom-value', 'delete', null, ['class'=>'', 'v-model'=>'crudSelected', 'hidden'=>'', 'id'=>'crud_selected4']) }}
+										<span class="span"> (D) Delete</span>
+									</label>
+								</dt>
+							</div>
+							<div class="col-md-6">
+								<dt>		
+									<label for="crud_selected5">
+										{{ Form::checkbox('custom-value', 'create-ifowner', null, ['class'=>'', 'v-model'=>'crudSelected', 'hidden'=>'', 'id'=>'crud_selected5', '@click'=>'uncheckOther($event, "create")']) }}
+										<span class="span"> If Owner</span>
+									</label>
+								</dt>
+								<dt>		
+									<label for="crud_selected6">
+										{{ Form::checkbox('custom-value', 'read-ifowner', null, ['class'=>'', 'v-model'=>'crudSelected', 'hidden'=>'', 'id'=>'crud_selected6', '@click'=>'uncheckOther($event, "read")']) }}
+										<span class="span"> If Owner</span>
+									</label>
+								</dt>
+								<dt>		
+									<label for="crud_selected7">
+										{{ Form::checkbox('custom-value', 'update-ifowner', null, ['class'=>'', 'v-model'=>'crudSelected', 'hidden'=>'', 'id'=>'crud_selected7', '@click'=>'uncheckOther($event, "update")']) }}
+										<span class="span"> If Owner</span>
+									</label>
+								</dt>
+								<dt>		
+									<label for="crud_selected8">
+										{{ Form::checkbox('custom-value', 'delete-ifowner', null, ['class'=>'', 'v-model'=>'crudSelected', 'hidden'=>'', 'id'=>'crud_selected8', '@click'=>'uncheckOther($event, "delete")']) }}
+										<span class="span"> If Owner</span>
+									</label>
+								</dt>
+							</div>
+						</div>
+
 						<hr class="hr-spacing-top mt-2">
 					</div>
 
@@ -136,7 +167,7 @@
 		var commonData = {
 			permissionType: 'basic',
 			resource: '',
-			crudSelected: ['create', 'read', 'update', 'delete']
+			crudSelected: ['create', 'read', 'update', 'delete'],
 		};
 
 		Vue.directive('focus', {
@@ -171,6 +202,18 @@
 		var app2=new Vue({
 			el: '#app2',
 			data: commonData,
+			methods:{
+				uncheckOther: function(e, item) {
+					return true; // Not Using this code here so just return
+					if (e.target.checked) {
+						for (var i=0; i<this.crudSelected.length; ++i) { 
+							if (this.crudSelected[i]==item) {
+								this.crudSelected.splice(i, 1);
+							}
+						}
+					}
+				}
+			}
 		});
 	</script>	
 @endsection

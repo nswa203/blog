@@ -25,20 +25,20 @@
 							<th>Owner</th>
 							<th>Used</th>
 							<th width="120px">Updated</th>
-							<th width="130px" class="text-right">Page {{$folders->currentPage()}} of {{$folders->lastPage()}}</th>
+							<th width="130px" class="text-right">Page {{ $folders->currentPage() }} of {{ $folders->lastPage() }}</th>
 						</thead>
 						<tbody>						
 							@foreach($folders as $folder)
 								<tr>
 									<th>{{ $folder->id }}</th>
 									<td>{{ myTrim($folder->name, 32) }}</td>
-									<td><a href="{{ url('f/'.$folder->slug) }}">{{ myTrim($folder->slug, 32) }}</a></td>
+									<td><a href="{{ route('folders.show', [$folder->slug]) }}">{{ myTrim($folder->slug, 32) }}</a></td>
 									<td>
 										<a href="{{ route('categories.show', [$folder->category_id, 'Folders']) }}"><span class="badge badge-info">{{ $folder->category->name }}</span></a>
 									</td>
 									<td>
 										@if($folder->user->id)
-											<a href="{{ route('users.show', $folder->user->id) }}">{{ $folder->user->name }}</a>
+											<a href="{{ route('users.show', [$folder->user->id]) }}">{{ $folder->user->name }}</a>
 										@endif	
 									</td>
 									<td class="{{ $folder->size / $folder->max_size / 1048576 > .85 ? 'text-danger' : 'text-success' }}">
@@ -46,7 +46,7 @@
 									</td>
 									<td>{{ date('j M Y', strtotime($folder->updated_at)) }}</td>
 									<td class="text-right" nowrap>
-										<a href="{{ route('folders.show', $folder->id)}}" class="btn btn-sm btn-outline-dark">View Folder</a>
+										<a href="{{ route('folders.show', $folder->id) }}" class="btn btn-sm btn-outline-dark">View Folder</a>
 									</td>
 								</tr>
 							@endforeach

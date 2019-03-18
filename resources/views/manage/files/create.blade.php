@@ -10,7 +10,7 @@
 @section('content')
 	<div class="row">
 		<div class="col-md-8 myWrap">
-			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-folder-open mr-4">
+			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-folder mr-4">
 				</span>Add Files{{ $folder_id?' to: '.$folders[$folder_id]:'' }}</a></h1>
 			<hr>
 
@@ -98,15 +98,17 @@
 				<hr class="hr-spacing-top">
 				<div class="row">
 					<div class="col-sm-6">
-						{!! Html::decode('<a href='.url()->previous().' class="btn btn-danger btn-block"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
-					</div>
+						{{ Form::button('<i class="fas fa-times-circle mr-2"></i>NO Cancel', ['class'=>'btn btn-outline-danger btn-block', 			'onclick'=>'window.history.back();
+							event.preventDefault ? event.preventDefault : event.returnValue=false;
+						']) }}
+					</div>				
 					<div class="col-sm-6">
 						{{ Form::button('<i class="fas fa-plus-circle mr-2"></i>Save', ['type'=>'submit', 'class'=>'btn btn-success btn-block']) }}
 					</div>
 				</div>
 				<div class="row mt-3">
 					<div class="col-sm-12">
-						{!! Html::decode(link_to_route('files.index', '<i class="fas fa-folder-open mr-2"></i>See All Files', [], ['class'=>'btn btn-outline-dark btn-block'])) !!}
+						{!! Html::decode(link_to_route('files.index', '<i class="fas fa-folder mr-2"></i>See All Files', [], ['class'=>'btn btn-outline-dark btn-block'])) !!}
 					</div>
 				</div>
 			</div>
@@ -150,6 +152,7 @@
 	{!! Html::script('js/select2.min.js')	  !!}
 	{!! Html::script('js/exif.js')			  !!}
 	{!! Html::script('js/jsmediatags.min.js') !!}
+	{!! Html::script('js/helpers.js')	 	  !!}
 
 	<script type="text/javascript">
 		$.fn.select2.defaults.set( "width", "100%" );
@@ -163,7 +166,7 @@
 	<script type="text/javascript">
 		// ========================================================================== //
 		// Load all files using Ajax to manage a progress bar
-		myUpload({
+		xmyUpload({
 			formID: 				'myForm1',									// OK
 			url: 					"{{ route('files.store') }}",				// OK
 			formInputFileName: 		'files[]',
@@ -172,21 +175,34 @@
 		});
 	</script>	
 
-	<script type="text/javascript">
-		myImageAll();
-
+	<script>
+		myImageAll(myImageInit());
 		// ========================================================================== //
-		// Called @ page load to simulate Reset for each image unit  
-		function myImageAll() {
-			var elFiles=document.getElementsByClassName('myFile-img-reset');
-			for (i=0; i< elFiles.length; i++) {
-  				myImage(elFiles[i].firstElementChild);
-			}	
-		}
+		// Sets up constants required by myImagAll() myImage() myFile()  
+		// Should be called first to make myImageVars available Globally
+		// Best to place your own custom copy at the end of your view 
+		function myImageInit() {
+			_T();
+			myImageVars = {
+				attr_image_new:        'data-imgNew', 		  // data-imgNew
+				attr_image_old:        'data-imgOld', 		  // data-imgOld
+				attr_image:            'data-img', 			  // data-img
+				attr_mime: 			   'data-mime',			  // data-mime		
+				class_input_file:      'custom-file-input',   // File Input
+				class_label_file:      'custom-file-label',   // File Label
+				class_button_delete:   'myFile-img-delete',   // Delete Button
+				class_button_delCheck: 'myFile-img-delCheck', // Delete CheckBox
+				class_button_reset:    'myFile-img-reset', 	  // Reset Button
+				class_meta_list:       'myFile-meta-list'  	  // Meta List
+			};	
+		};
+	</script>	
 
+	<script type="text/javascript">
 		// ========================================================================== //
 		// Toggle visibity of image controls and image locations
 		function myImage($this, op='reset', imgNew=false, imgOld=false, img=false) {
+			_T();
 			var elRow=$this.parentNode.parentNode;										// Owning DIV
 			// console.dir(elRow); alert('!1');
 			if (!imgNew){ imgNew=elRow.getAttribute('data-imgNew'); } 					// data-imgNew
@@ -222,6 +238,7 @@
 		// Clear any existing preview slides. Load & render any image, video or audio
 		// files and return the counts of each type of file file processed.
 		function previewMedia(files, tagID, elMeta) {
+			_T(files, tagID, elMeta);
 			preview=document.querySelector('#'+tagID);
 			messages=preview.childNodes[1];
 			progress=preview.childNodes[3].childNodes[1];
@@ -231,7 +248,9 @@
 			// ======================================================================= //
 			// Render Images
 			function doItImage(file, index) {
+				_T(file, index);
 				var reader=new FileReader();
+
 				reader.addEventListener("load", function () {
 					var wrapper=document.createElement("div");
 					if (index==0) {
@@ -240,7 +259,8 @@
 						wrapper.className='carousel-item';
 					}
 
-					var image=new Image();
+					var image=new Image();				// <---------------------- New Image
+
 					image.alt=file.name;
 					image.src=this.result;
 					image.className='d-block w-100';
@@ -257,7 +277,6 @@
 					wrapper.appendChild(caption);
 					slides.appendChild(wrapper);
 				}, false);
-
 				reader.readAsDataURL(file);
 			}
 
@@ -377,7 +396,7 @@
 		// If a media file, load and render the NEW file
 		// Hide the DELETE button and any OLD images
 		// Show the RESET  button and any NEW images 
-		function myFiles($this, imgNew=false, imgOld=false, mimes=false) {
+		function XXXmyFiles($this, imgNew=false, imgOld=false, mimes=false) {
 			var elRow=$this.parentNode;										    // Owning DIV
 			if (!imgNew){ imgNew=elRow.getAttribute('data-imgNew'); } 			// data-imgNew
 			if (!imgOld){ imgOld=elRow.getAttribute('data-imgOld'); } 			// data-imgOld
@@ -411,7 +430,7 @@
 
 		// ========================================================================== //
 		// Retrieve EXIF & IPTC metadata from image file and append to output element  
-		function myGetExif(file, elOut) {
+		function XXXmyGetExif(file, elOut) {
 			EXIF.getData(file, function() {
 		        var newMetaData=EXIF.getAllTags(this);
 		        newMetaData.filename=file.name;
@@ -423,7 +442,7 @@
 
 		// ========================================================================== //
 		// Hide / Show elements - input is a list of ids OR element objects
-		function myHideShowElement(tagIDs={}, op='none') {
+		function XXXmyHideShowElement(tagIDs={}, op='none') {
 			for (var i=0; i<tagIDs.length; i++){
 				var el=tagIDs[i];
 				if (typeof el === 'string') {

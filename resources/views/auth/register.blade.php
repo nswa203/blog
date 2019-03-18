@@ -1,14 +1,14 @@
 {{-- @extends('layouts.app') --}}
 @extends('main')
 
-@section('title',"| Register for ".env('APP_NAME'))
+@section('title',"| Register")
 
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header">{{ __('Register for ') }}{{ env('APP_NAME') }}</div>
+                <div class="card-header">{{ __('Register for ') }}{{ config('app.name') }}</div>
 
                 <div class="card-body">
                     <form method="POST" action="{{ route('register') }}">

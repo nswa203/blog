@@ -4,9 +4,15 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
-use App\Tag;
 use App\Category;
+use App\Comment;
+use App\File;
+use App\Folder;
+use App\Permission;
 use App\Post;
+use App\Profile;
+use App\Role;
+use App\Tag;
 use App\User;
 use Session;
 use Storage;
@@ -30,6 +36,50 @@ class TestController extends Controller
     public function __construct() {
         $this->middleware('auth');
     }
+
+
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function upload(Request $request) {
+        $files = $request->file('files');
+        $type  = $request->ajax() ? 'AJAX' : 'HTTP';
+        $files = Input::file('files');
+        if ($files) {
+            $countBad = count($files);
+            $countOK  = 0;
+            foreach ($files as $file) {
+                ++$countOK;
+                --$countBad;
+            }
+        } else {
+            $countBad = 0;
+        }    
+
+        if ($countBad == 0) {
+            Session::flash('success', 'All Files were successfully uploaded. Type='.$type);
+            return json_encode(['rc' => $countBad, 'url' => route('tests.index')]);    
+        } else {
+            Session::flash('failure', 'Oops! Something went wrong.');
+            return json_encode(['rc' => $countBad]);    
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 
     public function gpx() {
         $pos1 = ['496497', '165478'];
@@ -59,30 +109,7 @@ class TestController extends Controller
         return ['data' => $data, 'range' => $range];        
     }    
 
-    public function upload(Request $request, $id) {
-        $type = $request->ajax() ? 'AJAX' : 'HTTP';
-        $files = Input::file('files');
-        if ($files) {
-            $countBad = count($files);
-            $countOK  = 0;
-            foreach ($files as $file) {
-                ++$countOK;
-                --$countBad;
-                //break;
-                sleep(1);
-            }
-        } else {
-            $countBad = 0;
-        }    
 
-        if ($countBad == 0) {
-            Session::flash('success', 'All Files were successfully uploaded for "'.$id.'". Type='.$type);
-            return json_encode(['countBad' => $countBad, 'url' => route('tests.index')]);    
-        } else {
-            Session::flash('failure', 'Oops! Something went wrong.');
-            return json_encode(['countBad' => $countBad]);    
-        }
-    }
 
 
     /**
@@ -100,9 +127,20 @@ class TestController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function create() {
-        $categories=Category::orderBy('name','asc')->pluck('name','id');
-        $tags=Tag::orderBy('name','asc')->pluck('name','id');
-        return view('tests.create',['categories'=>$categories,'tags'=>$tags]);
+        $oldfile  = File::where('file', 'LIKE', '%.jpg%')->first();
+        $oldfiles = File::where('file', 'LIKE', '%p%')->take(1)->get();
+
+//$oldfile=false;
+
+        $folders = Folder::orderBy('slug', 'asc')->pluck('slug', 'id');
+        $tags = Tag::orderBy('name', 'asc')->pluck('name', 'id');
+        $file = new File;
+        $list['f'] = fileStatus(2);
+        $list['o'] = fileOption(3);        
+        $mimes = 'text/*,image/*,audio/*,video/*,.pdf,.txt,.log,.ico,.nfo,.nft,.srt,.rex,.rexx,.bat,.cmd,.php,.js,.rar,.zip,.gpx';
+
+        return view('tests.create', ['file' => $file, 'folders' => $folders, 'tags' => $tags,
+            'mimes' => $mimes, 'list' => $list, 'folder_id' => null, 'xoldfile' => $oldfile, 'oldfiles' => $oldfiles]);
     }
 
     /**
@@ -113,7 +151,7 @@ class TestController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        dd($request, $request->files, $request->files_delete);
     }
 
     /**

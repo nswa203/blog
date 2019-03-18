@@ -22,10 +22,11 @@
 					</div>
 
 					<div class="col-md-10 mb-5">
-						<h1 class="display-4">Welcome to {{ env('APP_NAME') }}!</h1>
+						<h1 class="display-4">Welcome to {{ config('app.name') }}!</h1>
 					</div>
 				</div>	
-				<p class="lead">Thank you so much for visiting. This is my test website built with Laravel. Please read my latest post!</p>
+				<p class="lead">Thank you so much for visiting. This is a test website built with Laravel. Please read the most recent posts.</p>
+				<p class="lead">This "Manage" area of the blog is shared between users with different permissions - some functions may not be available to you!</p>
 				<a class="btn btn-primary btn-lg mt-4" href="/blog" role="button">Popular Posts</a>
 			</div>
 		</div>

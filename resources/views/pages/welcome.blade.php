@@ -18,7 +18,7 @@
 						<h1 class="display-4">Welcome to {{ $data['name'] }}!</h1>
 					</div>
 				</div>	
-				<p class="lead">Thank you so much for visiting. This is my test website built with Laravel. Please read my latest post!</p>
+				<p class="lead">Thank you so much for visiting. This is a test website built with Laravel. Please read the most recent posts.</p>
 				<a class="btn btn-primary btn-lg mt-4" href="/blog" role="button">Popular Posts</a>
 			</div>
 		</div>
@@ -60,7 +60,6 @@
 				@endforeach 				
 			</p>
 		</div>
-
 
 	</div>
 @endsection

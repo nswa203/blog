@@ -15,18 +15,44 @@ use Validator;
 class CommentController extends Controller
 {
 
-    public function __construct() {
-        $this->middleware('auth',['except' => 'store']);
+    public function __construct(Request $request) {
         $this->middleware(function ($request, $next) {
-            session(['zone' => 'Comments']);
+            $owner_id = $request->route('user') ?: '*';         
+
+            if (!permit($this->permits($owner_id))) {
+                Session::flash('failure', "It doesn't look like you have permission for that action!");
+                return redirect(previous());
+            }
+
+            session(['zone' => 'Comments']);                    // Set the active zone for search()
+            previous(url($request->getPathInfo()));             // Set the previous url for redirect(previous()) 
             return $next($request);
         });
+    }
+
+    // These permits are used by permit() in the __contruct() middleware to secure the controller actions 
+    // This could be done in the Route config - but it seems to make more sense to do it in the controller.
+    // $owner_id='*' permits all Users for a permission   
+    public function permits($owner_id='^') {
+        $permits = [
+            'showAll' => 'permission:comments-read',
+            'index'   => 'user:*,permission:comments-read',
+            'show'    => 'user:*,permission:comments-read',
+            'create'  => 'user:*,permission:comments-create',
+            'store'   => 'user:*,permission:comments-create',
+            'edit'    => 'permission:comments-update',
+            'update'  => 'permission:comments-update',
+            'delete'  => 'permission:comments-delete',
+            'destroy' => 'permission:comments-delete',
+            'default' => '' 
+        ];
+        return $permits;
     }
 
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
     // The table is sorted (ascending or descending) and finally filtered.
     // It requires the custom queryHelper() function in Helpers.php.
-    public function query() {
+    public function query($status=false) {
         $query = [
             'model'         => 'Comment',
             'searchModel'   => ['name', 'email', 'comment'],
@@ -42,8 +68,11 @@ class CommentController extends Controller
                 'c'       => 'd,created_at',
                 'p'       => 'd,id,post',
                 'default' => 'i'                       
-            ],            
+            ],
         ];
+        if ($status) {
+            $query['filter'] = ['approved', '=', '1'];
+        }   
         return $query;
     }
 
@@ -53,7 +82,9 @@ class CommentController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        $comments = paginateHelper($this->query(), $request, 12, 4, 192, 4); // size($request->pp), default, min, max, step
+        $status = permit($this->permits(), 'showAll') ? '' : 'published_only';
+
+        $comments = paginateHelper($this->query($status), $request, 12, 4, 192, 4); // size($request->pp), default, min, max, step
 
         if ($comments && $comments->count() > 0) {
 
@@ -140,6 +171,7 @@ class CommentController extends Controller
             return view('manage.comments.edit', ['comment' => $comment, 'post' => $post]);
         } else {
             Session::flash('failure', 'Comment "' . $id . '" was NOT found.');
+            return redirect(previous());
             return redirect()->route('comments.index');
         }
     }
@@ -196,6 +228,7 @@ class CommentController extends Controller
             return view('manage.comments.delete', ['comment' => $comment, 'post' => $post]);
         } else {
             Session::flash('failure', 'Comment "' . $id . '" was NOT found.');
+            return redirect(previous());
             return redirect()->route('comments.index');
         }
     }

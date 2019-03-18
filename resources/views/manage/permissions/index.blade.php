@@ -27,7 +27,7 @@
 			<div class="col-md-12">
 				<table class="table table-hover table-responsive-lg">
 					<thead class="thead-dark" style="color:inherit;">
-						<th class="thleft">
+						<th class="thleft" width="40px">
 							<a href="{{ route('permissions.index', ['sort'=>'i'.$sort, 'search'=>$search]) }}">
 								<i id="sort-i" class="ml-2"></i><i class="fas fa-hashtag mb-1"></i>
 							</a>	
@@ -37,12 +37,12 @@
 								<i id="sort-n" class="ml-2"></i>Name
 							</a>	
 						</th>
-						<th class="thleft">
+{{--						<th class="thleft">
 							<a href="{{ route('permissions.index', ['sort'=>'s'.$sort, 'search'=>$search]) }}">
 								<i id="sort-s" class="ml-2"></i>Slug
 							</a>	
 						</th>
-						<th class="thleft">
+--}}					<th class="thleft">
 							<a href="{{ route('permissions.index', ['sort'=>'d'.$sort, 'search'=>$search]) }}">
 								<i id="sort-d" class="ml-2"></i>Description
 							</a>	
@@ -64,8 +64,8 @@
 							<tr>
 								<th>{{ $permission->id }}</th>
 								<td>{{ $permission->display_name }}</td>
-								<td>{{ $permission->name }}</td>
-								<td>{{ substr($permission->description, 0, 156) }}{{ myTrim($permission->description, 32) }}</td>
+{{--							<td>{{ $permission->name }}</td>
+--}}							<td>{{ myTrim($permission->description, 80) }}</td>
 								<td>{{ date('j M Y', strtotime($permission->created_at)) }}</td>
 								<td>{{ date('j M Y', strtotime($permission->updated_at)) }}</td>
 								<td class="text-right" nowrap>

@@ -10,8 +10,8 @@
 		<div class="row">
 			<div class="col-md-9 myWrap">
 				<h1><a class="pointer" id="menu-toggle2" data-toggle="tooltip" data-placement="top" title="Toggle NavBar">
-					@if (isset($search)) <span class="fas fa-search mr-4"></span>
-					@else 				 <span class="fas fa-folder mr-4"></span>
+					@if (isset($search)) <span class="fas fa-search      mr-4"></span>
+					@else 				 <span class="fas fa-folder-open mr-4"></span>
 					@endif 				 Manage Folders
 				</a></h1>
 			</div>
@@ -28,7 +28,7 @@
 			<div class="col-md-12 myWrap">
 				<h1>
 					<a><span class="pointer-expand fas fa-chevron-circle-down float-right mr-1"
-					data-toggle="collapse" data-target=".collapsef" onClick="myView('folder', 'accordionf2')">
+						data-toggle="collapse" data-target=".collapsef" onClick="myView('folder', 'accordionf2')">
 				 	</span></a>
 				</h1> 	
 			</div>
@@ -39,7 +39,7 @@
 				<div id="accordionf1" class="collapse collapsef show" data-parent="#accordionf">
 					<table class="table table-hover table-responsive-lg wrap-string">
 						<thead class="thead-dark" style="color:inherit;">
-							<th class="thleft" width="40">
+							<th class="thleft" width="40px">
 								<a href="{{ route('folders.index', ['sort'=>'i'.$sort, 'search'=>$search]) }}">
 									<i id="sort-i" class="ml-2"></i><i class="fas fa-hashtag mb-1"></i>
 								</a>	
@@ -80,14 +80,14 @@
 									<i id="sort-u" class="ml-2"></i>Updated
 								</a>	
 							</th>
-							<th width="130px">Page {{$folders->currentPage()}} of {{$folders->lastPage()}}</th>
+							<th width="130px">Page {{ $folders->currentPage() }} of {{ $folders->lastPage() }}</th>
 						</thead>
 						<tbody>
 							@foreach($folders as $folder)
 								<tr>
 									<th>{{ $folder->id }}</th>
 									<td>{{ myTrim($folder->name, 32) }}</td>
-									<td><a href="{{ url('f/'.$folder->slug) }}">{{ myTrim($folder->slug, 32) }}</a></td>
+									<td><a href="{{ route('blog.folder', [$folder->slug]) }}">{{ myTrim($folder->slug, 32) }}</a></td>
 									<td>
 										<a href="{{ route('categories.show', [$folder->category_id, session('zone')]) }}"><span class="badge badge-info">{{ $folder->category->name }}</span></a>
 									</td>
@@ -103,8 +103,8 @@
 									</td>
 									<td>{{ date('j M Y',strtotime($folder->updated_at)) }}</td>
 									<td class="text-right" nowrap>
-										<a href="{{ route('folders.show', $folder->id)}}" class="btn btn-sm btn-outline-dark">View</a>
-										<a href="{{ route('folders.edit', $folder->id)}}" class="btn btn-sm btn-outline-dark">Edit</a>
+										<a href="{{ route('folders.show', $folder->id) }}" class="btn btn-sm btn-outline-dark">View</a>
+										<a href="{{ route('folders.edit', $folder->id) }}" class="btn btn-sm btn-outline-dark">Edit</a>
 									</td>
 								</tr>
 							@endforeach
@@ -119,8 +119,8 @@
 								<div class="text-center">
 									{{ myTrim($folder->name, 32) }}
 									({{ $folder->files->count() }} {{ $folder->files->count() == 1 ? 'file)' : 'files)' }}				
-									<a href="{{ route('files.indexOf', [$folder->id])}}">
-										<img src="{{ route('private.getFolderFile', [$folder->id, 'Folder.jpg']) }}"
+									<a href="{{ route('files.indexOf', [$folder->id]) }}">
+										<img src="{{ route('folders.getFolderFile', [$folder->id, 'Folder.jpg']) }}"
 											class="img-frame-lg" style="max-height:200px; max-width:100%;"
 											onerror="this.onerror=null; this.src='{{ asset('favicon.ico') }}';"
 										/>
@@ -140,10 +140,12 @@
 @endsection
 
 @section('scripts')
-	{!! Html::script('js/app.js')     !!}
 	{!! Html::script('js/helpers.js') !!}
 
 	<script>
+		// ========================================================================== //
+		// Toggles the sort direction indicator on index views
+        // place this at the end of your view mySortArrow({!! json_encode($sort) !!});
 		mySortArrow({!! json_encode($sort) !!});
 	</script>
 
@@ -151,25 +153,7 @@
 		// ========================================================================== //
 		// Saves the view (list or lightbox) to session storage
 		// Retrieves the view from session storage and sets accordion elements
+		// place this at the end of your view myView(resouce_name, 'accordionf2', 'accordionf1');
 		myView('folder', 'accordionf2', 'accordionf1');
-		function myView(zone, id1, id2=false ) {
-			//console.log('myView1: '+id1+' '+id2);
-			if (id2) {												// Session Load			
-				var view=sessionStorage.getItem('view_'+zone);
-				//console.log('myView2a: '+view);
-				if (view=='true') {
-					var elview2=document.getElementById(id2);
-					elview2.classList.remove('show');
-					var elview1=document.getElementById(id1);
-					elview1.classList.add('show');					
-					//console.log('myView2b: SHOW');
-				}
-			} else {												// Click
-				var elView=document.getElementById(id1);
-				var view=elView.classList.contains('show') ? 'false' : 'true';
-				sessionStorage.setItem('view_'+zone, view);
-				//console.log('myView3: '+sessionStorage.getItem('view'));
-			}
-		}			
 	</script>
 @endsection

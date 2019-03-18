@@ -6,12 +6,26 @@
 @import "variables";
 
 // Bootstrap
-//@import '~bootstrap/scss/bootstrap';
+@import '~bootstrap/scss/bootstrap';
 
-// Font Awesome
-//@import "node_modules/font-awesome/scss/font-awesome.scss";
+// Font Awesome Free
+// @import "node_modules/font-awesome/scss/font-awesome";
+// npm install @fortawesome/fontawesome-free
+$fa-font-path: "../webfonts";
+@import "~@fortawesome/fontawesome-free/css/fontawesome.css";
+@import "~@fortawesome/fontawesome-free/css/regular.css";
+@import "~@fortawesome/fontawesome-free/css/solid.css";
+@import "~@fortawesome/fontawesome-free/css/brands.css";
 
-.navbar-laravel {
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-}
+// Font Awesome Pro
+//$fa-font-path: "../webfonts";
+//@import "~fontawesome-pro-5.2.0/css/fontawesome.css";
+@import "~fontawesome-pro-5.2.0/css/light.css";
+@import "~fontawesome-pro-5.2.0/css/regular.css";
+@import "~fontawesome-pro-5.2.0/css/solid.css";
+@import "~fontawesome-pro-5.2.0/css/brands.css";
+
+//.navbar-laravel {
+//  background-color: #fff;
+//  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+//}

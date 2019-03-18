@@ -43,7 +43,7 @@ class PageController extends Controller
 	                'u'       => 'd,updated_at',
 	                'default' => 'u'                       
 	            ],
-	            'filter' 	  => ['status', '>=', '4']
+	            'filter' 	  => ['posts.status', '>=', '4']
         	];
         } elseif ($model == 'pta') {							// Posts with this Tag name
 	        $query = [
@@ -56,9 +56,9 @@ class PageController extends Controller
 	                'u'       => 'd,updated_at',
 	                'default' => 'u'                       
 	            ],	            
-	            'filter'	  => ['status', '>=', '4']
+	            'filter'	  => ['posts.status', '>=', '4']
         	];        	
-        } elseif ($model == 'pus') {							// Posts with this User name
+        } elseif ($model == 'pus') {							// Posts with this User name 
 	        $query = [
 	            'model'         => 'Post',
 	            'searchModel'   => [],
@@ -70,10 +70,35 @@ class PageController extends Controller
 	                'u'       => 'd,updated_at',
 	                'default' => 'u'                       
 	            ],	            
-	            'filter'	  => ['status', '>=', '4']
+	            'filter'	  => ['posts.status', '>=', '4']
         	];
-
-
+        } elseif ($model == 'pfo') {							// Posts with this Folder slug 
+	        $query = [
+	            'model'         => 'Post',
+	            'searchModel'   => [],
+	            'searchRelated' => [
+					'folders'	=> ['slug']
+	            ],
+                'sort'        => [
+	                'u'       => 'd,updated_at',
+	                'default' => 'u'                       
+	            ],	            
+	            'filters'	  => [
+	            	['posts.status', '>=', '4'],
+	            ]	        	];
+        } elseif ($model == 'pua') {							// Posts with this User name (No comments search)
+	        $query = [
+	            'model'         => 'Post',
+	            'searchModel'   => [],
+	            'searchRelated' => [
+					'user' 		=> ['^name^'],
+	            ],
+                'sort'        => [
+	                'u'       => 'd,updated_at',
+	                'default' => 'u'                       
+	            ],	            
+	            'filter'	  => ['posts.status', '>=', '4']
+        	];
 
 
 
@@ -146,7 +171,6 @@ class PageController extends Controller
 	                'u'       => 'd,updated_at',
 	                'default' => 'u'                       
 	            ],
-	            'filter'	  => ['status', '>=', '4']
 	        ];
         }
         return $query;
@@ -173,15 +197,18 @@ class PageController extends Controller
 		} elseif ($request->pta) {
 			$searchType = 'pta';							// Posts with this Tag
 			$request->search = '"'.$request->pta.'"';
+		} elseif ($request->pua) {	
+			$searchType = 'pua';							// Posts with this User
+			$request->search = '"'.$request->pua.'"';
 		} elseif ($request->pus && Auth::check()) {	
 			$searchType = 'pus';							// Posts with current User
-			$request->search = '"'.Auth::user()->name.'"';
+			$request->search = '"'.Auth::user()->name.'"';			
 		} else {
 			$searchType = false;
 		}
         $posts = paginateHelper($this->query($searchType), $request, 4, 4, 48, 2);
 
-		if ($posts && $posts->count() > 0) {
+		if ($posts && $posts->count()>0) {
 			//dd($this->query($searchType), DB::getQueryLog(), $posts);
 		} else {
 			Session::flash('failure', 'No blog Posts were found.');
@@ -209,7 +236,7 @@ class PageController extends Controller
 //}
 //dd($categories, $categoriesFolder, $categoriesAll);
    		$data = [];
-		$data['name'] = env('APP_NAME');
+		$data['name'] = config('app.name');
 
 		if ($posts && $posts->count() > 0) {
 
@@ -222,14 +249,14 @@ class PageController extends Controller
 
 	public function showAbout() {
 		$data = [];
-		$data['name'] = env('APP_NAME');
+		$data['name'] = config('app.name');
 		return view('pages.about')->with('data', $data);
 	}
 
 	public function showContact() {
 		$data = [];
-		$data['owner'] = env('APP_OWNER');
-		$data['key'  ] = myConstants('CAPTCHA_SITEKEY');
+		$data['contact'] = config('app.contact');
+		$data['key'    ] = myConstants('CAPTCHA_SITEKEY');
 		return view('pages.contact')->with('data', $data);
 	}
 
@@ -317,7 +344,7 @@ class PageController extends Controller
 	// We only include "Public" Folders & public files in this public view.
 	public function showFolder(Request $request, $select) {
 		//dd($request, $select, $request->search);
-		if (is_int($select)) {
+		if (is_numeric($select)) {
 			$folder = Folder::where('id', $select)->where('status', '>=', '1')->with(['files' => function ($q) {
 				$q->where('status', '>=', '4');
 			}])->first();
@@ -338,6 +365,7 @@ class PageController extends Controller
 	        $request->search = '4';
             $tagsPost = queryHelperTest($this->query('tag'), $request)->get();
 	        $request->search = null;
+
 			return view('blog.showFolder', ['folder' => $folder, 'files' => $files, 'tagsPost' => '$tagsPost', 
 				'search' => $request->search, 'sort' => $request->sort, 'list' => $list]);
 		} else {

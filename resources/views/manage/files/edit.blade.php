@@ -3,14 +3,14 @@
 @section('title','| Manage Edit File')
 
 @section('stylesheets')
-	{!! Html::style('css/parsley.css') 		!!}
-	{!! Html::style('css/select2.min.css')	!!}
+	{!! Html::style('css/parsley.css') 	   !!}
+	{!! Html::style('css/select2.min.css') !!}
 @endsection
 
 @section('content')
 	<div class="row">
 		<div class="col-md-8 myWrap">
-			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-folder-open mr-4">
+			<h1><a class="pointer" id="menu-toggle2"><span class="fas fa-folder mr-4">
 				</span>Edit File</a></h1>
 			<hr>
 
@@ -90,7 +90,7 @@
 				</div>
 				<div class="row mt-3">
 					<div class="col-sm-12">
-						{!! Html::decode(link_to_route('files.index', '<i class="fas fa-folder-open mr-2"></i>See All Files', [], ['class'=>'btn btn-outline-dark btn-block'])) !!}
+						{!! Html::decode(link_to_route('files.index', '<i class="fas fa-folder mr-2"></i>See All Files', [], ['class'=>'btn btn-outline-dark btn-block'])) !!}
 					</div>
 				</div>
 			</div>

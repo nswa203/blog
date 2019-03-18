@@ -9,7 +9,7 @@
 
 @section('content')
 	@if($files)
-		{!! Form::open(['route'=>['files.updateMultiple'], 'data-parsley-validate'=>'']) !!}
+		{!! Form::open(['route'=>['files.manyEdit'], 'data-parsley-validate'=>'']) !!}
 
 		<div class="row">
 			<div class="col-md-8 myWrap">
@@ -22,8 +22,11 @@
 			</div>
 
 			<div class="col-md-2 mt-2">
-				{!! Html::decode('<a href='.url()->previous().' class="btn btn-outline-danger btn-block"><span class="fas fa-times-circle mr-2"></span>NO Cancel</a>') !!}
+				{{ Form::button('<i class="fas fa-times-circle mr-2"></i>NO Cancel', ['class'=>'btn btn-outline-danger btn-block', 			'onclick'=>'window.history.back();
+					event.preventDefault ? event.preventDefault : event.returnValue=false;
+				']) }}
 			</div>
+			
 			<div class="col-md-2 mt-2">
 				{{ 	Form::button('<i class="far fa-edit mr-2"></i>YES EDIT NOW', ['type'=>'submit', 'class'=>'btn btn-primary btn-block']) }}
 			</div>

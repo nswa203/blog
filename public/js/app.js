@@ -31608,7 +31608,41 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
+// *******************************************************
+// perform "npm run watch" to enact changes to this code 
+// *******************************************************
 var axios = __webpack_require__(7);
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -31648,7 +31682,8 @@ var axios = __webpack_require__(7);
         },
         makeElevation: function makeElevation(results) {
             //console.log('makeElevation:');
-            makeElevationChart(results);
+            makeElevationChart_1(results);
+            makeElevationChart_2(results);
         }
     },
     mounted: function mounted() {
@@ -31659,20 +31694,31 @@ var axios = __webpack_require__(7);
 
 // ========================================================================== //
 // Makes Elevation charts using chart.js
-function makeElevationChart(results) {
+function makeElevationChart_1(results) {
     //console.log('makeElevationChart:');
-    var gdata = results['data']; // Elevation v Distance
     var grange = results['range']; // Range max/min data 
-    var gdata2 = results['data2']; // Climb v distance 
-
-    //console.log(gdata);
+    var gdata1 = results['data1']; // Elevation v Distance
+    var gdata2 = results['data2']; // Climb     v Distance
+    var gdata3 = results['data3']; // Waypoints v Distance
+    //console.log(gdata1);
     //console.log(grange);
 
-    var ctx = document.getElementById('myChart').getContext('2d');
+    var ctx = document.getElementById('myChart_1').getContext('2d');
     var chart = new Chart(ctx, {
         type: 'scatter',
         data: {
             datasets: [{
+                label: 'POI',
+                yAxisID: 'E',
+                borderWidth: 2,
+                borderColor: "#1f6e7a",
+                backgroundColor: "white",
+                data: gdata3,
+                fill: false,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                showLine: false
+            }, {
                 label: 'Climb',
                 yAxisID: 'C',
                 borderColor: "#1f6e7a",
@@ -31686,13 +31732,29 @@ function makeElevationChart(results) {
                 yAxisID: 'E',
                 borderColor: "#2a92a2",
                 backgroundColor: "#49bed0",
-                data: gdata,
+                data: gdata1,
                 fill: true,
                 pointRadius: 1,
                 pointHoverRadius: 5
             }]
         },
         options: {
+            tooltips: { // Insert Waypoint label (gdata3.l) into tooltip 
+                callbacks: {
+                    footer: function footer(tooltipItems, data) {
+                        var label = false;
+                        if (tooltipItems[0].datasetIndex == 0) {
+                            var i = tooltipItems[0].index;
+                            //console.log(data.datasets[0].data[i]);
+                            if (data.datasets[0].data[i].l != 'undefined') {
+                                label = data.datasets[0].data[i].l;
+                            }
+                        }
+                        return label;
+                    }
+                },
+                footerFontStyle: 'bold'
+            },
             scales: {
                 xAxes: [{
                     scaleLabel: {
@@ -31748,6 +31810,138 @@ function makeElevationChart(results) {
             }
         }
     });
+
+    // Add vertical cursor - Hook into main event handler
+    var parentEventHandler = Chart.Controller.prototype.eventHandler;
+    Chart.Controller.prototype.eventHandler = function () {
+        var ret = parentEventHandler.apply(this, arguments);
+        this.clear();
+        this.draw();
+        // Draw the vertical line here
+        var eventPosition = Chart.helpers.getRelativePosition(arguments[0], this.chart);
+        // console.log(this.chart.ctx);
+        var h = this.chart.ctx.canvas.height;
+        this.chart.ctx.beginPath();
+        this.chart.ctx.moveTo(eventPosition.x, 60);
+        this.chart.ctx.strokeStyle = "#ff0000";
+        this.chart.ctx.lineTo(eventPosition.x, h - 85);
+        this.chart.ctx.stroke();
+        return ret;
+    };
+}
+
+// ========================================================================== //
+// Makes Elevation charts using chart.js
+function makeElevationChart_2(results) {
+    //console.log('makeElevationChart:');
+    var grange = results['range']; // Range max/min data 
+    var gdata1 = results['data1']; // Elevation v Distance
+    var gdata2 = results['data2']; // Climb     v Distance
+    var gdata3 = results['data3']; // Waypoints v Distance
+    var gdata4 = results['data4']; // Calories  v Distance Nick
+    var gdata5 = results['data5']; // Calories  v Distance Dave
+    var gdata6 = results['data6']; // Calories  v Distance Chris
+    //console.log(gdata1);
+    //console.log(grange);
+
+    var ctx = document.getElementById('myChart_2').getContext('2d');
+    var chart = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Nick',
+                yAxisID: 'C1',
+                borderColor: "#b30000",
+                backgroundColor: "#b30000",
+                data: gdata4,
+                fill: false,
+                pointRadius: 1,
+                pointHoverRadius: 5
+            }, {
+                label: 'Dave',
+                yAxisID: 'C1',
+                borderColor: "#b35500",
+                backgroundColor: "#b35500",
+                data: gdata5,
+                fill: false,
+                pointRadius: 1,
+                pointHoverRadius: 5
+            }, {
+                label: 'Chris',
+                yAxisID: 'C1',
+                borderColor: "#b38800",
+                backgroundColor: "#b38800",
+                data: gdata6,
+                fill: false,
+                pointRadius: 1,
+                pointHoverRadius: 5
+            }, {
+                label: 'Elevation',
+                yAxisID: 'E',
+                borderColor: "#2a92a2",
+                backgroundColor: "#49bed0",
+                data: gdata1,
+                fill: true,
+                pointRadius: 1,
+                pointHoverRadius: 5
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Distance - miles'
+                    },
+                    ticks: {
+                        max: grange[1],
+                        maxRotation: 45,
+                        minRotation: 45,
+                        callback: function callback(value, index, values) {
+                            var v = value;
+                            if (value == grange[0]) {
+                                v = 'Start: ' + value;
+                            } else if (value == grange[1]) {
+                                v = 'Finish: ' + value;
+                            }
+                            return v;
+                        }
+                    }
+                }],
+
+                yAxes: [{
+                    id: 'E',
+                    display: true,
+                    position: 'right',
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Elevation - metres'
+                    },
+                    ticks: {
+                        suggestedMin: grange[2],
+                        suggestedMax: grange[3],
+                        beginAtZero: false
+                    }
+                }, {
+                    id: 'C1',
+                    display: true,
+                    position: 'left',
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'kCals'
+                    },
+                    ticks: {
+                        suggestedMax: grange[4],
+                        beginAtZero: true
+                    }
+                }]
+            },
+            title: {
+                display: true,
+                text: 'Route Profile'
+            }
+        }
+    });
 }
 
 /***/ }),
@@ -31765,7 +31959,75 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", [_c("canvas", { attrs: { id: "myChart" } })])
+    return _c("div", [
+      _c("div", { staticClass: "row", attrs: { id: "accordionpm1" } }, [
+        _c("div", { staticClass: "col-md-12 myWrap" }, [
+          _c("h1", [
+            _c("span", { staticClass: "h1-suffix" }, [
+              _vm._v("Points of Interest, Climb & Elevation")
+            ]),
+            _vm._v(" "),
+            _c("a", [
+              _c("span", {
+                staticClass:
+                  "mt-2 pointer-expand fas fa-chevron-circle-down float-right mr-2",
+                attrs: {
+                  "data-toggle": "collapse",
+                  "data-target": "#collapsepm1"
+                }
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c(
+            "div",
+            {
+              staticClass: "collapse hide",
+              attrs: { id: "collapsepm1", "data-parent": "#accordionpm1" }
+            },
+            [
+              _c("div", { staticClass: "d-flex justify-content-center" }, [
+                _c("canvas", { attrs: { id: "myChart_1" } })
+              ])
+            ]
+          )
+        ])
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "row", attrs: { id: "accordionpm2" } }, [
+        _c("div", { staticClass: "col-md-12 myWrap" }, [
+          _c("h1", [
+            _c("span", { staticClass: "h1-suffix" }, [
+              _vm._v("Calories & Elevation")
+            ]),
+            _vm._v(" "),
+            _c("a", [
+              _c("span", {
+                staticClass:
+                  "mt-1 mb-1 pointer-expand fas fa-chevron-circle-down float-right mr-2",
+                attrs: {
+                  "data-toggle": "collapse",
+                  "data-target": "#collapsepm2"
+                }
+              })
+            ])
+          ]),
+          _vm._v(" "),
+          _c(
+            "div",
+            {
+              staticClass: "collapse hide",
+              attrs: { id: "collapsepm2", "data-parent": "#accordionpm2" }
+            },
+            [
+              _c("div", { staticClass: "d-flex justify-content-center" }, [
+                _c("canvas", { attrs: { id: "myChart_2" } })
+              ])
+            ]
+          )
+        ])
+      ])
+    ])
   }
 ]
 render._withStripped = true

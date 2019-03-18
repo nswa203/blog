@@ -35,7 +35,7 @@
 {{-- **************************************************************************** --}}
 		@if($files)
 			<div id="app"> <!-- Vue 2 -->
-				{!! Form::open(['route'=>['blog.file', $folder->id]]) !!}
+				{!! Form::open(['route'=>['files.mixed']]) !!}
 							
 				<div class="row">
 					<div class="col-md-12 myWrap">
@@ -152,7 +152,9 @@
 											onerror="this.onerror=null; this.src='{{ asset('favicon.ico') }}';" /> 
 										</a>
 									@else
-									    {{-- https://blog/manage/private/find/pdf/icons --}}
+										{{-- Here we provide icons for different filetype extensions                                  --}}
+										{{-- They should be pre-loaded into the db in $folder->name=icons $file->title=file_extension --}}
+									    {{-- Debug: https://blog/manage/private/find/pdf/icons 										  --}}
 										<a href="{{ route('private.getFile', [$file->id]) }}">
 											<img src="{{ route('private.findFile',
 											[pathinfo($file->file, PATHINFO_EXTENSION), 'icons']) }}" {{-- searches title not .ext --}}

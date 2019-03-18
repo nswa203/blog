@@ -17,11 +17,13 @@
 						/>
 					</div>
 				@endif
+				@if($post->image)
 					<a href="{{ asset('images/'.$post->image) }}">
 						<img src="{{ asset('images/'.$post->image) }}" width="150px" class="img-frame float-left mr-4" style="margin-top:-10px; margin-bottom:10px;"
 							onerror="this.onerror=null; this.src='{{ asset('favicon.ico') }}';"
 						/>
 					</a>
+				@endif	
 				<h1>{{ $post->title }}</h1>
 				<p>{!! $post->body !!}</p>
 				<hr>
@@ -38,6 +40,10 @@
 				</p>
 				<p>
 					Posted In <a href="{{ url('blog?pca='.$post->category->name) }}"><span class="badge badge-secondary">{{ $post->category->name }}</span></a>
+					@if ($post->user->profile)
+						by <a href="{{ url('blog?pua='.$post->user->name) }}">
+						<span class="badge badge-dark">{!! $post->user->profile->username !!}</span></a>
+	    			@endif
 					<span class="float-right">Published: {{ date('j M Y, h:i a', strtotime($post->published_at)) }}</span>
 				</p>
 			</div>

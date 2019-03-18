@@ -10,28 +10,82 @@ use App\Category;
 use App\Folder;
 use App\Tag;
 use App\User;
+use Auth;
 use Image;
 use Purifier;
 use Session;
 use Storage;
 use Validator;
 
+use Route;
+
 class PostController extends Controller
  {
 
-	public function __construct(Request $request) {
+    public function __construct(Request $request) {
         $this->middleware(function ($request, $next) {
-            session(['zone' => 'Posts']);
+            $post = $request->route('post') ?: false;
+            if ($post) {
+                $owner_id = Post::find($post)->author_id;
+            } else {
+                $owner_id = $request->author_id ?: false;
+            } 
+            $owner_id = $owner_id ? $owner_id : '*'; 
+
+            if (!permit($this->permits($owner_id))) {
+                Session::flash('failure', "It doesn't look like you have permission for that action!");
+                return redirect(previous());
+            }
+
+            // This codes extends validation to ensure restricted users may only access
+            // their own User & Folder resources   
+            if (permit($this->permits(), 'updateAll')) { 
+                Validator::extend('ownFolder', function() { return true; });
+                Validator::extend('ownUser'  , function() { return true; });
+            } else {
+                Validator::extend('ownFolder', function() use ($request) {
+                    return areOwnedBy($request->folders, 'Folder', 'user_id', auth()->user()->id); },
+                    "Invalid Folder."
+                );
+                Validator::extend('ownUser', function() use ($request, $owner_id) {
+                    return $owner_id==auth()->user()->id; },
+                    "Invalid User."
+                );
+            } 
+
+            session(['zone' => 'Posts']);                       // Set the active zone for search()
+            previous(url($request->getPathInfo()));             // Set the previous url for redirect(previous()) 
             return $next($request);
         });
-	}
+    }
+
+    // These permits are used by permit() in the __contruct() middleware to secure the controller actions 
+    // This could be done in the Route config - but it seems to make more sense to do it in the controller.
+    // $owner_id='*' permits all Users for a permission   
+    public function permits($owner_id='^') {
+        $permits = [
+            'showAll'   	 => 'permission:posts-read',
+            'index'     	 => 'permission:posts-read,owner:'.$owner_id.'|posts-read-ifowner',
+            'show'      	 => 'permission:posts-read,owner:'.$owner_id.'|posts-read-ifowner',
+            'create'    	 => 'permission:posts-create|posts-create-ifowner',
+            'store'     	 => 'permission:posts-create|posts-create-ifowner',
+            'edit'      	 => 'permission:posts-update,owner:'.$owner_id.'|posts-update-ifowner',
+            'updateAll' 	 => 'permission:posts-update',
+            'update'    	 => 'permission:posts-update,owner:'.$owner_id.'|posts-update-ifowner',
+            'delete'    	 => 'permission:posts-delete,owner:'.$owner_id.'|posts-delete-ifowner',
+            'destroy'   	 => 'permission:posts-delete,owner:'.$owner_id.'|posts-delete-ifowner',
+            'apiCheckUnique' => 'user:*',
+            'default'   	 => '' 
+        ];
+        return $permits;
+    }
 
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
     // The table is sorted (ascending or descending) and finally filtered.
     // Looses searches are performed unless the search string is enclosed in '^'
     // It requires the custom queryHelper() function in Helpers.php.
     // $posts = paginateHelper($this->query(), $request, 12, 4, 192, 4);
-    public function query() {
+    public function query($user_id=false) {
         $query = [
             'model'         => 'Post',
             'searchModel'   => ['title', 'slug', 'image', 'body', 'excerpt'],
@@ -52,8 +106,10 @@ class PostController extends Controller
                 'a'		  => 'a,name,user',				// Associated search
                 'default' => 'i'                       
             ],
-            //'filter'		=>['status', '>=', '4']
         ];
+        if ($user_id) {
+            $query['filter'] = ['author_id', '=', $user_id];
+        }
         return $query;
     }
 
@@ -76,7 +132,9 @@ class PostController extends Controller
 	 * @return \Illuminate\Http\Response
 	 */
 	public function index(Request $request) {
-        $posts = paginateHelper($this->query(), $request, 12, 4, 192, 4); // size($request->pp), default, min, max, step
+        //$posts = paginateHelper($this->query(), $request, 12, 4, 192, 4); // size($request->pp), default, min, max, step
+        $id = permit($this->permits(), 'showAll') ? '' : Auth::user()->id;
+        $posts = paginateHelper($this->query($id), $request, 12, 4, 192, 4);  
 
 		if ($posts && $posts->count() > 0) {
 
@@ -93,11 +151,18 @@ class PostController extends Controller
 	 * @return \Illuminate\Http\Response
 	 */
 	public function create() {
-		$categories = Category::orderBy('name', 'asc')->pluck('name', 'id');
-		$folders    = Folder::  orderBy('name', 'asc')->pluck('name', 'id');
-		$tags       = Tag::     orderBy('name', 'asc')->pluck('name', 'id');
-		$users      = User::    orderBy('name', 'asc')->pluck('name', 'id');
 		$post = new Post;
+
+        if (permit($this->permits(), 'updateAll')) {
+            $folders = Folder::orderBy('name', 'asc')->pluck('name', 'id');
+            $users   =   User::orderBy('name', 'asc')->pluck('name', 'id');            
+        } else {
+            $folders = Folder::where('user_id', Auth::user()->id)->orderBy('name', 'asc')->pluck('name', 'id');
+            $users   = [Auth::user()->id => Auth::user()->name];            
+        }
+
+		$categories = Category::orderBy('name', 'asc')->pluck('name', 'id');
+		$tags       = Tag::     orderBy('name', 'asc')->pluck('name', 'id');
 
 		return view('manage.posts.create', ['post' => $post,
 			'categories' => $categories, 'folders' => $folders, 'tags' => $tags, 'users' => $users, 'status_list' => $this->status(2)]);
@@ -119,9 +184,9 @@ class PostController extends Controller
 			'banner'	  => 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
 			'body' 		  => 'required|min:1',
 			'excerpt' 	  => 'sometimes',
-			'author_id'   => 'sometimes|integer|exists:users,id',
+			'author_id'   => 'sometimes|integer|exists:users,id|ownUser',
 			'status' 	  => 'required|integer|min:0|max:4',
-			'folders'	  => 'array',
+			'folders'	  => 'array|ownFolder',
 			'folders.*'	  => 'integer|exists:folders,id',			
 			'tags'		  => 'array',
 			'tags.*'	  => 'integer|exists:tags,id',
@@ -131,6 +196,7 @@ class PostController extends Controller
         }
 
 		$post = new Post;
+
 		$post->title 	   = $request->title;
 		$post->slug 	   = $request->slug;
 		$post->category_id = $request->category_id;
@@ -165,6 +231,7 @@ class PostController extends Controller
         }
 
 		$myrc = $post->save();
+        
         if (isset($msgs)) { session()->flash('msgs', $msgs); }
 
 		if ($myrc) {
@@ -183,7 +250,8 @@ class PostController extends Controller
 			$request->tags = array_unique($request->tags);
 	
 			$myrc = $post->folders()->sync($request->folders, false);
-			$myrc = $post->tags()   ->sync([$request->tags],  false);
+			$myrc = $post->tags()   ->sync($request->tags,    false);
+
 			Session::flash('success', 'Post "' . $post->slug . '" was successfully saved.');
 			return redirect()->route('posts.show', $post->id);
 		} else {
@@ -207,6 +275,7 @@ class PostController extends Controller
             return view('manage.posts.show', ['post' => $post, 'comments' => $comments, 'folders' => $folders, 'status_list' => $this->status()]);
 		} else {
 			Session::flash('failure', 'Post "' . $id . '" was NOT found.');
+            return redirect(previous());
             return redirect()->route('posts.index');
 		}
 	}
@@ -220,16 +289,23 @@ class PostController extends Controller
 	public function edit($id) {
 		$post = Post::find($id);
 
-	    if ($post) {
+        if ($post) {
+            if (permit($this->permits(), 'updateAll')) {
+                $folders = Folder::orderBy('name', 'asc')->pluck('name', 'id');
+                $users   =   User::orderBy('name', 'asc')->pluck('name', 'id');            
+            } else {
+                $folders = Folder::where('user_id', Auth::user()->id)->orderBy('name', 'asc')->pluck('name', 'id');
+                $users   = [Auth::user()->id => Auth::user()->name];            
+            }
+
 			$categories = Category::orderBy('name', 'asc')->pluck('name', 'id');
-			$folders    = Folder::  orderBy('name', 'asc')->pluck('name', 'id');
 			$tags       = Tag::     orderBy('name', 'asc')->pluck('name', 'id');
-			$users      = User::    orderBy('name', 'asc')->pluck('name', 'id');
 
             return view('manage.posts.edit', ['post' => $post, 'categories' => $categories,
             	'folders' => $folders, 'tags' => $tags, 'users' => $users, 'status_list' => $this->status()]);
         } else {
             Session::flash('failure', 'Post "' . $id . '" was NOT found.');
+            return redirect(previous());
 			return redirect()->route('posts.index');
         }
 	}
@@ -251,9 +327,9 @@ class PostController extends Controller
 			'banner'	 		=> 'sometimes|image|mimes:jpeg,jpg,jpe,png,gif|max:8000|min:1',
 			'body' 				=> 'required|min:1',
 			'excerpt' 			=> 'sometimes',
-			'author_id' 		=> 'sometimes|integer|exists:users,id',
+			'author_id' 		=> 'sometimes|integer|exists:users,id|ownUser',
 			'status' 			=> 'required|integer|min:0|max:4',
-			'folders'			=> 'array',
+			'folders'			=> 'array|ownFolder',
 			'folders.*'			=> 'integer|exists:folders,id',			
 			'tags'				=> 'array',
 			'tags.*'			=> 'integer|exists:tags,id',
@@ -356,6 +432,7 @@ class PostController extends Controller
 	        return view('manage.posts.delete', ['post'=>$post, 'status_list' => $this->status()]);
         } else {
             Session::flash('failure', 'Post ' . $id . ' was NOT found.');
+            return redirect(previous());
             return redirect()->route('posts.index');
         }
     }

@@ -140,18 +140,20 @@
 	<script>
 		tinymce.init ({
 			selector: '#textarea-address',
-			plugins: "link lists",
+			plugins: "advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table contextmenu paste",
 			menubar: false,
-			toolbar: "",
+			extended_valid_elements: "iframe[src|width|height|name|align|frameborder|scrolling]",			
+			toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | alignleft aligncenter alignright alignjustify",
 			forced_root_block : 'div',
             branding: false,
  		});
 
  		tinymce.init ({
 			selector: '#textarea-about_me',
-			plugins: "link lists",
+			plugins: "advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table contextmenu paste",
 			menubar: false,
-			toolbar: "",
+			extended_valid_elements: "iframe[src|width|height|name|align|frameborder|scrolling]",			
+			toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | alignleft aligncenter alignright alignjustify",
 			forced_root_block : 'div',
             branding: false,
  		});

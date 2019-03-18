@@ -7,14 +7,14 @@
 @endsection
 
 @section('content')
-	@if($files)
-		{!! Form::open(['route'=>'files.move', 'data-parsley-validate'=>'']) !!}
+	@if ($files)
+		{!! Form::open(['route'=>'files.manyMove', 'data-parsley-validate'=>'']) !!}
 
 		<div class="row">
 			<div class="col-md-4 myWrap">
 				<h1><a class="pointer" id="menu-toggle2" data-toggle="tooltip" data-placement="top" title="Toggle NavBar">
 						@if (isset($search)) <span class="fas fa-search mr-4"></span>
-						@else 				 <span class="fas fa-folder-open mr-4"></span>
+						@else 				 <span class="fas fa-folder mr-4"></span>
 						@endif 				 Move Files to...
 					</a>
 				</h1>
@@ -25,8 +25,11 @@
 			</div>
 
 			<div class="col-md-2 mt-2">
-				{!! Html::decode('<a href='.url()->previous().' class="btn btn-outline-danger btn-block"><span class="fas fa-times-circle mr-2"></span>NO Cancel</a>') !!}
+				{{ Form::button('<i class="fas fa-times-circle mr-2"></i>NO Cancel', ['class'=>'btn btn-outline-danger btn-block', 			'onclick'=>'window.history.back();
+					event.preventDefault ? event.preventDefault : event.returnValue=false;
+				']) }}
 			</div>
+
 			<div class="col-md-2 mt-2">
 				{{ 	Form::button('<i class="fas fa-forward mr-2"></i>YES MOVE NOW', ['type'=>'submit', 'class'=>'btn btn-primary btn-block']) }}
 			</div>

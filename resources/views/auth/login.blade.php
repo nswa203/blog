@@ -1,14 +1,14 @@
 {{-- @extends('layouts.app') --}}
 @extends('main')
 
-@section('title',"| Login to ".env('APP_NAME'))
+@section('title',"| Login to ".config('app.name'))
 
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header">{{ __('Login to ') }}{{ env('APP_NAME') }}</div>
+                <div class="card-header">{{ __('Login to ') }}{{ config('app.name') }}</div>
 
                 <div class="card-body">
                     <form method="POST" action="{{ route('login') }}">

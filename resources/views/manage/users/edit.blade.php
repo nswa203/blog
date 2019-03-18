@@ -56,17 +56,20 @@
 				</div> <!-- Vue 2 -->
 
 				<hr class="hr-spacing-top">
-					@if(!$user->profile)					
-						<div class="row">
-							<div class="col-sm-12">
-								{!! Html::decode(link_to_route('profiles.create', '<i class="fas fa-user-circle mr-2"></i>Add A  User Profile', [$user->id], ['class'=>'btn btn-outline-dark btn-block'])) !!}
-							</div>
+				@if(!$user->profile)					
+					<div class="row">
+						<div class="col-sm-12">
+							{!! Html::decode(link_to_route('profiles.create', '<i class="fas fa-user-circle mr-2"></i>Add A  User Profile', [$user->id], ['class'=>'btn btn-outline-dark btn-block'])) !!}
 						</div>
-						<hr class="hr">
-					@endif					
+					</div>
+					<hr class="hr">
+				@endif					
 				<div class="row">
 					<div class="col-sm-6">
-						{!! Html::decode('<a href="Return" class="btn btn-danger btn-block" onclick="window.history.back()"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
+						{!! Html::decode('<a href="\" class="btn btn-danger btn-block"
+							onclick="window.history.back(); event.preventDefault ? event.preventDefault() : event.returnValue = false;">
+							<span class="fas fa-times-circle mr-2"></span>Cancel</a>')
+						!!}
 					</div>
 					<div class="col-sm-6">
 						{{ Form::button('<i class="fas fa-user-edit mr-2"></i>Save', ['type'=>'submit', 'class'=>'btn btn-success btn-block']) }}
@@ -81,58 +84,59 @@
 		</div>
 	</div>
 
-	<div class="row mt-4">
-		<div class="col-md-12">
-			<div class="card card-body bg-light" id="app"> <!-- Vue 2 -->
-				<h1>Roles<span class="h1-suffix">({{ $user->roles->count() }} Roles from {{ $roles->total() }}  have been assigned to this User.)</span></h1>
-				<table class="table table-hover table-responsive-lg">
-					<thead class="thead-dark">
-						<th><span class="fas fa-hashtag mb-2 ml-1"></th>
-						<th width="10px">
-							<label for="itemsCheckAll">
-						    	<input hidden type="checkbox" id="itemsCheckAll" @click="checkAll('all')" value="all" v-model="itemsCheckAll" name=":custom-value2" />
-								<span class="span"></span>
-						    </label>
-						</th>
-						<th>Name</th>
-						<th>Slug</th>
-						<th>Description</th>
-						<th width="120px">Updated</th>
-						<th width="130px" class="text-right">Page {{$roles->currentPage()}} of {{$roles->lastPage()}}</th>
-					</thead>
-					<tbody>						
-						@foreach($roles as $role)
-							<tr>
-								<th>{{ $role->id }}</th>
-								<td>
-									<label for="{!! $role->id !!}">
-								    	<input hidden type="checkbox" id="{!! $role->id !!}" value="{!! $role->id !!}" v-model="itemsSelected" name=":custom-value" @change="checkAll('item')" />
-										<span class="span"></span>
-								    </label>
-								</td>
-								<td>{{ $role->display_name }}</td>
-								<td>{{ $role->name }}</td>
-								<td>{{ substr($role->description, 0, 156) }}{{ strlen($role->description)>156 ? '...' : '' }}</td>
-								<td>{{ date('j M Y', strtotime($role->updated_at)) }}</td>
-								<td class="text-right" nowrap>
-									<a href="{{ route('roles.show', $role->id)}}" class="btn btn-sm btn-outline-dark">View Role</a>
-								</td>
-							</tr>
-						@endforeach
-					</tbody>
-				</table>
+		<div class="row mt-4">
+			<div class="col-md-12">
+				<div class="card card-body bg-light" id="app"> <!-- Vue 2 -->
+					<h1>Roles<span class="h1-suffix">({{ $user->roles->count() }} Roles from {{ $roles->total() }}  have been assigned to this User.)</span></h1>
+					<table class="table table-hover table-responsive-lg">
+						<thead class="thead-dark">
+							<th><span class="fas fa-hashtag mb-2 ml-1"></span></th>
+							<th width="10px">
+								<label for="itemsCheckAll">
+							    	<input hidden type="checkbox" id="itemsCheckAll" @click="checkAll('all')" value="all" v-model="itemsCheckAll" name=":custom-value2" />
+									<span class="span"></span>
+							    </label>
+							</th>
+							<th>Name</th>
+							<th>Slug</th>
+							<th>Description</th>
+							<th width="120px">Updated</th>
+							<th width="130px" class="text-right">Page {{$roles->currentPage()}} of {{$roles->lastPage()}}</th>
+						</thead>
+						<tbody>						
+							@foreach($roles as $role)
+								<tr>
+									<th>{{ $role->id }}</th>
+									<td>
+										<label for="{!! $role->id !!}">
+									    	<input hidden type="checkbox" id="{!! $role->id !!}" value="{!! $role->id !!}" v-model="itemsSelected" name=":custom-value" @change="checkAll('item')" />
+											<span class="span"></span>
+									    </label>
+									</td>
+									<td>{{ $role->display_name }}</td>
+									<td>{{ $role->name }}</td>
+									<td>{{ substr($role->description, 0, 156) }}{{ strlen($role->description)>156 ? '...' : '' }}</td>
+									<td>{{ date('j M Y', strtotime($role->updated_at)) }}</td>
+									<td class="text-right" nowrap>
+										<a href="{{ route('roles.show', $role->id)}}" class="btn btn-sm btn-outline-dark">View Role</a>
+									</td>
+								</tr>
+							@endforeach
+						</tbody>
+					</table>
 
-				<div class="d-flex justify-content-center">
-					{!! $roles->render() !!} 
-				</div>
-			</div> <!-- Vue 2 -->
+					<div class="d-flex justify-content-center">
+						{!! $roles->render() !!} 
+					</div>
+				</div> <!-- Vue 2 -->
+			</div>
 		</div>
-		{!! Form::close() !!}
+	{!! Form::close() !!}
 @endsection
 
 @section('scripts')
-	{!! Html::script('js/parsley.min.js')	!!}
-	{!! Html::script('js/app.js') 			!!}
+	{!! Html::script('js/parsley.min.js') !!}
+	{!! Html::script('js/app.js') 		  !!}
 
 	<script>
 		var commonData = {

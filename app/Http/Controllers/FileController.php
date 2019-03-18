@@ -100,7 +100,7 @@ class FileController extends Controller
         $tags = Tag::orderBy('name', 'asc')->pluck('name', 'id');
         $file = new File;
         $list['f'] = fileStatus(2);
-        $list['o'] = fileOption(3);        
+        $list['o'] = fileOption(3);
         $mimes = 'text/*,image/*,audio/*,video/*,.pdf,.txt,.log,.ico,.nfo,.nft,.srt,.rex,.rexx,.bat,.cmd,.php,.js,.rar,.zip,.gpx';
 
         return view('manage.files.create', ['file' => $file, 'folders' => $folders, 'tags' => $tags,
@@ -231,7 +231,7 @@ class FileController extends Controller
             if ($request->ajax()) {
                 return json_encode(['countBad' => $countBad]);    
             }              
-            return redirect()->route('files.create', $id)->withInput();
+            return redirect()->route('files.create')->withInput();
         }
     }
     
@@ -245,7 +245,7 @@ class FileController extends Controller
             $file->ext = pathinfo($file->file, PATHINFO_EXTENSION);
             $list['f'] = fileStatus();
             $list['d'] = folderStatus();
-            $list['x'] = showNav2($id, mySession('filesIndex', 'index'));     // Build list of First, Previous, Next, Last, Max, Current
+            $list['x'] = showNav3($id, mySession('filesIndex', 'index'));     // Build Playlist navigation controls 
 
             return view('manage.files.show', ['file' => $file, 'meta' => json_decode($file->meta), 'list' => $list, 'search' => true]);
         } else {
@@ -264,7 +264,7 @@ class FileController extends Controller
 
         if ($file) {
             $file->ext = pathinfo($file->file, PATHINFO_EXTENSION);
-            $list['x'] = showNav2($id, mySession('filesIndex', 'index'), $playList);
+            $list['x'] = showNav3($id, mySession('filesIndex', 'index'));
 
             return view('manage.files.showImage', ['file' => $file, 'meta' => json_decode($file->meta), 'list' => $list, 'search' => true]);
         } else {
@@ -276,7 +276,8 @@ class FileController extends Controller
     /* **************************************************************************************************************** 
     *  GetFile                                                                                                        *
     *  Hint: debug with http://blog/manage/private/nnn?r=angle       (where nnn = file number)                        *
-    *  NS01 NS02 NS03 NS04                                                                                                     *
+    *  NS01 NS02 NS03 NS04                                                                                            *
+    *  Debug: if "&" present, ensure you use !!bangs!! "{!! route('private.getFile', [':id', 'r=n&t=400']) !!}"       *    
     **************************************************************************************************************** */ 
     public function getFile(Request $request, $id) {
         $myrc = false;
@@ -295,9 +296,10 @@ class FileController extends Controller
                 } else {
                     $file = false;                                                  // NS04
                 }
-                if (!$file) { $file = FileSys::get($path); }
+                if (! $file) { $file = FileSys::get($path); }
                 $response = Response::make($file, 200);
-                $response->header("Content-Type", $type);
+                $response->header("x-file", $path);
+                $response->header("x-size", strlen($file));                         // NS05
                 $myrc = true;
             }
         }    
@@ -444,15 +446,15 @@ class FileController extends Controller
     }    
 
     /* **************************************************************************************************************** 
-    *  Mixed                                                                                                          *
-    *   CopyMultiple                                                                                                  *
-    *   DeleteMultiple                                                                                                *
-    *   EditMultiple                                                                                                  *
-    *   MoveMultiple                                                                                                  *
-    *   ShowMultiple                                                                                                  *
-    *   ShowFileMultiple                                                                                              *
+    *  Many                                                                                                           *
+    *   manyCopy                                                                                                      *
+    *   manyDelete                                                                                                    *
+    *   manyEdit                                                                                                      *
+    *   manyMove                                                                                                      *
+    *   manyShow                                                                                                      *
+    *   manyShowFile                                                                                                  *
     **************************************************************************************************************** */ 
-    public function mixed(Request $request) {
+    public function many(Request $request) {
 //  dd($request);
         $choice = explode(',', $request->choice);
         $ids = $request->itemsSelected;
@@ -460,56 +462,56 @@ class FileController extends Controller
         else      { $ids = [$choice[1]]; }
 
     /* **************************************************************************************************************** 
-    *   CopyMultiple                                                                                                  *
+    *   manyCopy                                                                                                      *
     **************************************************************************************************************** */ 
         if ($choice[0] == 'copy') {
-          $files = $this->searchSortQuery($ids)->get();
+          //$files = $this->searchSortQuery($ids)->get();
             $files = queryHelperTest($this->query(), $ids)->get();
 
             $folders = Folder::orderBy('slug', 'asc')->pluck('slug', 'id');
 
             $list['f'] = fileStatus();
             $list['d'] = folderStatus();            
-            return view('manage.files.copy', ['files' => $files, 'folders' => $folders, 'search' => true, 'sort' => $request->sort, 'list' => $list, 'itemsSelected' => implode(',', $ids)]);
+            return view('manage.files.manyCopy', ['files' => $files, 'folders' => $folders, 'search' => true, 'sort' => $request->sort, 'list' => $list, 'itemsSelected' => implode(',', $ids)]);
         }    
     /* **************************************************************************************************************** 
-    *   DeleteMultiple                                                                                                *
+    *   manyDelete                                                                                                    *
     **************************************************************************************************************** */
         else if ($choice[0] == 'delete') {
-       $files = $this->searchSortQuery($ids)->get();
+       //$files = $this->searchSortQuery($ids)->get();
             $files = queryHelperTest($this->query(), $ids)->get();
 
             $list['f'] = fileStatus();
             $list['d'] = folderStatus();
-            return view('manage.files.delete', ['files' => $files, 'search' => true, 'sort' => $request->sort, 'list' => $list, 'itemsSelected' => implode(',', $ids)]);
+            return view('manage.files.manyDelete', ['files' => $files, 'search' => true, 'sort' => $request->sort, 'list' => $list, 'itemsSelected' => implode(',', $ids)]);
         }    
     /* **************************************************************************************************************** 
     *   EditMultiple                                                                                                  *
     **************************************************************************************************************** */
         else if ($choice[0] == 'edit') {
-        $files = $this->searchSortQuery($ids)->get();
+        //$files = $this->searchSortQuery($ids)->get();
             $files = queryHelperTest($this->query(), $ids)->get();
 
             $tags = Tag::orderBy('name', 'asc')->pluck('name', 'id');
             
             $list['f'] = fileStatus();
             $list['d'] = folderStatus();            
-            return view('manage.files.alter', ['files' => $files, 'tags' => $tags, 'search' => true, 'sort' => $request->sort, 'list' => $list, 'itemsSelected' => implode(',', $ids)]);        }
+            return view('manage.files.manyEdit', ['files' => $files, 'tags' => $tags, 'search' => true, 'sort' => $request->sort, 'list' => $list, 'itemsSelected' => implode(',', $ids)]);        }
     /* **************************************************************************************************************** 
-    *   MoveMultiple                                                                                                  *
+    *   manyMove                                                                                                      *
     **************************************************************************************************************** */    
         else if ($choice[0] == 'move') {
-      $files = $this->searchSortQuery($ids)->get();
+      //$files = $this->searchSortQuery($ids)->get();
             $files = queryHelperTest($this->query(), $ids)->get();
 
             $folders = Folder::orderBy('slug', 'asc')->pluck('slug', 'id');
 
             $list['f'] = fileStatus();
             $list['d'] = folderStatus();            
-            return view('manage.files.move', ['files' => $files, 'folders' => $folders, 'search' => true, 'sort' => $request->sort, 'list' => $list, 'itemsSelected' => implode(',', $ids)]);
+            return view('manage.files.manyMove', ['files' => $files, 'folders' => $folders, 'search' => true, 'sort' => $request->sort, 'list' => $list, 'itemsSelected' => implode(',', $ids)]);
         }      
     /* **************************************************************************************************************** 
-    *   ShowFileMultiple                                                                                              *
+    *   manyShowFile                                                                                                  *
     **************************************************************************************************************** */    
         else if ($choice[0] == 'showFile') {
             $ids = $request->itemsSelected;
@@ -517,10 +519,10 @@ class FileController extends Controller
                 $ids = explode(',', $ids);
                 mySession('filesIndex', 'index', $ids);
             } else { $ids = [$choice[1]]; }
-            return redirect()->route('files.showFile', [$ids[0], 'r=y']); 
+            return redirect()->route('files.manyShowFile', [$ids[0], 'r=y']); 
         }      
     /* **************************************************************************************************************** 
-    *   ShowMultiple                                                                                                  *
+    *   manyShow                                                                                                      *
     **************************************************************************************************************** */   
         else {
             $ids = $request->itemsSelected;
@@ -533,13 +535,13 @@ class FileController extends Controller
     /* **************************************************************************************************************** 
     *   Error                                                                                                         *
     **************************************************************************************************************** */ 
-        dd('Mixed Error!');
+        dd('Many Error!');
     }
 
     /* **************************************************************************************************************** 
-    *  updateMultiple                                                                                                 *
+    *  manyUpdate                                                                                                     *
     **************************************************************************************************************** */ 
-    public function updateMultiple(Request $request) {
+    public function manyUpdate(Request $request) {
         $validator = Validator::make($request->all(), [
             'status*'   => 'sometimes|integer|min:0|max:4',
             'tags'      => 'array',
@@ -588,10 +590,10 @@ class FileController extends Controller
     }    
 
     /* **************************************************************************************************************** 
-    *  Copy                                                                                                           *
+    *  manyCopy                                                                                                       *
     *  FileObserver handles physical copy of the disk file and ensures no collisions                                  *  
     **************************************************************************************************************** */ 
-    public function copy(Request $request) {
+    public function manyCopy(Request $request) {
         $validator = Validator::make($request->all(), [
             'folder_id' => 'required|integer|exists:folders,id'
         ]);
@@ -644,10 +646,10 @@ class FileController extends Controller
     }    
 
     /* **************************************************************************************************************** 
-    *  Move                                                                                                           *
+    *  manyMove                                                                                                       *
     *  FileObserver handles physical move of the disk file and ensures no collisions                                  *  
     **************************************************************************************************************** */ 
-    public function move(Request $request) {
+    public function manyMove(Request $request) {
         $validator = Validator::make($request->all(), [
             'folder_id' => 'required|integer|exists:folders,id'
         ]);
@@ -698,10 +700,10 @@ class FileController extends Controller
     }    
 
     /* **************************************************************************************************************** 
-    *  Destroy                                                                                                        *
+    *  manyDestroy                                                                                                    *
     *  FileObserver handles physical removal of the disk file and general clean up.                                   *  
     **************************************************************************************************************** */ 
-    public function destroy(Request $request) {
+    public function manyDestroy(Request $request) {
         $myrc = true;
         $files = explode(',', $request->itemsSelected);
         $countBad = count($files);
@@ -735,39 +737,102 @@ class FileController extends Controller
 
     /**
      * API Get Elevation Data using Ordnance Survey OS Terrain 50 data 
-     *     Calculate Distances for multiple points.   
+     *     Calculate Distances for multiple points.
+     *     Added Calories burned data.
+     * We check if any Way Points are near our route and if so, we add        
      */
     public function apiGetElevation(Request $request) {
         $file = File::findOrFail($request->id);
         $data = json_decode($file->meta);
-        $points = isset($data->rtept) ? $data->rtept : $data->trkpt;
+        $tPoints = isset($data->rtept) ? $data->rtept : $data->trkpt;       // Track or Route points
+        $wPoints = isset($data->wpt)   ? $data->wpt   : [];                 // Way or Marker points
+// dd($data->wpt);
 
         //$distance = isset($data->Distance) ? $data->Distance : 0;
         //$climb    = isset($data->Climb   ) ? $data->Climb    : 0;
         $minY = isset($data->Lowest ) ? $data->Lowest  : 0;
         $maxY = isset($data->Highest) ? $data->Highest : 0;
 
-        $data = [];
-        $data2 =[];       
-        $c = 0;
-        $d = 0;
-        $m = 1609.344;                         // Metres in a mile (Change to 1 for x-axis in metres)
+// Add range max min etc for calories
+// do calcs for calories        
+        $data1 = [];                            // Elevation 
+        $data2 = [];                            // Climb
+        $data3 = [];                            // Waypoints            
+        $data4 = [];                            // Calories person profile 1
+        $data5 = [];                            // Calories person profile 2
+        $data6 = [];                            // Calories person profile 3
+        $c  = 0.0;                              // Elevation
+        $d  = 0.0;                              // Distance
+        $e1 = 0.0;                              // Calories 1
+        $e2 = 0.0;                              // Calories 2
+        $e3 = 0.0;                              // Calories 3
+        $m  = 1609.344;                         // Metres in a mile (Change to 1 for x-axis in metres)
 
-        for ($i=0; $i<sizeof($points); ++$i) {
-            $point = $points[$i];
-            $x = isset($point->d  ) ? $point->d   : 0;                  // delta Distance
-            $y = isset($point->ele) ? $point->ele : 0;                  // Elevation
+        for ($i=0; $i<sizeof($tPoints); ++$i) {
+            $tPoint = $tPoints[$i];
+            $x = isset($tPoint->d  ) ? $tPoint->d   : 0;                // delta Distance
+            $y = isset($tPoint->ele) ? $tPoint->ele : 0;                // Elevation
             $d = $d + $x;                                               // Total Distance
             if($i>0 && $y>$eleOld) { $c = $c + $y - $eleOld; }          // Total Climb
-            $data[]  = ['x' => round($d/$m, 3), 'y' => round($y, 1)];
-            $data2[] = ['x' => round($d/$m, 3), 'y' => round($c, 1)];
-            $eleOld = $point->ele;
+            if($i>0) {                                                  // Total Calories
+                $e1 = $e1 + calories($x, $y - $eleOld)[0];              // Nick
+                $e2 = $e2 + calories($x, $y - $eleOld)[1];              // Dave
+                $e3 = $e3 + calories($x, $y - $eleOld)[2];              // Chris
+            }     
+            $data1[] = ['x' => round($d/$m, 3), 'y' => round($y,  1)];
+            $data2[] = ['x' => round($d/$m, 3), 'y' => round($c,  1)];
+            $data4[] = ['x' => round($d/$m, 3), 'y' => round($e1, 1)];
+            $data5[] = ['x' => round($d/$m, 3), 'y' => round($e2, 1)];
+            $data6[] = ['x' => round($d/$m, 3), 'y' => round($e3, 1)];
+            $eleOld = $tPoint->ele;
+
+            // Ignore Start & Finish waypoints
+            // We use a rounding of 3 dec places for accuracy but we may miss a nearby waypoint 
+            for ($j=0; $j<sizeof($wPoints); ++$j) {                     // Here we check if our Waypoints are nearby to our track 
+                if (! isset($wPoints[$j]->ontrack) && round($wPoints[$j]->lat, 3)==round($tPoint->lat, 3) && round($wPoints[$j]->lon, 3)==round($tPoint->lon, 3)) {
+                    $wPoints[$j]->ontrack = true;                       // OK We set this to avoid rechecking later 
+                    $k = explode(' ', $wPoints[$j]->name);              // Skip automated Start & Finish waypoints
+                    if ($k[0]=='Start' || $k[0]=='Finish') { continue; }
+                    $wPoints[$j]->d = round($d/$m, 3);                  // Set Waypoint distance same as current point's distance
+                    $data3[] = ['x' => round($d/$m, 3), 'y' => round($y, 1), 'l' => $wPoints[$j]->name.' ('.$wPoints[$j]->osref.')'];
+                }    
+            }
         }
+
+//      dd($wPoints, $data3);
         $minY = $minY<=10 ? 0 : $minY - 10;
         $minY = ceil($minY / 10) * 10;
         $maxY = ceil(($maxY + 10) / 10) * 10;
         $range = [0, round($d/$m, 2), $minY, $maxY, round($c, 1)];
-        return json_encode(['data' => $data, 'range' => $range, 'data2' => $data2]);   
+
+        // Lets run the route again and check if there are any waypoints that could be a little further from the track
+        // We use a rounding of 2 dec places instead of 3 to do this. We also allow multiple points on the track if not within 200m 
+        $c  = 0.0;                              // Elevation
+        $d  = 0.0;                              // Distance
+        for ($i=0; $i<sizeof($tPoints); ++$i) {
+            $tPoint = $tPoints[$i];
+            $x = isset($tPoint->d  ) ? $tPoint->d   : 0;                // delta Distance
+            $y = isset($tPoint->ele) ? $tPoint->ele : 0;                // Elevation
+            $d = $d + $x;                                               // Total Distance
+            if($i>0 && $y>$eleOld) { $c = $c + $y - $eleOld; }          // Total Climb
+            $eleOld = $tPoint->ele;
+
+            for ($j=0; $j<sizeof($wPoints); ++$j) {                     // Here we check if our Waypoints are nearby to our track 
+                if (! isset($wPoints[$j]->ontrack) && round($wPoints[$j]->lat, 2)==round($tPoint->lat, 2) && round($wPoints[$j]->lon, 2)==round($tPoint->lon, 2)) {
+                    if (isset($wPoints[$j]->d2)) {
+                        $d2 = OSRefs([[$wPoints[$j]->east, $wPoints[$j]->north], $wPoints[$j]->d2])[1]->d;
+                        if ($d2<=200) { continue; }
+                    }
+                    //$wPoints[$j]->ontrack = true;                     // OK We set this to avoid rechecking later 
+                    $wPoints[$j]->d = round($d/$m, 3);                  // Set Waypoint distance same as current point's distance
+                    $wPoints[$j]->d2 = [$tPoint->east, $tPoint->north]; // Set Waypoint distance same as current point's distance
+                    $data3[] = ['x' => round($d/$m, 3), 'y' => round($y, 1), 'l' => $wPoints[$j]->name.' ('.$wPoints[$j]->osref.')'];
+                }    
+            }
+        }
+
+        return json_encode(['data1' => $data1, 'data2' => $data2, 'data3' => $data3, 'data4' => $data4,
+            'data5' => $data5, 'data6' => $data6, 'range' => $range]);   
     }    
 
 }

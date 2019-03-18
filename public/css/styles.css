@@ -503,7 +503,9 @@ dd {
   height: 100px;
   width: 100px;
   background-size: 100%, 100%;
-  background-image: none; 
+  background-image: none;
+  color: light;
+  text-shadow: 0px 0px 2px gray, 0px 0px 2px gray;
 }
 
 .carousel-control-next-icon:after
@@ -523,6 +525,25 @@ dd {
   font-size: 40px;
   margin-left: 10px;
 }
+
+.carousel-caption {
+  position: absolute;
+  bottom: 10px;
+}
+
+/* Some additional Carousel styling **************************************************** */
+.carousel-caption-inner {
+  line-height:30px;
+  background-color:#f8f9fa;
+  color:gray;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 5px;
+  padding-left: 4px;
+  padding-right: 5px;
+  padding-bottom: 3px;
+  padding-top: 0px;
+}  
 
 /* *********************************************************** */
 /* Force video to fit container - used on File upload          */
@@ -549,6 +570,7 @@ video {
 
 .page-in {
   width: 30px;
+  border-color: gainsboro;
   border-style: solid;
   border-width: 1px;
   border-left: 0px;
@@ -655,6 +677,21 @@ th a, th a:visited, th a:active {
 th a:hover {
   color: #80bdff;
   text-decoration: none;
+}
+
+
+/* remove decorations from links */
+.clean-link a,
+.clean-link a:link,
+.clean-link a:hover,
+.clean-link a:visited
+ {
+  color: rgba(0,0,0,.5);
+  text-decoration: none;
+  outline: 0;
+}
+.clean-link a:hover {
+  color: rgba(0,0,0,.7);
 }
 
 /* Print styling *********************************************************************** */
@@ -792,11 +829,12 @@ th a:hover {
   border-color: grey;
   border-width: 3px;
   background-color: #e6e6e6;
-  width: 150px;
-  padding-left: 2px;
+  width: 175px;
+  padding-left: 8px;
 }
 #div1 input[value="Find"] {
-  margin-left: 2px;
+  margin-left: 0px;
+  margin-top: 2px;
   border-style: solid;
   border-color: grey;
   border-width: 3px;
@@ -809,4 +847,11 @@ th a:hover {
   border-style: solid;
   border-color: grey;
   border-width: 3px;
+}
+#selectGaz {
+  margin-top: 2px;
+  border-style: solid;
+  border-color: grey;
+  border-width: 3px;
+  background-color: #e6e6e6;
 }

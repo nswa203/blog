@@ -14,20 +14,46 @@ class CategoryController extends Controller
 
     public function __construct(Request $request) {
         $this->middleware(function ($request, $next) {
-            session(['zone' => 'Categories']);
+            $owner_id = $request->route('user') ?: '*';         
+
+            if (!permit($this->permits($owner_id))) {
+                Session::flash('failure', "It doesn't look like you have permission for that action!");
+                return redirect(previous());
+            }
+
+            session(['zone' => 'Categories']);                  // Set the active zone for search()
+            previous(url($request->getPathInfo()));             // Set the previous url for redirect(previous()) 
             return $next($request);
         });
+    }
+
+    // These permits are used by permit() in the __contruct() middleware to secure the controller actions 
+    // This could be done in the Route config - but it seems to make more sense to do it in the controller.
+    // $owner_id='*' permits all Users for a permission   
+    public function permits($owner_id='^') {
+        $permits = [
+            'index'   => 'users:*,permission:categories-read',
+            'show'    => 'users:*,permission:categories-read',
+            'create'  => 'permission:categories-create',
+            'store'   => 'permission:categories-create',
+            'edit'    => 'permission:categories-update',
+            'update'  => 'permission:categories-update',
+            'delete'  => 'permission:categories-delete',
+            'destroy' => 'permission:categories-delete',
+            'default' => '' 
+        ];
+        return $permits;
     }
 
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
     // The table is sorted (ascending or descending) and finally filtered.
     // It requires the custom queryHelper() function in Helpers.php.
-    public function searchSortQuery($request) {
+    public function query() {
         $query = [
             'model'         => 'Category',
             'searchModel'   => ['name'],
             'searchRelated' => [],
-            'sortModel'   => [
+            'sort'   => [
                 'i'       => 'd,id',                                                      
                 'n'       => 'a,name',
                 'c'       => 'd,created_at',
@@ -35,7 +61,7 @@ class CategoryController extends Controller
                 'default' => 'n'                       
             ],                        
         ];
-        return queryHelper($query, $request);
+        return $query;
     }
 
     /**
@@ -44,11 +70,13 @@ class CategoryController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        $pager = pageSize($request, 'categoriesIndex', 12, 4, 192, 4);    // size($request->pp), sessionTag, default, min, max, step
-        $categories = $this->searchSortQuery($request)->paginate($pager['size']);
-        $categories->pager = $pager;
+        if ($request->edit && !permit($this->permits(), 'edit')) {
+           Session::flash('failure', "It doesn't look like you have permission for that action!");
+           return redirect()->route('categories.index');
+        } 
+        $categories = paginateHelper($this->query(), $request, 12, 4, 192, 4); // size($request->pp), default, min, max, step
 
-        if ($categories && $categories->count() > 0) {
+        if ($categories && $categories->count()>0) {
 
         } else {
             Session::flash('failure', 'No Categories were found.');
@@ -113,6 +141,7 @@ class CategoryController extends Controller
                 'posts' => $posts, 'list' => $list]);
         } else {
             Session::flash('failure', 'Category "' . $id . '" was NOT found.');
+            return redirect(previous());
             return redirect()->route('categories.index');
         }
     }
@@ -180,6 +209,7 @@ class CategoryController extends Controller
             return view('manage.categories.delete', ['category' => $category]);
         } else {
             Session::flash('failure', 'Category "' . $id . '" was NOT found.');
+            return redirect(previous());
             return redirect()->route('categories.index');
         }
     }

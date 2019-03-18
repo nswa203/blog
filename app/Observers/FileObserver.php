@@ -19,8 +19,9 @@ class FileObserver
 
     // Forces Folder observer to update folder size     
     function updateFolder(File $file, $folder=false) {
-        if (gettype($folder) == 'integer') {echo '!1!'; $folder = Folder::find($folder);          }
-        if (!$folder)                      {echo '!2!'; $folder = Folder::find($file->folder_id); }
+        if (gettype($folder) == 'integer') { echo '!1!'; $folder = Folder::find($folder);          }
+        if (! $folder)                     { echo '!2!'; $folder = Folder::find($file->folder_id); }
+        
         $myrc = $folder->save(); 
         return $myrc;
     }
@@ -29,19 +30,20 @@ class FileObserver
     function fitOnFolder(File $file, Folder $folder) {
         if ($folder->size + $file->size > $folder->max_size * 1048576) {
             $avail = $folder->max_size * 1048576 - $folder->size;
-            msgx(['warning' => ['Insufficient space in "'.$folder->slug.'" '.mySize($avail).' available.']]);
+            msgx(['warning' => ['Insufficient space in "' . $folder->slug . '" ' . mySize($avail) .' available.']]);
             return false;
-        }    
+        }
         return true;
     }
 
     // Returns a filepath if not already used   
     function getUnique(File $file, Folder $folder) {
         $path = filePath($file, $folder);
-        $myrc = FileSys::exists($path); 
+        $myrc = FileSys::exists($path);
+
         if ($myrc) {
-            msgx(['warning' => ['File already exists "'.$path.'".']]);
-        }    
+            msgx(['warning' => ['File already exists "' . $path . '".']]);
+        } 
         return $myrc ? false : $path;
     }
 
@@ -55,15 +57,15 @@ class FileObserver
     //  Request->folderTarget be set to the target Folder:: 
     //  Request->fileSource   be set to the index in the uploaded files list OR path to the existing file
     // NS01
-    public function saving(File $file)
-    {
+    public function saving(File $file) {
         $op = $this->request->action;
         
-        if (!in_array($op, ['alter', 'update'])) {
+        if (! in_array($op, ['alter', 'update'])) {
             $folderTarget = $this->request->folderTarget;
-            $pathTarget   = $this->getUnique($file, $folderTarget);            
-            if (!$pathTarget)                              { return false; }    // Already a file with that name
-            if (!$this->fitOnFolder($file, $folderTarget)) { return false; }    // No space
+            $pathTarget   = $this->getUnique($file, $folderTarget);
+
+            if (! $pathTarget)                              { return false; }   // Already a file with that name
+            if (! $this->fitOnFolder($file, $folderTarget)) { return false; }   // No space
         }    
 
         if ($op == 'alter') {
@@ -78,7 +80,7 @@ class FileObserver
             $fileSource   = $this->request->file('files')[$this->request->fileSource];
             // Retrieve information about the uploaded file  
             $file->mime_type = $fileSource->getMimeType();
-            $file->meta      = getMeta($fileSource);
+            $file->meta      = getMeta($fileSource);                            // Look in Helpers.php
             $file->sha256    = hash_file('sha256', $fileSource);
             // Move from temporary storage to target
             $myrc = FileSys::move($fileSource, $pathTarget);
@@ -87,8 +89,8 @@ class FileObserver
             $folderTarget = $this->request->folderTarget;
             $pathTarget   = $this->getUnique($file, $folderTarget); 
             $folderTarget->size = $folderTarget->size - $file->size;
-            if (!$pathTarget)                              { return false; }    // Already a file with that name
-            if (!$this->fitOnFolder($file, $folderTarget)) { return false; }    // No space
+            if (! $pathTarget)                              { return false; }    // Already a file with that name
+            if (! $this->fitOnFolder($file, $folderTarget)) { return false; }    // No space
             // Retrieve information about the uploaded file  
             $file->mime_type = $fileSource->getMimeType();
             $file->meta      = getMeta($fileSource);
@@ -102,16 +104,17 @@ class FileObserver
         if ($myrc) {                            // NS01 folderObserver is slow to update so we do it here
             $folderTarget->size = $folderTarget->size + $file->size;        
             $folderTarget->save();
-        }      
+        }
+
     return $myrc;
     }    
 
     //  This ensures that once the File row has been saved in the database, we synchronize any
     //  Tags and force an update of the Folder->size.
     //  Request->folderSource is required for Move to ensure we update the source folder.
-    public function saved(File $file)
-    {
+    public function saved(File $file) {
         $op = $this->request->action;
+       
         if        ($op == 'store') {
             $myrc = $file->tags()->sync($this->request->tags, false);
         } else if ($op == 'alter') {
@@ -125,17 +128,18 @@ class FileObserver
         } else if ($op == 'replace') {
             $myrc = $file->tags()->sync($this->request->tags, true);
         }
+
         //$myrc = $this->updateFolder($file, $this->request->folder);
         return $myrc;
     }
 
     // This ensures that once the File row has been deleted from the database, we detach any
     // Tags, erase the file from storage and force an update of the Folder->size.  
-    public function deleted(File $file)
-    {
+    public function deleted(File $file) {
         $myrc = false;
         $file->tags()->detach();
         $folder = Folder::find($file->folder_id);
+
         if ($folder) {
             $filePath = folder_path($folder)->path . '\\' . $file->file;    // C:\folder\fn.ft
             $myrc = FileSys::delete($filePath);

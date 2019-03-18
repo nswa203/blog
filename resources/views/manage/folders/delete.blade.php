@@ -44,17 +44,19 @@
 						@endif
 					</dt>
 					--}}
-					<hr class="hr-spacing-top mt-2">
 					<div class="row">
 						<div class="col-sm-12">
-								{{ 	Form::button('<i class="fas fa-trash-alt mr-2"></i>YES DELETE NOW', ['type'=>'submit', 'class'=>'btn btn-danger btn-block']) }}
-								{!! Html::decode('<a href="Return" class="btn btn-outline-danger btn-block mt-3" onclick="window.history.back()"><span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
+							{{ 	Form::button('<i class="fas fa-trash-alt mr-2"></i>YES DELETE NOW', ['type'=>'submit', 'class'=>'btn btn-danger btn-block']) }}
+							{!! Html::decode('<a href="" class="btn btn-outline-danger btn-block mt-3" onclick="
+								window.history.back();
+								event.preventDefault ? event.preventDefault : event.returnValue=false;">
+							<span class="fas fa-times-circle mr-2"></span>Cancel</a>') !!}
 						</div>
 					</div>
 					{!! Form::close() !!}
 				</div>
 				@if($folder->image)
-					<img class="mt-4" src="{{ route('private.getFolderFile', [$folder->id, 'Folder.jpg']) }}" width="100%" />
+					<img class="mt-4" src="{{ route('folders.getFolderFile', [$folder->id, 'Folder.jpg']) }}" width="100%" />
 				@endif
 			</div>
 		</div>	

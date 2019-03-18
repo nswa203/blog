@@ -12,11 +12,146 @@ use App\File;
 use App\Folder;
 //use App\Permission;
 //use App\Photo;
-//use App\Post;
-//use App\Profile;
+use App\Post;
+use App\Profile;
 //use App\Role;
 //use App\Tag;
 use App\User;
+
+// If you change Helpers.php you should do "composer dump-autoload".
+// Supports files.show      First, Previous, Next, false, false, Last, Min, Max, Current, item_list, Playlist_button 
+// Supports files.showImage First, Previous, Stop, Play,  Next,  Last, Min, Max, Current, item_list, Playlist_button
+if (! function_exists('showNav3')) {
+    function showNav3($id, $list=false) {
+        $item = $list ? array_search($id, $list) : $list;
+        if ($item !== false) {
+            $min = 0;
+            $max = count($list);
+            $pl = Request::get('pl') ?: 0;
+            $pl = $pl<=4 ? $pl : 0;
+            if ($item > 0)      { $start = $list[0];       $prev = $list[$item-1]; }
+            else                { $start = false;          $prev = false;          }
+            if ($item < $max-1) { $next  = $list[$item+1]; $last = $list[$max-1];  } 
+            else                { $next  = false;          $last = false;          }
+            $nav =  [$start, $prev, '/', 'play', $next, $last, $min, $max-1, $item, json_encode($list), $pl];
+        } else { $nav = false; }
+    //dd($id, $list, $nav);    
+    return $nav;
+    }
+}
+
+// Converts interval distance(m) and interval height(m) into a calorie array(kC)
+// with 4 elements representing four different walkers' weight.
+// 12% is added for each 1% incline
+// 6.6% is removed for each 1% decline 
+if (! function_exists('calories')) {
+    function calories($distance, $climb=0) {
+        if ($distance<=0) { return [0, 0, 0, 0]; }
+        $person[0] = [1.8288,  105.000];                 // Nick  m 6'0",  kg 105kg  
+        $person[1] = [1.778,   076.204];                 // Dave  m 5'10", kg 12st 0lb  
+        $person[2] = [1.72526, 076.204];                 // Chris m 5'9",  kg 12st 0lb
+        $person[3] = [1.72526, 076.204];                 // ????  m 5'9",  kg 12st 0lb
+        $v = 1.207;                                      // m/s 2.7mph
+        $g = $climb / $distance * 100;                                          // Gradient
+        for ($i=0; $i<count($person); ++$i) { 
+            $h = $person[$i][0];
+            $w = $person[$i][1];      
+            $cps = ((0.035 * $w) + ($v * $v / $h) * 0.029 * $w) / 60;           // Calories per second
+            $cpm = $cps / $v;                                                   // Calories per metre
+            if      ($g>=0.5 ) { $cpm = $cpm * (1 + ($g * 0.120)); }            // Add 12% for each 1% gradient    
+            else if ($g<=-0.5) { $cpm = $cpm * (1 - ($g * 0.066)); }            // Decrease 6.6% for each -1% gradient
+            $calories[$i] = $cpm * $distance;        
+        }
+        return $calories;
+    }    
+}
+
+if (! function_exists('areOwnedBy')) {
+    function areOwnedBy($items=false, $model, $col='id', $id=false) {
+        if (! $items || !$id || $id=='*') { return true; }
+        $model = 'App\\' . $model; 
+        $db = $model::whereIn('id', $items)->where($col, $id)->pluck('id')->toArray();
+        return count($db)==count($items);
+    }    
+}
+
+// These permits are used by permit() in the __contruct() middleware to secure the controller actions 
+// This could be done in the Route config - but it seems to make more sense to do it in the controller.
+// $owner_id='*' permits all Users for a permission   
+if (! function_exists('permit')) {
+    function permit($permits, $action=false) {
+        $action = $action ?: trim(strstr(Route::currentRouteAction(), '@'), '@');
+        $permit = array_key_exists($action, $permits) ? $permits[$action] : $permits['default'];
+//dd($permits, $action, $permit, isAllowedTo($permit) );        
+        return isAllowedTo($permit);
+    }    
+}
+
+// Tries to return the calling URL as back() increasingly doesn't work
+// on many browsers that restrict the use of referrer
+// A call to previous(previous_url) should be set in each controller's __construct()
+// We keep 2 url's to try to avoid loops 
+if (! function_exists('previous')) {
+    function previous($url=false) {
+        $previous = session('_previous');
+        $url_old = isset($previous['action']) ? $previous['action'] : '/home';
+        if ($url) { 
+            session(['_previous.action_old' => $url_old]);
+            session(['_previous.action'     => $url]);
+        } else {
+            if ($url_old==Request::url()) {
+                $url = isset($previous['action_old']) ? $previous['action_old'] : '/home';
+            } else {
+                $url = $url_old;
+            }
+        }    
+        return $url;
+    }    
+}
+
+// Checks Authority by User, Role, Permission, Owner
+// user:      name1|name2|...|nameX or *
+// role:      name1|name2|...|nameX
+// permission:name1|name2|...|nameX
+// owner:     name |permission1|permission2|...|permissionX
+// NS01 NS02 NS03 NS04 NS05
+if (! function_exists('isAllowedTo')) {
+    function isAllowedTo($rules='', $and=false, $user=false) {
+        $myrc = false;
+        if (! $user && Auth::check()) {
+            $user = Auth::user();
+        } 
+        if (! $user) {
+            $user = User::where('name', config('app.guest'))->first();  // NS03 NS04 None logged in users get Guest user status
+        }
+        if ($user->hasRole(config('app.owner'))) { return true; }       // NS03 NS04 Always approve superadministrators
+        $controls = explode(',', $rules);
+        foreach ($controls as $control) {
+            $list = explode(':', $control, 2);
+            $type = $list[0];
+            $items = isset($list[1]) ? explode('|', $list[1]) : [];     // NS02
+
+            if ($type=='role') {
+                $myrc = $user->hasRole($items, $and);
+            } elseif ($type=='permission') {
+                $myrc = $user->hasPermission($items, $and);
+            } elseif ($type=='owner' && ($items[0]==$user->id or $items[0]=='*')) {
+                if (isset($items[1])) {
+                    $myrc = $user->hasPermission(array_slice($items, 1), $and);
+                } else { $myrc = true; }
+            } elseif ($type=='user') {    
+                foreach ($items as $item) {
+                    if ($item==$user->id or $item=='*') { $myrc = true; }   // NS01 NS05
+                    if ($and  && !$myrc) { return false; }
+                    if ($myrc && !$and ) { return true;  }
+                }        
+            }   
+            if ($and  && !$myrc) { return false; }
+            if ($myrc && !$and ) { return true;  }
+        }
+        return $myrc;
+    }
+}    
 
 // Simple trace routine
 if (! function_exists('trace')) {
@@ -25,8 +160,8 @@ if (! function_exists('trace')) {
     }
 }    
 
-// System wide constants set here because .env and config() don't seem to work very well
-// especially if cache is active.
+// System wide constants set here because .env don't seem to work very well
+// especially if cache is active. Now added to config() so you could try that also
 if (! function_exists('myConstants')) {
     function myConstants($id=false) {
         # Google recaptcha account details used within public form submission
@@ -196,13 +331,14 @@ if (! function_exists('myThumb')) {
 
 // If you change Helpers.php you should do "composer dump-autoload".
 // Uses the "Intervention Image" PHP image handling and manipulation library
-// Provides a thumnbnail of an image file (Only supports jpg, png, hif & webp)
+// Provides a thumnbnail of an image file (Only supports jpg, png, gif & webp)
 // Returns a binary stream of the thumbnail or boolean
-// NS01
+// NS01 NS02
 if (! function_exists('myThumb2')) {
     function myThumb2($path, $size='') {
-        if (!in_array(pathinfo($path, PATHINFO_EXTENSION), ['jpg', 'png', 'gif', 'webp'])) { return false; } // NS01
-        if (!is_numeric($size)) { $size = 100; }
+        if (! preg_grep("/".pathinfo($path, PATHINFO_EXTENSION)."/i", ['jpg', 'png', 'gif', 'webp'])) { return false; } // NS01 NS02
+        //if (! in_array(pathinfo($path, PATHINFO_EXTENSION), ['jpg', 'png', 'gif', 'webp'])) { return false; } // NS01
+        if (! is_numeric($size)) { $size = 100; }
         return Image::make($path)->widen($size, function ($constraint) {
             $constraint->upsize();
         })->stream();
@@ -295,7 +431,7 @@ if (! function_exists('showNav2')) {
             if ($item < $max-1) { $next  = $list[$item+1]; $last = $list[$max-1];  } 
             else                { $next  = false;          $last = false;          }
             if ($playList) {
-                $plsB = ['fas fa-genderless', 'fas fa-reply', 'fas fa-reply-all'][$playList-1];
+                $plsB = ['fas fa-ellipsis-h', 'fas fa-reply fa-flip-horizontal', 'fas fa-reply-all fa-flip-horizontal'][$playList-1];
                 $plsV = $next ?: $start;
                 $nav  = ['fas fa-fast-backward', $start, 'fas fa-step-backward', $prev,
                          'fas fa-stop',          true,   $plsB,                  $plsV,
@@ -353,6 +489,8 @@ if (! function_exists('getMeta')) {
         } elseif ($pathExt == 'gpx') {                      // Map GPX tags
             $obj = new GPXTags;
             $meta = $obj->getTags($file);
+//dd($file, $mime_type, $meta);        
+
         } else { $meta = null; }
     return strlen($meta)<2 ? null : $meta;
     }
@@ -361,6 +499,7 @@ if (! function_exists('getMeta')) {
 // If you change Helpers.php you should do "composer dump-autoload".
 // Status definitions for Folders
 // $list['d'] for Folders
+// An "*" prepended to an element is used by the view to identify the default
 if (! function_exists('folderStatus')) {
     function folderStatus($default = -1) {
         $status = [
@@ -374,6 +513,7 @@ if (! function_exists('folderStatus')) {
 // If you change Helpers.php you should do "composer dump-autoload".
 // Status definitions for Posts
 // $list['p'] for Posts
+// An "*" prepended to an element is used by the view to identify the default
 if (! function_exists('postStatus')) {
     function postStatus($default = -1) {
         $status = [
@@ -390,6 +530,7 @@ if (! function_exists('postStatus')) {
 // If you change Helpers.php you should do "composer dump-autoload".
 // Status definitions for Files
 // $list['f'] for Files
+// An "*" prepended to an element is used by the view to identify the default
 if (! function_exists('fileStatus')) {
     function fileStatus($default = -1) {
         $status = postStatus($default);              // Same as Posts at the moment!
@@ -400,6 +541,7 @@ if (! function_exists('fileStatus')) {
 // If you change Helpers.php you should do "composer dump-autoload".
 // Status definitions for Albums
 // $list['f'] for Albums
+// An "*" prepended to an element is used by the view to identify the default
 if (! function_exists('albumStatus')) {
     function albumStatus($default = -1) {
         $status = postStatus($default);              // Same as Posts at the moment!
@@ -410,6 +552,7 @@ if (! function_exists('albumStatus')) {
 // If you change Helpers.php you should do "composer dump-autoload".
 // Option definitions for Files
 // $list['o'] for File Options
+// An "*" prepended to an element is used by the view to identify the default
 if (! function_exists('fileOption')) {
     function fileOption($default = -1) {
         $options = [
@@ -563,9 +706,11 @@ if (! function_exists('fileURL')) {
 }
 
 // Returns string
-//  nice size
+// nice size
+// NS01
 if (! function_exists('mySize')) {
     function mySize($bytes, $unit=false) {
+        if ($bytes<=0) { return 'Zero bytes'; }             // NS01
         if ($unit=='M') { $bytes = $bytes*1048576; }
         $i = floor(log($bytes, 1024));
         return round($bytes / pow(1024, $i), [0,0,2,2,3][$i]).[' bytes',' kB',' M',' G',' T'][$i];
@@ -782,6 +927,7 @@ if (! function_exists('queryHelper')) {
 // Add this to your index view {{ $posts->appends(Request::only(['search', 'sort']))->render() }} 
 if (! function_exists('paginateHelper')) {
     function paginateHelper($q, $request, $default=false, $min=false, $max=false, $step=false, $force=false) {
+        //dd('T01', $request->search);
         //dd(app('request')->route()->getAction());
         $context = app('request')->route()->getAction('as');
         $pager = pageSize($request, $context, $default, $min, $max, $step, $force);    // size($request->pp), sessionTag, default, min, max, step, ignore_session_size
@@ -793,9 +939,11 @@ if (! function_exists('paginateHelper')) {
 
 // This routine builds the db query with search and sort support for both the primary model
 // and its relationships. It supports search for phrases embeded in double quotes. It also
-// supports boolean "and" searches.
+// supports boolean "and +" searches.
 // Warning: the search in the $q query is overidden by the search in the $data request !!!  
-// NS01 Adds exact search support using '^' delimiters 
+// NS01 Adds exact search support using '^' delimiters
+// NS02 let "+"" be an alias of "and"
+// NS03 multiple filter support  
 if (! function_exists('queryHelperTest')) {
     function queryHelperTest($q, $data=false, $trace=false) {
         // $data can be a Request containing ->search and/or ->sort data
@@ -819,9 +967,9 @@ if (! function_exists('queryHelperTest')) {
             $and = false;
             foreach ($words[0] as $word) {
                 $word = trim($word, '"');
-                if (!strcasecmp($word, 'and')) { $and = true; continue; }
-                else if ($and)                 { $and = false; $search_listAnd[] = $word; }
-                else                           { $search_listOr[] = $word; }   
+                if (!strcasecmp($word, 'and') or $word=='+') { $and = true; continue; }     // NS02
+                else if ($and)                               { $and = false; $search_listAnd[] = $word; }
+                else                                         { $search_listOr[] = $word; }   
             }
 
             // Search each column in our model
@@ -895,6 +1043,15 @@ if (! function_exists('queryHelperTest')) {
                 $query = $query->with($table);
             }
         }    
+
+        // Filter everything - code placed here for No Search case ***************************************
+        if (array_key_exists('filters', $q)) {                                  // NS03
+            foreach ($q['filters'] as $filter) {
+                $query->where(function ($qq) use ($filter) {
+                    $qq->where($filter[0], $filter[1], $filter[2]);
+                });
+            }    
+        }
 
         // Filter everything - needed here for No Search case ********************************************
         if (array_key_exists('filter', $q)) {

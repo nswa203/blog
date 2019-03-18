@@ -12,6 +12,7 @@ use App\Folder;
 use App\Permission;
 use App\Profile;
 use App\Role;
+use Auth;
 use File;
 use Session;
 use Validator;
@@ -20,16 +21,42 @@ class UserController extends Controller
 {
 
     public function __construct(Request $request) {
-        $this->middleware(function ($request, $next) {
-            session(['zone' => 'Users']);
+        $this->middleware(function ($request, $next) { 
+            $owner_id = $request->route('user') ?: '*';         // This gets {user} from Route:: statement (if {user} was coded)
+            if (! permit($this->permits($owner_id))) {          // Check Permission for this controller action
+                Session::flash('failure', "It doesn't look like you have permission for that action!");
+                return redirect(previous());
+            }
+
+            session(['zone' => 'Users']);                       // Set the active zone for search()
+            previous(url($request->getPathInfo()));             // Set the previous url for redirect(previous()) 
             return $next($request);
         });
+    }
+
+    // These permits are used by permit() in the __contruct() middleware to secure the controller actions 
+    // This could be done in the Route config - but it seems to make more sense to do it in the controller.
+    // $owner_id='*' permits all Users for a permission but ... only if any additional permission is set  
+    public function permits($owner_id='^') {
+        $permits = [
+            'showAll' => 'permission:users-read',
+            'index'   => 'permission:users-read,owner:'.$owner_id.'|users-read-ifowner',
+            'show'    => 'permission:users-read,owner:'.$owner_id.'|users-read-ifowner',
+            'create'  => 'permission:users-create',
+            'store'   => 'permission:users-create',
+            'edit'    => 'permission:users-update,owner:'.$owner_id.'|users-update-ifowner',
+            'update'  => 'permission:users-update,owner:'.$owner_id.'|users-update-ifowner',
+            'delete'  => 'permission:users-delete,owner:'.$owner_id.'|users-delete-ifowner',
+            'destroy' => 'permission:users-delete,owner:'.$owner_id.'|users-delete-ifowner',
+            'default' => '' 
+        ];
+        return $permits;
     }
 
     // This Query Builder searches our table/columns and related_tables/columns for each word/phrase.
     // The table is sorted (ascending or descending) and finally filtered.
     // It requires the custom queryHelper() function in Helpers.php.
-    public function query() {
+    public function query($user_id=false) {
         $query = [
             'model'         => 'User',
             'searchModel'   => ['name', 'email'],
@@ -49,6 +76,9 @@ class UserController extends Controller
                 'default' => 'n'                       
             ],                   
         ];
+        if ($user_id) {
+            $query['filter'] = ['id', '=', $user_id];
+        }         
         return $query;
     }
 
@@ -58,9 +88,10 @@ class UserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
-        $users = paginateHelper($this->query(), $request, 12, 4, 192, 4); // size($request->pp), default, min, max, step
+        $id = permit($this->permits(), 'showAll') ? '' : Auth::user()->id;
+        $users = paginateHelper($this->query($id), $request, 12, 4, 192, 4); 
 
-        if ($users && $users->count() > 0) {
+        if ($users && $users->count()>0) {
 
         } else {
             Session::flash('failure', 'No Users were found.');
@@ -182,6 +213,7 @@ class UserController extends Controller
                 'posts' => $posts,   'roles'  => $roles,    'permissions' => $permissions,  'list'          => $list]);
         } else {
             Session::flash('failure', 'User "' . $id . '" was NOT found.');
+            return redirect(previous());
             return redirect()->route('users.index');
         }
     }
@@ -200,6 +232,7 @@ class UserController extends Controller
             return view('manage.users.edit', ['user' => $user, 'roles' => $roles]);
         } else {
             Session::flash('failure', 'User "' . $id . '" was NOT found.');
+            return redirect(previous());
             return redirect()->route('users.index');
         }
     }
@@ -226,7 +259,7 @@ class UserController extends Controller
             'roles.*'   => 'exists:roles,id'
         ]);
         if ($validator->fails()) {
-            return redirect()->route('users.edit')->withErrors($validator)->withInput();
+            return redirect()->route('users.edit', [$id])->withErrors($validator)->withInput();
         }
 
         $user = User::findOrFail($id);
@@ -304,6 +337,7 @@ class UserController extends Controller
             return view('manage.users.delete', ['user' => $user]);
         } else {
             Session::flash('failure', 'User "' . $id . '" was NOT found.');
+            return redirect(previous());
             return redirect()->route('users.index');
         }
     }

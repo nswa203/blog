@@ -28,7 +28,7 @@
 			<div class="col-md-12">
 				<table class="table table-hover table-responsive-lg">
 					<thead class="thead-dark" style="color:inherit;">
-						<th class="thleft">
+						<th class="thleft" width="40px">
 							<a href="{{ route('users.index', ['sort'=>'i'.$sort, 'search'=>$search]) }}">
 								<i id="sort-i" class="ml-2"></i><i class="fas fa-hashtag mb-1"></i>
 							</a>	
